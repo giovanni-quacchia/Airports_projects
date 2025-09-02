@@ -1,0 +1,32 @@
+# File to configure the containers and network
+
+version: "3.8"
+
+services:
+  # Backend container
+  backend:
+    build: .
+    container_name: backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - mongo
+    networks:
+      - taw
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - taw
+
+networks:
+  taw:
+
+volumes:
+  mongo-data:
