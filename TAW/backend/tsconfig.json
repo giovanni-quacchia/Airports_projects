@@ -7,7 +7,21 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "typeRoots": [
-            "node_modules/@types",
-        ]
-    }
+            "node_modules/@types"
+        ],
+        "outDir": "dist",
+        "rootDir": "src",
+        "strict": false, // allows express arguments to not be typed (req,res,next,err)
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }

@@ -1,6 +1,9 @@
-const express = require('express');
+import express from 'express';
 // Cross-origin resource sharing: controllare quali domini esterni possono inviare reqs
-const cors = require('cors');
+import cors from 'cors';
+
+import {connectDB} from './src/db/db';
+import { getUsers } from './src/models/user';
 
 const app = express();
 const PORT = 3000;
@@ -14,9 +17,11 @@ app.get("/", (req, res) => {
     return res.send("Server connected");
 });
 
-app.get("/test", (req, res) => {
-  
-})
+// app.get("/test", (req, res) => {
+//   getUsers().then(data => {
+//     res.json(data)
+//   })
+// })
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -24,6 +29,9 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something went wrong!'); // Generic message for users
 });
 
-app.listen(PORT, function(){
-    console.log('Listening on port 3000');
-});
+// Connect to DB, then start server
+connectDB().then(() => {
+  app.listen(PORT, function(){
+      console.log('Listening on port 3000');
+  });
+})

@@ -4,7 +4,6 @@ import crypto = require('crypto');
 // Interface
 
 export interface User extends mongoose.Document {
-    username: string;
     mail: string;
     roles: string[];
     salt: string;
@@ -15,10 +14,9 @@ export interface User extends mongoose.Document {
     checkPassword(password: string): boolean;
 }
 
-// Schema per DB
+// Schema
 
 const userSchema = new mongoose.Schema<User>({
-    username: { type: String, required: true},
     mail: { type: String, required: true, unique: true },
     roles: { type: [String], required: true, default: [] },
     salt: { type: String, required: true},
@@ -61,6 +59,10 @@ export function newUser(data): User {
     const _usermodel = getModel();
     const user = new _usermodel(data);
     return user;
+}
+
+export function getUsers(): Promise<User[]>{
+    return getModel().find({}).exec();
 }
 
 export default { getModel, userSchema };
