@@ -1,33 +1,42 @@
 import mongoose = require('mongoose');
-import { User } from './user';
-
 
 // Interface
 
-export interface Passenger extends User{
+interface Passenger{
     name: string;
     surname: string;
-    CF: string;
-    // passportNumber
+    CF?: string;
+    passportNumber?: string
 }
 
-// Schema
+// Schema: CF || passportNumber
 
 const passengerSchema = new mongoose.Schema<Passenger>({
     name: {type: String, required: true},
     surname: {type: String, required: true},
-    // passportNumber
+    CF: {
+        type: String,
+        validate: {
+            validator: function(this: Passenger, value: string){
+                return !!value || !!this.passportNumber; // \!! converts to boolean
+            }
+        }
+    },
+    passportNumber: {
+        type: String,
+        validate: {
+            validator: function(this: Passenger, value: string){
+                return !!value || !!this.passportNumber; // \!! converts to boolean
+            }
+        }
+    }
 });
 
 // Model
-// Discriminator: 
 
 let passengerModel: mongoose.Model<Passenger>;
 export function getModel(): mongoose.Model<Passenger>{
-    if(!passengerModel){
-        const userModel = getModel();
-        passengerModel = userModel.discriminator<Passenger>('Passenger', passengerSchema);
-    }
+    if(!passengerModel) passengerModel = mongoose.model<Passenger>('Passenger', passengerSchema);
     return passengerModel;
 }
 

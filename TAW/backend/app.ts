@@ -8,14 +8,20 @@ import { getUsers } from './src/models/user';
 const app = express();
 const PORT = 3000;
 
+const AirlinesRouter = require('./src/routes/airlines.routes')
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false })); // per interpretare i dati inviati tramite form HTML
 
+// Routes
+app.use("/airlines", AirlinesRouter);
+
 app.get("/", (req, res) => {
     return res.send("Server connected");
 });
+
 
 // app.get("/test", (req, res) => {
 //   getUsers().then(data => {

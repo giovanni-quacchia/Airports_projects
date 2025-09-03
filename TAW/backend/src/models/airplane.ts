@@ -10,7 +10,13 @@ export interface Airplane{
 // Schema
 
 const AirplaneSchema = new mongoose.Schema<Airplane>({
-    code: {type: Number, validate: Number.isInteger, unique: true},
+    code: {
+        type: Number, 
+        unique: true,
+        validate: {
+            validator: Number.isInteger
+        }
+    },
     route: {type: mongoose.Schema.ObjectId, ref: 'Route'}
 });
 

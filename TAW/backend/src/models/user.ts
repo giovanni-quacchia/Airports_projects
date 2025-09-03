@@ -5,9 +5,9 @@ import crypto = require('crypto');
 
 export interface User extends mongoose.Document {
     mail: string;
-    roles: string[];
-    salt: string;
-    digest: string;
+    roles?: string[];
+    salt?: string;
+    digest?: string;
     isAdmin(): boolean;
     setAdmin(): void;
     setPassword(password: string): void;

@@ -38,5 +38,6 @@ Ticket: volo, prezzo, tipo (economy, ...)
 
 Per eseguire fuori dal docker
 
+- docker run -d -p 27017:27017 --name mymongo mongo:6 // database
 - npm install
 - npx nodemon app.ts
