@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { User } from './user';
+import { User } from './User';
 
 
 // Interface

@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { Airport } from './airport';
+import { Airport } from './Airport';
 
 // Interface
 export interface Route{

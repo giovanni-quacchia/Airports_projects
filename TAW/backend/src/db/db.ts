@@ -11,7 +11,7 @@ export async function connectDB(){
     mongoose.connect(mongoUri)
     .then(() => {
         console.log("Connected to MongoDB");
-        return User.getModel().findOne({mail: "admin@gmail.com"});
+        return User.getModel().exists({mail: "admin@gmail.com"})
     })
     // Create admin
     .then((adminExists) => {

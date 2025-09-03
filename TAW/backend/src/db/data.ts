@@ -1,6 +1,6 @@
-import { Airline } from "../models/airline";
+import { Airline } from "../models/Airline";
 
-export const airlines = [
+export const airlines: Partial<Airline>[] = [
   {
     PIVA: "IE123456789",
     name: "Ryanair",

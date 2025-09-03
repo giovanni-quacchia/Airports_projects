@@ -1,17 +1,18 @@
 import mongoose = require('mongoose');
 import crypto = require('crypto');
+import {z} from "zod";
 
 // Interface
 
-export interface User extends mongoose.Document {
+export interface User{
     mail: string;
     roles?: string[];
     salt?: string;
     digest?: string;
     isAdmin(): boolean;
     setAdmin(): void;
-    setPassword(password: string): void;
-    checkPassword(password: string): boolean;
+    setPassword(pwd: string): void;
+    checkPassword(pwd: string): boolean;
 }
 
 // Schema
@@ -47,6 +48,19 @@ userSchema.methods.checkPassword = function(this: User, pwd: string){
     return (this.digest == digest);
 }
 
+// Validation
+function validateInput(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    if(!data.mail || typeof data.mail !== 'string') 
+        throw Error("Mail required");
+
+    const keys = Object.keys(data).filter(key => key !== 'mail');
+    if(keys.length > 0) throw Error("Not valid data");
+    return true;
+}
+
 // Model
 
 let userModel: mongoose.Model<User>;
@@ -55,7 +69,8 @@ export function getModel(): mongoose.Model<User> {
     return userModel;
 }
 
-export function newUser(data): User {
+export function newUser(data): mongoose.HydratedDocument<User> {
+    validateInput(data);
     const _usermodel = getModel();
     const user = new _usermodel(data);
     return user;

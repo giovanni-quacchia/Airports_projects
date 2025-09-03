@@ -14,4 +14,7 @@ router.post("/", airlines.newAirline);
 // Delete airline
 router.delete("/:id", airlines.deleteAirline);
 
+// Update airline
+router.put("/:id", airlines.updateAirline);
+
 module.exports = router;

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-import Airline from '../models/airline';
+import Airline from '../models/Airline';
 import { airlines } from "./data";
 import ser from '../services/airlines.service'
 import crypto = require('crypto');

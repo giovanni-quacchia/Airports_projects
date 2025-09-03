@@ -38,9 +38,20 @@ export async function deleteAirline(req, res, next){
     }
 }
 
+export async function updateAirline(req, res, next){
+    try {
+        const {id} = req.params;
+        const result = await airlines.updateAirline(id, req.body);
+        res.json(result);
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
+}
+
 export default {
     getAllAirlines,
     getAirline,
     newAirline,
-    deleteAirline
+    deleteAirline,
+    updateAirline
 }

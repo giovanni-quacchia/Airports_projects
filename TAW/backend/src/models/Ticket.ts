@@ -1,8 +1,9 @@
 import mongoose = require('mongoose');
-import { Passenger } from './passenger';
+import { Passenger } from './Passenger';
+import { Flight } from './Flight';
 
 // Interface
-export interface ticket{
+export interface Ticket{
     type: 'ECONOMY' | 'BUSINESS' | 'FIRST CLASS',
     extra: 'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG',
     price: number,
@@ -11,15 +12,15 @@ export interface ticket{
     flight: Flight
 }
 
-
-
 // Schema
 
 const TicketSchema = new mongoose.Schema<Ticket>({
-    type: 
-    PIVA: {type: String, required: true, unique: true},
-    name: {type: String, required: true},
-    logo: {type: String}
+    type: {
+        type: String,
+        enum: ["ECONOMY", "BUSINESS", "FIRST CLASS"], 
+        required: true
+    },
+    
 });
 
 // Model

@@ -1,22 +1,17 @@
-import Airline from '../models/airline';
+import Ar, {Airline} from '../models/Airline';
 import crypto from 'crypto'
 
 // Add airlines (if not exist)
 async function getAllAirlines() {
-    return Airline.getModel().find();
+    return Ar.getModel().find();
 }
 
 async function getAirline(id: string){
-    return Airline.getModel().findById(id);
+    return Ar.getModel().findById(id);
 }
 
-async function newAirline(airline){
-
-    if(!airline.PIVA || !airline.name){
-        throw new Error("Airline PIVA and name required");
-    }
-
-    const ar = Airline.newAirline(airline);
+async function newAirline(airline: Partial<Airline>){
+    const ar = Ar.newAirline(airline);
     const pw = crypto.randomBytes(16).toString("hex");
     ar.setPassword(pw);
     ar.save();
@@ -25,12 +20,18 @@ async function newAirline(airline){
 }
 
 async function deleteAirline(id: string){
-    return Airline.getModel().deleteOne({_id: id});
+    return Ar.getModel().findByIdAndDelete(id);
+}
+
+async function updateAirline(id: string, data: any){
+    Ar.validateUpdate(data);
+    return Ar.getModel().findByIdAndUpdate(id, data);
 }
 
 export default {
     getAllAirlines,
     getAirline,
     newAirline,
-    deleteAirline
+    deleteAirline,
+    updateAirline
 }
