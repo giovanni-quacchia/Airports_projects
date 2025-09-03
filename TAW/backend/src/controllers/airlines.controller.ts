@@ -21,7 +21,7 @@ export async function getAirline(req, res, next){
 
 export async function newAirline(req, res, next){
     try {
-        const result = await airlines.newAirline(req.body);
+        const result = await airlines.createAirline(req.body);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

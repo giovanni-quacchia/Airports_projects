@@ -10,7 +10,7 @@ async function getAirline(id: string){
     return Ar.getModel().findById(id);
 }
 
-async function newAirline(airline: Partial<Airline>){
+async function createAirline(airline: Partial<Airline>){
     const ar = Ar.newAirline(airline);
     const pw = crypto.randomBytes(16).toString("hex");
     ar.setPassword(pw);
@@ -31,7 +31,7 @@ async function updateAirline(id: string, data: any){
 export default {
     getAllAirlines,
     getAirline,
-    newAirline,
+    createAirline,
     deleteAirline,
     updateAirline
 }

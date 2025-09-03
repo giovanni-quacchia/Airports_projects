@@ -1,4 +1,5 @@
 import { Airline } from "../models/Airline";
+import { Airplane } from "../models/airplane";
 
 export const airlines: Partial<Airline>[] = [
   {
@@ -31,4 +32,12 @@ export const airlines: Partial<Airline>[] = [
     logo: "https://upload.wikimedia.org/wikipedia/commons/f/f1/ITA_Airways_logo.svg",
     mail: "contact@itaairways.com"
   },
+];
+
+export const airplanes: Airplane[] = [
+  { code: 1, model: "Airbus A320neo" },
+  { code: 2, model: "Boeing 737-800" },
+  { code: 3, model: "Embraer E190" },
+  { code: 4, model: "Bombardier CRJ900" },
+  { code: 5, model: "Boeing 787-9 Dreamliner" }
 ];

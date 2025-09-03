@@ -8,7 +8,8 @@ import { getUsers } from './src/models/user';
 const app = express();
 const PORT = 3000;
 
-const AirlinesRouter = require('./src/routes/airlines.routes')
+const AirlinesRouter = require('./src/routes/airlines.routes');
+const AirplanesRouter = require('./src/routes/airplanes.routes');
 
 // Middleware
 app.use(cors());
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: false })); // per interpretare i dati inv
 
 // Routes
 app.use("/airlines", AirlinesRouter);
+app.use("/airplanes", AirplanesRouter);
 
 app.get("/", (req, res) => {
     return res.send("Server connected");

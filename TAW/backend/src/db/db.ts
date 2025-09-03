@@ -5,7 +5,7 @@ const mongoUri = "mongodb://localhost:27017/" + DBname;
 
 import User from '../models/user';
 import { newUser } from '../models/user';
-import { AddAirlines } from './funcs';
+import { AddAirlines, addAirplanes } from './start';
 
 export async function connectDB(){
     mongoose.connect(mongoUri)
@@ -26,6 +26,7 @@ export async function connectDB(){
         }
     })
     .then(AddAirlines())
+    .then(addAirplanes())
     .catch((err: string) => console.error('MongoDB connection error:', err));
 }
 
