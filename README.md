@@ -1,7 +1,5 @@
 # Airports_projects
 
-test
-
 [TAW_2025_project.pdf](https://github.com/user-attachments/files/20361937/TAW_2025_project.pdf)
 
 ## Progetto TAW
@@ -41,4 +39,4 @@ Ticket: volo, prezzo, tipo (economy, ...)
 Per eseguire fuori dal docker
 
 - npm install
-- nodemon app.ts
+- npx nodemon app.ts

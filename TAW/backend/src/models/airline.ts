@@ -4,7 +4,6 @@ import { Url } from 'url';
 
 
 // Interface
-
 export interface Airline extends User{
     PIVA: string,
     name: string,
