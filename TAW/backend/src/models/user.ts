@@ -1,9 +1,8 @@
 import mongoose = require('mongoose');
 import crypto = require('crypto');
-
+import { checkKeys } from '../utils/utils';
 
 // Interface
-
 export interface User{
     mail: string;
     roles?: string[];
@@ -49,16 +48,40 @@ userSchema.methods.checkPassword = function(this: User, pwd: string){
 }
 
 // Validation
-function validateInput(data: any): boolean{
+
+function validateLogin(data: any): boolean{
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
+    const keys = Object.keys(data)
+
     if(!data.mail || typeof data.mail !== 'string') 
         throw Error("Mail required");
+    if(!data.password || typeof data.password !== 'string') 
+        throw Error("Password required");
 
-    const keys = Object.keys(data).filter(key => key !== 'mail');
-    if(keys.length > 0) throw Error("Not valid data");
-    return true;
+    // Check if there are not valid keys
+    if(keys.length === 2) return true;
+    else
+        throw Error("Credentials not valid");
+}
+
+export function validateUpdate(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    const keys = Object.keys(data)
+
+    if(
+        (!data.mail || typeof data.mail !== 'string') &&
+        (!data.password || typeof data.password !== 'string')
+    )
+        throw Error("Updating a user requires a new mail or password")
+
+    // Check if there are not valid keys
+    if(checkKeys(keys, ["mail", "password"])) return true;
+    else
+        throw Error("Not valid data");
 }
 
 // Model
@@ -69,15 +92,11 @@ export function getModel(): mongoose.Model<User> {
     return userModel;
 }
 
-export function newUser(data): mongoose.HydratedDocument<User> {
-    validateInput(data);
+export function createUser(data): mongoose.HydratedDocument<User> {
+    validateLogin(data);
     const _usermodel = getModel();
-    const user = new _usermodel(data);
+    const user = new _usermodel({mail: data.mail});
     return user;
 }
 
-export function getUsers(): Promise<User[]>{
-    return getModel().find({}).exec();
-}
-
-export default { getModel, userSchema };
+export default { getModel, createUser, validateUpdate, validateLogin };

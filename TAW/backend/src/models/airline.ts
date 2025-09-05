@@ -12,7 +12,7 @@ export interface Airline extends User{
 // Schema
 const AirlineSchema = new mongoose.Schema<Airline>({
     PIVA: {type: String, required: true, unique: true},
-    name: {type: String, required: true},
+    name: {type: String, required: true, unique: true},
     logo: {type: String}
 });
 

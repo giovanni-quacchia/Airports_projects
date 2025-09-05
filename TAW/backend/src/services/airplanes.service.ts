@@ -1,4 +1,5 @@
 import {Airplane, getModel, newAirplane, validateUpdate} from '../models/airplane';
+import mongoose from 'mongoose';
 
 // Add airlines (if not exist)
 async function getAllAirplanes() {
@@ -11,9 +12,7 @@ async function getAirplane(id: string){
 
 async function createAirplane(airplane: Partial<Airplane>){
     const ar = newAirplane(airplane);
-    ar.save();
-    console.log("\nAirplane created:");
-    console.log(`-${airplane.code}\n-${airplane.model}\n`);
+    return ar.save();
 }
 
 async function deleteAirplane(id: string){
@@ -22,7 +21,7 @@ async function deleteAirplane(id: string){
 
 async function updateAirplane(id: string, data: any){
     validateUpdate(data);
-    return getModel().findByIdAndUpdate(id, data);
+    return getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
 }
 
 export default {

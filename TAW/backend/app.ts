@@ -1,15 +1,21 @@
 import express from 'express';
+const pc = require('picocolors')
 // Cross-origin resource sharing: controllare quali domini esterni possono inviare reqs
 import cors from 'cors';
 
 import {connectDB} from './src/db/db';
-import { getUsers } from './src/models/user';
 
 const app = express();
 const PORT = 3000;
 
+// Routers
 const AirlinesRouter = require('./src/routes/airlines.routes');
 const AirplanesRouter = require('./src/routes/airplanes.routes');
+const AirportsRouter = require('./src/routes/airports.routes');
+const UsersRouter = require('./src/routes/users.routes');
+const RoutesRouter = require('./src/routes/routes.routes');
+const FlightsRouter = require('./src/routes/flights.routes');
+
 
 // Middleware
 app.use(cors());
@@ -19,17 +25,15 @@ app.use(express.urlencoded({ extended: false })); // per interpretare i dati inv
 // Routes
 app.use("/airlines", AirlinesRouter);
 app.use("/airplanes", AirplanesRouter);
+app.use("/airports", AirportsRouter);
+app.use("/users", UsersRouter);
+app.use("/routes", RoutesRouter);
+app.use("/flights", FlightsRouter);
+
 
 app.get("/", (req, res) => {
     return res.send("Server connected");
 });
-
-
-// app.get("/test", (req, res) => {
-//   getUsers().then(data => {
-//     res.json(data)
-//   })
-// })
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -40,6 +44,7 @@ app.use((err, req, res, next) => {
 // Connect to DB, then start server
 connectDB().then(() => {
   app.listen(PORT, function(){
+      console.log(pc.green("[Server starts]\n"));
       console.log('Listening on port 3000');
   });
 })

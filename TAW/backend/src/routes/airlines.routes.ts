@@ -9,7 +9,7 @@ router.get("/", airlines.getAllAirlines);
 router.get("/:id", airlines.getAirline);
 
 // Create a new airline
-router.post("/", airlines.newAirline);
+router.post("/", airlines.createAirline);
 
 // Delete airline
 router.delete("/:id", airlines.deleteAirline);

@@ -1,9 +1,7 @@
 import mongoose = require('mongoose');
 import { User } from './User';
 
-
 // Interface
-
 export interface Customer extends User{
     buyTicket(): any
 }

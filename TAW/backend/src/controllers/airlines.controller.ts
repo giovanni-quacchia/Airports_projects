@@ -19,11 +19,19 @@ export async function getAirline(req, res, next){
     }
 }
 
-export async function newAirline(req, res, next){
+export async function createAirline(req, res, next){
+    const ar = req.body
     try {
-        const result = await airlines.createAirline(req.body);
+        const [result, pw] = await airlines.createAirline(ar);
+
+        console.log("\nAirline created:");
+        console.log(`-${ar.PIVA}\n-${ar.name}\n-${ar.mail}:${pw}\n`);
+        
         res.json(result);
     } catch (err) {
+        // duplicate error
+        if (err.code === 11000)
+            err.message = `Airline already exists`;
         res.status(400).send(err.message);
     }
 }
@@ -51,7 +59,7 @@ export async function updateAirline(req, res, next){
 export default {
     getAllAirlines,
     getAirline,
-    newAirline,
+    createAirline,
     deleteAirline,
     updateAirline
 }

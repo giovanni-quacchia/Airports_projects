@@ -1,5 +1,5 @@
 import Ar, {Airline} from '../models/Airline';
-import crypto from 'crypto'
+import { getRandomPassword } from '../utils/utils';
 
 // Add airlines (if not exist)
 async function getAllAirlines() {
@@ -12,11 +12,9 @@ async function getAirline(id: string){
 
 async function createAirline(airline: Partial<Airline>){
     const ar = Ar.newAirline(airline);
-    const pw = crypto.randomBytes(16).toString("hex");
+    const pw = getRandomPassword(16);
     ar.setPassword(pw);
-    ar.save();
-    console.log("\nAirline created:");
-    console.log(`-${airline.name}\n-${airline.mail}:${pw}\n`);
+    return [ar.save(), pw];
 }
 
 async function deleteAirline(id: string){
@@ -25,7 +23,7 @@ async function deleteAirline(id: string){
 
 async function updateAirline(id: string, data: any){
     Ar.validateUpdate(data);
-    return Ar.getModel().findByIdAndUpdate(id, data);
+    return Ar.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
 }
 
 export default {

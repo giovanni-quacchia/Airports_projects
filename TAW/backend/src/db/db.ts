@@ -3,30 +3,35 @@ const mongoose = require('mongoose');
 const DBname = "AirplanesDB"
 const mongoUri = "mongodb://localhost:27017/" + DBname;
 
-import User from '../models/user';
-import { newUser } from '../models/user';
-import { AddAirlines, addAirplanes } from './start';
+import { AddAirlines, addAirplanes, addAirports, addFlights, addRoutes, AddUsers } from './start';
+
+import {getModel as getAirportsModel} from '../models/Airport';
+import {getModel as getRoutesModel} from '../models/route';
+
 
 export async function connectDB(){
     mongoose.connect(mongoUri)
     .then(() => {
         console.log("Connected to MongoDB");
-        return User.getModel().exists({mail: "admin@gmail.com"})
     })
     // Create admin
-    .then((adminExists) => {
-        if(!adminExists){
-            const admin = newUser({
-                mail: "admin@gmail.com",
-            });
-            admin.setPassword("admin");
-            admin.setAdmin();
-            console.log("Admin created")
-            return admin.save();
-        }
+    .then(async () => {
+        AddUsers();
+        await AddAirlines();
+        await addAirports();
+        addAirplanes();
+
+        // ALTERNATIVA: aggiungere ricerca con query parameters per routes, ...
+
+        const a = await getAirportsModel().find({}, "_id code").exec();
+        const airports = new Map(a.map(airport => [airport.code, airport._id]));
+
+        await addRoutes(airports);
+
+
+        addFlights()
+
     })
-    .then(AddAirlines())
-    .then(addAirplanes())
     .catch((err: string) => console.error('MongoDB connection error:', err));
 }
 

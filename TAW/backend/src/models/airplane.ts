@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { Route } from './Route';
+import { Route } from './route';
 
 // Interface
 export interface Airplane{
@@ -46,8 +46,9 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data)
 
-    if(!data.code || typeof data.code !== 'number') 
+    if(!data.code || isNaN(Number(data.code))) 
         throw Error("Code required");
+    data.code = Number(data.code)
     if(!data.model || typeof data.model !== 'string') 
         throw Error("Model required");
     if(data.route && typeof data?.route !== 'string')
@@ -68,12 +69,16 @@ export function validateUpdate(data: any): boolean{
     const keys = Object.keys(data)
 
     if(
-        (!data.code || typeof data.code !== 'number') &&
-        (!data.route || typeof data.route !== 'string')
+        (!data.code || isNaN(Number(data.code))) &&
+        (!data.route || typeof data.route !== 'string') &&
+        (!data.model || typeof data.model !== 'string') 
     )
-        throw Error("Updating an airplane requires a new code or route")
+        throw Error("Updating an airplane requires a new code, model or route")
+
+    if(data.code) data.code = Number(data.code);
+
     // Check if there are not valid keys
-    const validKeys = ["code", "route"];
+    const validKeys = ["code", "route", "model"];
     keys.forEach(key => {
         if(!validKeys.includes(key))
             throw Error("Not valid data");
