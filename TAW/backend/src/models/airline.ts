@@ -4,13 +4,15 @@ import {getModel as getUserModel} from './user'
 
 // Interface
 export interface Airline extends User{
-    PIVA: string,
-    name: string,
-    logo: string,
+    code: String,
+    PIVA: String,
+    name: String,
+    logo: String,
 }
 
 // Schema
 const AirlineSchema = new mongoose.Schema<Airline>({
+    code: {type: String, required: true, unique: true},
     PIVA: {type: String, required: true, unique: true},
     name: {type: String, required: true, unique: true},
     logo: {type: String}
@@ -23,6 +25,8 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data)
 
+    if(!data.code || typeof data.code !== 'string') 
+        throw Error("Code required");
     if(!data.mail || typeof data.mail !== 'string') 
         throw Error("Mail required");
     if(!data.PIVA || typeof data.PIVA !== 'string') 
@@ -30,7 +34,7 @@ function validateInput(data: any): boolean{
     if(!data.name || typeof data.name !== 'string') 
         throw Error("PIVA required");
     // Check if there are not valid keys
-    const validKeys = ["mail", "PIVA", "name", "logo"];
+    const validKeys = ["code", "mail", "PIVA", "name", "logo"];
     keys.forEach(key => {
         if(!validKeys.includes(key))
             throw Error("Not valid data");

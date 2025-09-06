@@ -12,7 +12,7 @@ async function getAirplane(id: string){
 
 async function createAirplane(airplane: Partial<Airplane>){
     const ar = newAirplane(airplane);
-    return ar.save();
+    return ar;
 }
 
 async function deleteAirplane(id: string){

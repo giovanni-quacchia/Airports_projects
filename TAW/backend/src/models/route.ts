@@ -55,6 +55,28 @@ function validate(data: any): boolean{
         throw Error("Not valid data");
 }
 
+function validateSearch(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    const keys = Object.keys(data);
+
+    if (keys.length === 0) return true;
+
+    if(
+        (!data.fromCity || typeof data.fromCity !== 'string') &&
+        (!data.toCity || typeof data.toCity !== 'string') &&
+        (!data.fromCountry || typeof data.fromCountry !== 'string') &&
+        (!data.toCountry || typeof data.toCountry !== 'string')
+    )
+        throw Error("Searching a route not valid");
+
+    // Check if there are not valid keys
+    if(checkKeys(keys, ["fromCity", "toCity", "fromCountry", "toCountry"])) return true;
+    else
+        throw Error("Not valid data");
+}
+
 // Model
 
 let routeModel: mongoose.Model<Route>;
@@ -70,4 +92,4 @@ export function createRoute(data): mongoose.HydratedDocument<Route> {
     return route;
 }
 
-export default {getModel, createRoute, validate}
+export default {getModel, createRoute, validate, validateSearch}

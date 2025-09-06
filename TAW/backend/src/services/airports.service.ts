@@ -12,7 +12,7 @@ async function getAirport(id: string){
 
 async function createAirport(airport: Partial<Airport>){
     const ar = Ar.createAirport(airport);
-    return ar.save();
+    return ar;
 }
 
 async function deleteAirport(id: string){

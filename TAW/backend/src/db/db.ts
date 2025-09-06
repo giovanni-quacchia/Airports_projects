@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 const DBname = "AirplanesDB"
 const mongoUri = "mongodb://localhost:27017/" + DBname;
 
-import { AddAirlines, addAirplanes, addAirports, addFlights, addRoutes, AddUsers } from './start';
+import { AddAirlines, addAirplanes, addAirports, addFlights, addRoutes, addTickets, AddUsers } from './start';
 
 import {getModel as getAirportsModel} from '../models/Airport';
 import {getModel as getRoutesModel, Route} from '../models/route';
-import {getModel as getAirlinesModel} from '../models/Airline';
+import {getModel as getAirlinesModel} from '../models/airline';
+import {getModel as getFlightsModel} from '../models/flight';
 
 export async function connectDB(){
     mongoose.connect(mongoUri)
@@ -25,8 +26,6 @@ export async function connectDB(){
         await addAirports();
         addAirplanes();
 
-        // ALTERNATIVA: aggiungere ricerca con query parameters per routes, ...
-
         const a = await getAirportsModel().find({}, "_id code").exec();
         const airports = new Map(a.map(airport => [airport.code, airport._id]));
 
@@ -40,8 +39,12 @@ export async function connectDB(){
         const routes = new Map(r.map((route: any) => {
             return [`${route.from.code}-${route.to.code}`, route._id]
         }));
-        addFlights(routes, airlines);
-
+        
+        // Flights
+        await addFlights(routes, airlines);
+        const fl = await getFlightsModel().find({}, "_id code").exec();
+        const flights = new Map(fl.map(flight => [flight.code, flight._id]));
+        await addTickets(flights);
     })
     .catch((err: string) => console.error('MongoDB connection error:', err));
 }

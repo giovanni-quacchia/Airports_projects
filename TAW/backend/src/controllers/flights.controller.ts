@@ -2,7 +2,7 @@ import flights from '../services/flights.service'
 
 export async function getAllFlights(req, res, next) {
     try {
-        const result = await flights.getAllFlights();
+        const result = await flights.getAllFlights(req.query);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

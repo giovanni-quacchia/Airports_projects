@@ -1,4 +1,4 @@
-import Ar, {Airline} from '../models/Airline';
+import Ar, {Airline} from '../models/airline';
 import { getRandomPassword } from '../utils/utils';
 
 // Add airlines (if not exist)
@@ -14,7 +14,7 @@ async function createAirline(airline: Partial<Airline>){
     const ar = Ar.newAirline(airline);
     const pw = getRandomPassword(16);
     ar.setPassword(pw);
-    return [ar.save(), pw];
+    return [ar, pw];
 }
 
 async function deleteAirline(id: string){

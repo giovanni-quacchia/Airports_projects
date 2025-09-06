@@ -1,56 +1,56 @@
-import routes from '../services/routes.service'
+import Tickets from '../services/tickets.service'
 
-export async function getAllRoutes(req, res, next) {
+export async function getAllTickets(req, res, next) {
     try {
-        const result = await routes.getAllRoutes(req.query);
+        const result = await Tickets.getAllTickets(req.query);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
     }
 }
 
-export async function getRoute(req, res, next){
+export async function getTicket(req, res, next){
     try {
         const {id} = req.params;
-        const result = await routes.getRoute(id);
+        const result = await Tickets.getTicket(id);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
     }
 }
 
-export async function createRoute(req, res, next){
+export async function createTicket(req, res, next){
     const ar = req.body
     try {
-        const result = await routes.createRoute(ar);
+        const result = await Tickets.createTicket(ar);
 
-        console.log("\nRoute created:");
+        console.log("\nTicket created:");
         for(const value of Object.values(ar))
             console.log(`-${value}`);     
         res.json(result);
     } catch (err) {
         // duplicate error
         if (err.code === 11000)
-            err.message = `Route with code ${ar.code} already exists`;
+            err.message = `Ticket with code ${ar.code} already exists`;
         res.status(400).send(err.message);
     }
 }
 
-export async function deleteRoute(req, res, next){
+export async function deleteTicket(req, res, next){
     try {
         const {id} = req.params;
-        const result = await routes.deleteRoute(id);
+        const result = await Tickets.deleteTicket(id);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
     }
 }
 
-export async function updateRoute(req, res, next){
+export async function updateTicket(req, res, next){
     const ar = req.body;
     try {
         const {id} = req.params;
-        const result = await routes.updateRoute(id, ar);
+        const result = await Tickets.updateTicket(id, ar);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -58,9 +58,9 @@ export async function updateRoute(req, res, next){
 }
 
 export default {
-    getAllRoutes,
-    getRoute,
-    createRoute,
-    deleteRoute,
-    updateRoute
+    getAllTickets,
+    getTicket,
+    createTicket,
+    deleteTicket,
+    updateTicket
 }

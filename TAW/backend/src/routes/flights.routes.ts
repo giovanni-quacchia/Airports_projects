@@ -2,7 +2,9 @@ import express from "express";
 const router = express.Router();
 import flight from '../controllers/flights.controller'
 
-// Get All flights
+// Get All flights: ? [fromCity, toCity, fromCountry, toCountry, fromDate, toDate]
+// Date: year-month-day
+
 router.get("/", flight.getAllFlights);
 
 // Get :id flight

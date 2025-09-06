@@ -15,7 +15,7 @@ const AirportsRouter = require('./src/routes/airports.routes');
 const UsersRouter = require('./src/routes/users.routes');
 const RoutesRouter = require('./src/routes/routes.routes');
 const FlightsRouter = require('./src/routes/flights.routes');
-
+const TicketSRouter = require('./src/routes/tickets.routes');
 
 // Middleware
 app.use(cors());
@@ -29,7 +29,7 @@ app.use("/airports", AirportsRouter);
 app.use("/users", UsersRouter);
 app.use("/routes", RoutesRouter);
 app.use("/flights", FlightsRouter);
-
+app.use("/tickets", TicketSRouter);
 
 app.get("/", (req, res) => {
     return res.send("Server connected");

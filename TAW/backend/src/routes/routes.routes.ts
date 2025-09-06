@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 import route from '../controllers/routes.controller'
 
-// Get All route
+// Get All route: ? [fromCity, toCity, fromCountry, toCountry]
 router.get("/", route.getAllRoutes);
 
 // Get :id route

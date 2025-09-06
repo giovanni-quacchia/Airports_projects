@@ -3,15 +3,17 @@ import { checkKeys } from '../utils/utils';
 
 // Interface
 export interface Flight{
+    code: String
     date: Date,
     duration: Number, // minutes
-    route: mongoose.Types.ObjectId,
-    airline: mongoose.Types.ObjectId
+    route: mongoose.Schema.Types.ObjectId,
+    airline: mongoose.Schema.Types.ObjectId
 }
 
 // Schema
 
 const FlightSchema = new mongoose.Schema<Flight>({
+    code: {type: String, required: true},
     date: {type: Date, required: true},
     duration: {
         type: Number, 
@@ -20,8 +22,8 @@ const FlightSchema = new mongoose.Schema<Flight>({
             validator: Number.isInteger
         }
     },
-    route: {type: mongoose.Schema.ObjectId, ref: 'Route'},
-    airline: {type: mongoose.Schema.ObjectId, ref: 'Airline'},
+    route: {type: mongoose.Schema.Types.ObjectId, ref: 'Route'},
+    airline: {type: mongoose.Schema.Types.ObjectId, ref: 'Airline'},
 });
 
 // Validate
@@ -31,6 +33,8 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data);
 
+    if(!data.code || typeof data.code !== 'string')
+        throw Error("Code required");
     if(!data.date || !(data.date instanceof Date))
         throw Error("Date required");
     if(!data.duration || typeof data.duration !== 'number')
@@ -41,9 +45,9 @@ function validateInput(data: any): boolean{
         throw Error("Airline required");
 
     // Check if there are not valid keys
-    if(keys.length === 4) return true;
+    if(keys.length === 5) return true;
     else
-        throw Error("Credentials not valid");
+        throw Error("Not valid data");
 }
 
 function validate(data: any): boolean{
@@ -53,6 +57,7 @@ function validate(data: any): boolean{
     const keys = Object.keys(data);
 
     if(
+        (!data.code || typeof data.code !== 'string') &&
         (!data.date || !(data.date instanceof Date)) &&
         (!data.duration || typeof data.duration !== 'number') &&
         (!data.route || !mongoose.Types.ObjectId.isValid(data.route)) &&
@@ -64,7 +69,31 @@ function validate(data: any): boolean{
 
     // Check if there are not valid keys
      // Check if there are not valid keys
-    if(checkKeys(keys, ["date", "duration", "route", "airline"])) return true;
+    if(checkKeys(keys, ["date", "duration", "route", "airline", "code"])) return true;
+    else
+        throw Error("Not valid data");
+}
+
+function validateSearch(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    const keys = Object.keys(data);
+
+    if (keys.length === 0) return true;
+
+    if(
+        (!data.fromCity || typeof data.fromCity !== 'string') &&
+        (!data.toCity || typeof data.toCity !== 'string') &&
+        (!data.fromCountry || typeof data.fromCountry !== 'string') &&
+        (!data.toCountry || typeof data.toCountry !== 'string') &&
+        (!data.fromDate || typeof data.fromDate !== 'string') &&
+        (!data.toDate || typeof data.toDate !== 'string')
+    )
+        throw Error("Searching a route not valid");
+        
+    // Check if there are not valid keys
+    if(checkKeys(keys, ["fromCity", "toCity", "fromCountry", "toCountry", "fromDate", "toDate"])) return true;
     else
         throw Error("Not valid data");
 }
@@ -84,4 +113,4 @@ export function createFlight(data): mongoose.HydratedDocument<Flight> {
     return flight;
 }
 
-export default {getModel, createFlight, validate}
+export default {getModel, createFlight, validate, validateSearch}
