@@ -98,81 +98,109 @@ export const routes: {from: string, to: string}[] = [
   { from: "HND", to: "EZE" },
   { from: "DXB", to: "CDG" },
   { from: "BER", to: "BCN" },
-  { from: "SYD", to: "JFK" }
+  { from: "SYD", to: "JFK" },
+  { from: "JFK", to: "BER" },
+  { from: "HND", to: "DXB" },
 ];
 
 export const flights = [
   {
     code: "EK101",
-    date: new Date('2025-09-10T08:30:00Z'),
+    departure: new Date('2025-09-10T08:30:00Z'),
     duration: 720,
     route: { from: "DXB", to: "SYD" },
-    airline: "Emirates"
+    airline: "Emirates",
+    arrival: new Date(new Date('2025-09-10T08:30:00Z').getTime() + 720 * 60000)
   },
   {
     code: "AF202",
-    date: new Date('2025-09-12T13:45:00Z'),
+    departure: new Date('2025-09-12T13:45:00Z'),
     duration: 660,
     route: { from: "FCO", to: "LAX" },
-    airline: "Air France"
+    airline: "Air France",
+    arrival: new Date(new Date('2025-09-12T13:45:00Z').getTime() + 660 * 60000)
   },
   {
     code: "AZ303",
-    date: new Date('2025-09-14T07:00:00Z'),
+    departure: new Date('2025-09-14T07:00:00Z'),
     duration: 90,
     route: { from: "VCE", to: "FCO" },
-    airline: "ITA Airways"
+    airline: "ITA Airways",
+    arrival: new Date(new Date('2025-09-14T07:00:00Z').getTime() + 90 * 60000)
   },
   {
     code: "LH404",
-    date: new Date('2025-09-15T22:00:00Z'),
+    departure: new Date('2025-09-16T22:00:00Z'),
     duration: 840,
     route: { from: "JFK", to: "HND" },
-    airline: "Lufthansa"
+    airline: "Lufthansa",
+    arrival: new Date(new Date('2025-09-15T22:00:00Z').getTime() + 840 * 60000)
   },
   {
     code: "FR505",
-    date: new Date('2025-09-16T09:30:00Z'),
+    departure: new Date('2025-09-16T09:30:00Z'),
     duration: 540,
     route: { from: "VCE", to: "JFK" },
-    airline: "Ryanair"
+    airline: "Ryanair",
+    arrival: new Date(new Date('2025-09-16T09:30:00Z').getTime() + 540 * 60000)
   },
   {
     code: "BA606",
-    date: new Date('2025-09-18T11:15:00Z'),
+    departure: new Date('2025-09-18T11:15:00Z'),
     duration: 600,
     route: { from: "HND", to: "BER" },
-    airline: "British Airways"
+    airline: "British Airways",
+    arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
+  },
+  {
+    code: "BA608",
+    departure: new Date('2025-09-18T11:15:00Z'),
+    duration: 600,
+    route: { from: "JFK", to: "BER" },
+    airline: "British Airways",
+    arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
   },
   {
     code: "EK707",
-    date: new Date('2025-09-19T20:45:00Z'),
+    departure: new Date('2025-09-19T20:45:00Z'),
     duration: 720,
     route: { from: "LAX", to: "DXB" },
-    airline: "Emirates"
+    airline: "Emirates",
+    arrival: new Date(new Date('2025-09-19T20:45:00Z').getTime() + 720 * 60000)
   },
   {
     code: "AF808",
-    date: new Date('2025-09-20T06:00:00Z'),
+    departure: new Date('2025-09-20T06:00:00Z'),
     duration: 480,
     route: { from: "BER", to: "PEK" },
-    airline: "Air France"
+    airline: "Air France",
+    arrival: new Date(new Date('2025-09-20T06:00:00Z').getTime() + 480 * 60000)
   },
   {
     code: "FR909",
-    date: new Date('2025-09-22T14:30:00Z'),
+    departure: new Date('2025-09-22T14:30:00Z'),
     duration: 480,
     route: { from: "EZE", to: "BCN" },
-    airline: "Ryanair"
+    airline: "Ryanair",
+    arrival: new Date(new Date('2025-09-22T14:30:00Z').getTime() + 480 * 60000)
   },
   {
     code: "AZ010",
-    date: new Date('2025-09-25T18:00:00Z'),
+    departure: new Date('2025-09-25T18:00:00Z'),
     duration: 360,
     route: { from: "CDG", to: "VCE" },
-    airline: "ITA Airways"
+    airline: "ITA Airways",
+    arrival: new Date(new Date('2025-09-25T18:00:00Z').getTime() + 360 * 60000)
+  },
+  {
+    code: "EK312",
+    departure: new Date('2025-09-20T09:30:00Z'),
+    duration: 600,
+    route: { from: "HND", to: "DXB" },
+    airline: "Emirates",
+    arrival: new Date(new Date('2025-09-20T09:30:00Z').getTime() + 600 * 60000)
   }
-]
+];
 
 export const tickets = [
   { type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },

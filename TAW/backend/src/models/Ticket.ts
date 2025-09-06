@@ -24,7 +24,7 @@ const TicketSchema = new mongoose.Schema<Ticket>({
     quantity: {
         type: Number,
         requierd: true,
-        min: 1
+        min: 0
     },
     flight: {
         type: mongoose.Schema.Types.ObjectId,
@@ -104,14 +104,22 @@ function validateSearch(data: any): boolean {
 
     // Optional search fields, must be correct type if provided
     if (data.type && typeof data.type !== 'string') throw Error("Ticket type must be a string");
-    if (data.flight && !mongoose.Types.ObjectId.isValid(data.flight)) throw Error("Flight must be a valid ObjectId");
+    if (data.from && typeof data.from !== 'string') throw Error("Departure must be a string");
+    if (data.to && typeof data.to !== 'string') throw Error("Arrival must be a string");
     if (data.minPrice && isNaN(data.minPrice)) throw Error("minPrice must be a number");
     if (data.maxPrice && isNaN(data.maxPrice)) throw Error("maxPrice must be a number");
     if (data.minQuantity && isNaN(data.minQuantity)) throw Error("minQuantity must be a number");
     if (data.maxQuantity && isNaN(data.maxQuantity)) throw Error("maxQuantity must be a number");
 
+    if(data.minPrice) data.minPrice = Number(data.minPrice)
+    if(data.maxPrice) data.maxPrice = Number(data.maxPrice)
+    if(data.minQuantity) data.minQuantity = Number(data.minQuantity)
+    if(data.maxQuantity) data.maxQuantity = Number(data.maxQuantity)
+
+    console.log(data.minPrice)
+
     // Check if keys are valid
-    if (checkKeys(keys, ["type", "flight", "minPrice", "maxPrice", "minQuantity", "maxQuantity"])) return true;
+    if (checkKeys(keys, ["type", "flight", "minPrice", "maxPrice", "minQuantity", "maxQuantity", "from", "to"])) return true;
     else throw Error("Not valid data");
 }
 

@@ -9,6 +9,7 @@ import {getModel as getAirportsModel} from '../models/Airport';
 import {getModel as getRoutesModel, Route} from '../models/route';
 import {getModel as getAirlinesModel} from '../models/airline';
 import {getModel as getFlightsModel} from '../models/flight';
+import {getModel as getTicketsModel} from '../models/Ticket';
 
 export async function connectDB(){
     mongoose.connect(mongoUri)

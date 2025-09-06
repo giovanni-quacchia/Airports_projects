@@ -4,7 +4,8 @@ import { checkKeys } from '../utils/utils';
 // Interface
 export interface Flight{
     code: String
-    date: Date,
+    departure: Date,
+    arrival: Date
     duration: Number, // minutes
     route: mongoose.Schema.Types.ObjectId,
     airline: mongoose.Schema.Types.ObjectId
@@ -14,7 +15,8 @@ export interface Flight{
 
 const FlightSchema = new mongoose.Schema<Flight>({
     code: {type: String, required: true},
-    date: {type: Date, required: true},
+    departure: {type: Date, required: true},
+    arrival: {type: Date, required: true},
     duration: {
         type: Number, 
         min: 0,
@@ -33,10 +35,15 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data);
 
+    data.departure = new Date(data.departure)
+    data.arrival = new Date(data.arrival)
+
     if(!data.code || typeof data.code !== 'string')
         throw Error("Code required");
-    if(!data.date || !(data.date instanceof Date))
-        throw Error("Date required");
+    if(!data.departure || isNaN(data.departure))
+        throw Error("Departure date required");
+    if(!data.arrival || isNaN(data.arrival))
+        throw Error("Arrival date required");
     if(!data.duration || typeof data.duration !== 'number')
         throw Error("Duration required");
     if(!data.route || !mongoose.Types.ObjectId.isValid(data.route)) 
@@ -45,7 +52,7 @@ function validateInput(data: any): boolean{
         throw Error("Airline required");
 
     // Check if there are not valid keys
-    if(keys.length === 5) return true;
+    if(keys.length === 6) return true;
     else
         throw Error("Not valid data");
 }
@@ -56,20 +63,23 @@ function validate(data: any): boolean{
 
     const keys = Object.keys(data);
 
+    const testDeparture = new Date(data.departure)
+    const testArrival = new Date(data.arrival)
+
     if(
         (!data.code || typeof data.code !== 'string') &&
-        (!data.date || !(data.date instanceof Date)) &&
+        (!data.departure || isNaN(+testDeparture)) &&
+        (!data.arrival || isNaN(+testArrival)) &&
         (!data.duration || typeof data.duration !== 'number') &&
         (!data.route || !mongoose.Types.ObjectId.isValid(data.route)) &&
         (!data.airline || !mongoose.Types.ObjectId.isValid(data.airline))
     )
-        throw Error("Updating a flight requires a new date, duration, route or airline")
-
+        throw Error("Updating a flight requires a new departure date, arrival date, duration, route or airline")
     if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same")
 
     // Check if there are not valid keys
      // Check if there are not valid keys
-    if(checkKeys(keys, ["date", "duration", "route", "airline", "code"])) return true;
+    if(checkKeys(keys, ["departure", "arrival", "duration", "route", "airline", "code"])) return true;
     else
         throw Error("Not valid data");
 }
@@ -83,17 +93,18 @@ function validateSearch(data: any): boolean{
     if (keys.length === 0) return true;
 
     if(
-        (!data.fromCity || typeof data.fromCity !== 'string') &&
-        (!data.toCity || typeof data.toCity !== 'string') &&
-        (!data.fromCountry || typeof data.fromCountry !== 'string') &&
-        (!data.toCountry || typeof data.toCountry !== 'string') &&
+        (!data.from || typeof data.from !== 'string') &&
+        (!data.to || typeof data.to !== 'string') &&
         (!data.fromDate || typeof data.fromDate !== 'string') &&
-        (!data.toDate || typeof data.toDate !== 'string')
+        (!data.toDate || typeof data.toDate !== 'string') &&
+        (!data.onlyDirect || (data.onlyDirect !== 'true' && data.onlyDirect !== 'false'))
     )
         throw Error("Searching a route not valid");
+
+    if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');
         
     // Check if there are not valid keys
-    if(checkKeys(keys, ["fromCity", "toCity", "fromCountry", "toCountry", "fromDate", "toDate"])) return true;
+    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "onlyDirect"])) return true;
     else
         throw Error("Not valid data");
 }

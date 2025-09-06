@@ -2,90 +2,118 @@ import Ti, {Ticket} from '../models/Ticket';
 
 async function getAllTickets(query) {
     Ti.validateSearch(query);
-    const { minPrice = /.*/, maxPrice = /.*/, minQuantity = /.*/, maxQuantity = /.*/, fromDate = "", toDate = ""} = query
-
+    const { minPrice = 0, maxPrice = 99999, minQuantity = 0, maxQuantity = 99999, type = /.*/, from = /.*/, to = /.*/} = query
+    const fromMatch = from ? { $regex: from, $options: "i" } : { $exists: true };
+    const toMatch = to ? { $regex: to, $options: "i" } : { $exists: true };
+    
     return Ti.getModel().aggregate([
-        { $match: {
-            "price":{
-                $gte: minPrice,
-                $lte: maxPrice
-            },
-            "quantity":{
-                $gte: minQuantity,
-                $lte: maxQuantity
+        // WHERE price, quantity
+        { 
+            $match: {
+                "type": type,
+                "price":{ $gte: minPrice, $lte: maxPrice},
+                "quantity":{$gte: minQuantity, $lte: maxQuantity}
             }
-        }}
+        },
+        // JOIN Flight
         {
+            
             $lookup: {
                 from: "flights", 
                 localField: "flight", 
                 foreignField: "_id", 
                 as: "flight"
             }
-        }
+        },
+        { $unwind: "$flight" },
+        // JOIN Route
+        {
+            $lookup: {
+                from: "routes", 
+                localField: "flight.route", 
+                foreignField: "_id", 
+                as: "flight.route"
+            }
+        },
+        { $unwind: "$flight.route" },
+        // JOIN From Airport
+        {
+            $lookup: {
+                from: "airports", 
+                localField: "flight.route.from", 
+                foreignField: "_id", 
+                as: "flight.route.from",
+            }
+        },
+        { $unwind: "$flight.route.from" },
+        // JOIN To Airport
+        {
+            $lookup: {
+                from: "airports", 
+                localField: "flight.route.to", 
+                foreignField: "_id", 
+                as: "flight.route.to",
+            }
+        },
+        { $unwind: "$flight.route.to" },
+        // JOIN Airline
+        {
+            $lookup: {
+                from: "users", 
+                localField: "flight.airline", 
+                foreignField: "_id", 
+                as: "flight.airline",
+                pipeline: [
+                    { $project: {name: 1, code: 1, PIVA: 1, logo: 1 } }
+                ]
+            }
+        },
+        { $unwind: "$flight.airline" },
+        // Match direct flights
+        // WHERE ( from.name LIKE ... OR ... from.country LIKE ... ) AND (to.name LIKE ... OR to.country LIKE ...)
+        { 
+            $match: {
+                $and: [
+                    {
+                    $or: [
+                        {"flight.route.from.name": fromMatch }, // LIKE operator: /text/i (i: case insensitive)
+                        {"flight.route.from.city": fromMatch },
+                        {"flight.route.from.code": fromMatch },
+                        {"flight.route.from.country": fromMatch }
+                    ],
+                    },
+                    {
+                    $or: [
+                        {"flight.route.to.name": toMatch }, // LIKE operator: /text/i (i: case insensitive)
+                        {"flight.route.to.city": toMatch },
+                        {"flight.route.to.code": toMatch},
+                        {"flight.route.to.country": toMatch }
+                    ]
+                    }
+                ]
+            }
+        },
     ])
-
-    // return Ti.getModel().aggregate([
-    //     {
-    //         // Join Route
-    //         $lookup: {
-    //             from: "routes", // collection's name
-    //             localField: "route", // FK
-    //             foreignField: "_id", 
-    //             as: "route"
-    //         }
-    //     },
-    //     { $unwind: "$route"},
-    //     {
-    //         // Join From Airport
-    //         $lookup: {
-    //             from: "airports", // collection's name
-    //             localField: "route.from", // FK
-    //             foreignField: "_id", 
-    //             as: "route.from"
-    //         }
-    //     },
-    //     {$unwind: "$route.from"},
-    //     {
-    //         // Join To Airport
-    //         $lookup: {
-    //             from: "airports", // collection's name
-    //             localField: "route.to", // FK
-    //             foreignField: "_id", 
-    //             as: "route.to"
-    //         }
-    //     },
-    //     {$unwind: "$route.to"},
-    //     {
-    //         // Join Airline
-    //         $lookup: {
-    //             from: "users", // airlines is a subclass of user
-    //             localField: "airline", // FK
-    //             foreignField: "_id", 
-    //             as: "airline",
-    //             pipeline: [
-    //                 {$project: {code: 1, name: 1, PIVA: 1, logo: 1}}
-    //             ]
-    //         }
-    //     },
-    //     {$unwind: "$airline"},
-    //     {
-    //         $match: {
-    //                 "route.from.country": fromCountry,
-    //                 "route.to.country": toCountry,
-    //                 "route.from.city": fromCity,
-    //                 "route.to.city": toCity,
-    //                 "date":{
-    //                     $gt: fromDate ? new Date(fromDate) : new Date('1970-01-01'),
-    //                     $lt: toDate ? new Date(toDate) : new Date('2100-12-31')
-    //                 }
-    //         }
-    //     }
-    // ])
 }
 
 async function getTicket(id: string){
-    return Ti.getModel().findById(id);
+    return (await Ti.getModel().findById(id))
+        .populate({
+            path: "flight",
+            populate: [
+                {
+                path: "route",
+                populate: [
+                    { path: "from" },
+                    { path: "to" }
+                ]
+                },
+                {
+                path: "airline",
+                select: "code PIVA name logo -__t"  // select only these fields
+                }
+            ]
+        });
 }
 
 async function createTicket(Ticket: Partial<Ticket>){
