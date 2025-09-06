@@ -2,7 +2,16 @@ import Fl, {Flight} from '../models/Flight';
 
 // Add Flights (if not exist)
 async function getAllFlights() {
-    return Fl.getModel().find();
+    return Fl.getModel().find()
+        .populate({
+            path: "route",
+            populate: [
+            { path: "from", select: "code name" },
+            { path: "to",   select: "code name" }
+            ]
+        })
+        .populate("airline", "name PIVA logo -__t")
+        .exec();
 }
 
 async function getFlight(id: string){

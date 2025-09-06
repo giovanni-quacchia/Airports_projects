@@ -6,7 +6,7 @@ import {getModel as getAirplaneModel} from '../models/airplane';
 import {getModel as getAirportsModel} from '../models/Airport';
 import {getModel as getUserModel} from '../models/user';
 import {getModel as getRouteModel} from '../models/route';
-import {getModel as getFlightModel} from '../models/flight'
+import {getModel as getFlightModel} from '../models/Flight'
 
 // Data
 import { airlines, airplanes, airports, flights, routes, users } from "./data";
@@ -17,6 +17,7 @@ import AirplanesSer from '../services/airplanes.service'
 import AirportsServ from '../services/airports.service';
 import UsersServ from '../services/users.service'
 import RoutesServ from '../services/routes.service'
+import FlightServ from '../services/flights.service'
 import mongoose from 'mongoose';
 
 
@@ -86,19 +87,18 @@ export async function addFlights(routes, airlines){
     console.log(pc.green("[Flights creation]\n"));
     
     for(const flight of flights){
-        // use airpot's _ids
+        const {from, to} = flight.route
         const f = {
             date: flight.date,
-            duration: flight.duration
-            route: airports.get(flight.route), 
-            airline: airports.get(flight.to)
+            duration: flight.duration,
+            route: routes.get(`${from}-${to}`), 
+            airline: airlines.get(flight.airline)
         }
 
-        getFlightModel().findOne(r).then((exists) => {
+        getFlightModel().findOne(f).then((exists) => {
             if(!exists){
-                RoutesServ.createRoute(r);
+                FlightServ.createFlight(f);
             }
         })
     }
-}
 }

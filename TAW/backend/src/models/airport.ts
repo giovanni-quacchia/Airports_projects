@@ -12,14 +12,15 @@ export interface Airport{
 // Schema
 
 const AirportSchema = new mongoose.Schema<Airport>({
-    name: {type: String},
-    city: {type: String},
+    name: {type: String, required: true},
+    city: {type: String, required: true},
     code: {
         type: String,
+        required: true,
         unique: true,
         match: /^[A-Z]{3}$/ // regex for 3 uppercase letters
     }, 
-    country: {type: String}
+    country: {type: String, required: true}
 });
 
 // Model

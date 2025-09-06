@@ -6,8 +6,8 @@ const mongoUri = "mongodb://localhost:27017/" + DBname;
 import { AddAirlines, addAirplanes, addAirports, addFlights, addRoutes, AddUsers } from './start';
 
 import {getModel as getAirportsModel} from '../models/Airport';
-import {getModel as getRoutesModel} from '../models/route';
-
+import {getModel as getRoutesModel, Route} from '../models/route';
+import {getModel as getAirlinesModel} from '../models/Airline';
 
 export async function connectDB(){
     mongoose.connect(mongoUri)
@@ -18,6 +18,10 @@ export async function connectDB(){
     .then(async () => {
         AddUsers();
         await AddAirlines();
+
+        const air = await getAirlinesModel().find({}, "_id name").exec();
+        const airlines = new Map(air.map(airline => [airline.name, airline._id]));
+
         await addAirports();
         addAirplanes();
 
@@ -28,8 +32,15 @@ export async function connectDB(){
 
         await addRoutes(airports);
 
-
-        addFlights()
+        const r = await getRoutesModel()
+            .find({}, "_id from to")
+            .populate("from", "code")
+            .populate("to", "code")
+            .exec();
+        const routes = new Map(r.map((route: any) => {
+            return [`${route.from.code}-${route.to.code}`, route._id]
+        }));
+        addFlights(routes, airlines);
 
     })
     .catch((err: string) => console.error('MongoDB connection error:', err));

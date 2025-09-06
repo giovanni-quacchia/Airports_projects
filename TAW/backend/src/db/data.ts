@@ -42,6 +42,12 @@ export const airlines: Partial<Airline>[] = [
     logo: "https://upload.wikimedia.org/wikipedia/commons/f/f1/ITA_Airways_logo.svg",
     mail: "contact@itaairways.com"
   },
+  {
+  PIVA: "AE987654321",
+  name: "Emirates",
+  logo: "https://upload.wikimedia.org/wikipedia/commons/d/d8/Emirates_logo.svg",
+  mail: "contact@emirates.com"
+  }
 ];
 
 export const airplanes: Airplane[] = [

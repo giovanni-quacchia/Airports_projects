@@ -3,15 +3,15 @@ import { checkKeys } from '../utils/utils';
 
 // Interface
 export interface Route{
-    from: mongoose.Types.ObjectId,
-    to: mongoose.Types.ObjectId
+    from: mongoose.Schema.Types.ObjectId,
+    to: mongoose.Schema.Types.ObjectId
 }
 
 // Schema
 
 const RouteSchema = new mongoose.Schema<Route>({
-    from: {type: mongoose.Schema.ObjectId, ref: 'Airport', required: true},
-    to: {type: mongoose.Schema.ObjectId, ref: 'Airport', required: true}
+    from: {type: mongoose.Schema.Types.ObjectId, ref: 'Airport', required: true},
+    to: {type: mongoose.Schema.Types.ObjectId, ref: 'Airport', required: true}
 });
 
 //Validate
