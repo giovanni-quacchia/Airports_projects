@@ -328,9 +328,9 @@ import mongoose from 'mongoose';
 // }
 
 // Direct Flights
-async function getAllFlights(query){
+export async function getAllFlights(query){
     Fl.validateSearch(query);
-    let { from = /.*/, to = /.*/, fromDate = "", toDate = ""} = query;
+    let { from, to, fromDate = "", toDate = ""} = query;
 
     from = from ? { $regex: from, $options: "i" } : /.*/;
     to = to ? { $regex: to, $options: "i" } : /.*/;
@@ -342,9 +342,11 @@ async function getAllFlights(query){
         ...JOIN("routes", "route"),
 
         ...JOIN("airports", "route.from"),
+
         matchAirport("route.from", from),
 
         ...JOIN("airports", "route.to"),
+
         matchAirport("route.to", to),
 
         ...JOIN("users", "airline", "code PIVA name logo"),
@@ -353,8 +355,23 @@ async function getAllFlights(query){
     return Fl.getModel().aggregate(pipeline)
 }
 
-async function getFlight(id: string, query){
+async function getFlight(id: string){
+    return Fl.getModel().findById(id)
+        .populate({
+            path: "route",
+            populate: [
+            { path: "from" },
+            { path: "to" }
+            ]
+        })
+        .populate({
+            path: "airline",
+            select: "code PIVA name logo -__t"
+        });
+}
 
+async function getItineraries(query){
+    const {from, where} = query;
 }
 
 async function createFlight(flight: Partial<Flight>){

@@ -12,7 +12,7 @@ export async function getAllFlights(req, res, next) {
 export async function getFlight(req, res, next){
     try {
         const {id} = req.params;
-        const result = await flights.getFlight(id, req.query);
+        const result = await flights.getFlight(id);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

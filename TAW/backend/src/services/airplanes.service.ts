@@ -1,5 +1,4 @@
 import {Airplane, getModel, newAirplane, validateUpdate} from '../models/airplane';
-import mongoose from 'mongoose';
 
 // Add airlines (if not exist)
 async function getAllAirplanes() {
