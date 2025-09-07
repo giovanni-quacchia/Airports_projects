@@ -2,8 +2,21 @@ import Ar, {Airline} from '../models/airline';
 import { getRandomPassword } from '../utils/utils';
 
 // Add airlines (if not exist)
-async function getAllAirlines() {
-    return Ar.getModel().find();
+async function getAllAirlines(query) {
+    Ar.validateSearch(query);
+    
+    let {name = /.*/} = query
+
+    name = name ? { $regex: name, $options: "i" } : /.*/;
+
+    return Ar.getModel().aggregate([
+        {
+            $match: { name: name }
+        },
+        {
+            $project: {__t: 0}
+        }
+    ]);
 }
 
 async function getAirline(id: string){

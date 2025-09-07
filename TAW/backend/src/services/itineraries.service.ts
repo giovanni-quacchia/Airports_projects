@@ -1,16 +1,25 @@
-import { getAirportContidions, JOIN, JOINStop, matchAirport, matchDate } from "../db/queries";
+import { getAirportContidions, JOIN, JOINStop, matchAirlines, matchAirport, matchDate } from "../db/queries";
 import { checkKeys } from "../utils/utils";
-import Fl, {Flight} from '../models/flight';
+import Fl from '../models/flight';
 import { getAllFlights } from "../services/flights.service";
+
+// TODO: Aggiungere campi numStops, totDuration
+// TODO: ricerca per code
 
 async function getAllItineraries(query){
     checkQuery(query);
-    let { from, to, fromDate = "", toDate = "", onlyDirect = false} = query;
+    let { from, to, fromDate = "", toDate = "", onlyDirect = false, maxStops = 2, airline, sortBy = "departure", order = "asc"} = query;
 
     from = from ? { $regex: from, $options: "i" } : /.*/;
     to = to ? { $regex: to, $options: "i" } : /.*/;
+    airline = airline ? { $regex: airline, $options: "i" } : /.*/;
 
-    if(onlyDirect) return getAllFlights(query);
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    if(onlyDirect || maxStops === 0){
+        const { maxStops, ...rest} = query
+        return getAllFlights(rest);
+    }
 
     const pipeline = [
 
@@ -26,23 +35,42 @@ async function getAllItineraries(query){
 
         ...JOIN("users", "airline", "code PIVA name logo"),
 
-        // Manage stops
-
+        // Manage 1 stop
         ...JOINStop("flights", "route.to._id", "route.from", "stop1", to, "departure"),
-
-        ...JOINStop("flights", "stop1.route.to._id", "route.from", "stop2", to, "stop1.departure"),
-
-        // Mantieni i voli con f1.To = to OR f2.to = to
-        {
-            $match:{
-                $or: [
-                    ...getAirportContidions("route.to", to),
-                    ...getAirportContidions("stop1.route.to", to),
-                    ...getAirportContidions("stop2.route.to", to),
-                ]
-            }
-        }
     ]
+
+    // Manage 2 stops
+    if(maxStops === 2){
+
+        pipeline.push(
+            
+            ...JOINStop("flights", "stop1.route.to._id", "route.from", "stop2", to, "stop1.departure"),
+
+            // Mantieni i voli con f1.To = to OR f2.to = to
+            {
+                $match:{
+                    $or: [
+                        ...getAirportContidions("route.to", to),
+                        ...getAirportContidions("stop1.route.to", to),
+                        ...getAirportContidions("stop2.route.to", to),
+                    ]
+                }
+            }
+        )
+    } else {
+        pipeline.push(
+            {
+                $match:{
+                    $or: [
+                        ...getAirportContidions("route.to", to),
+                        ...getAirportContidions("stop1.route.to", to),
+                    ]
+                }
+            }
+        )
+    }
+
+    pipeline.push( matchAirlines(["airline", "stop1.airline", "stop2.airline"], airline) )
 
     return Fl.getModel().aggregate(pipeline)
 }
@@ -61,14 +89,28 @@ function checkQuery(data: any): boolean{
         (!data.to || typeof data.to !== 'string') &&
         (!data.fromDate || typeof data.fromDate !== 'string') &&
         (!data.toDate || typeof data.toDate !== 'string') &&
-        (!data.onlyDirect || (data.onlyDirect !== 'true' && data.onlyDirect !== 'false'))
+        (!data.onlyDirect || (data.onlyDirect !== 'true' && data.onlyDirect !== 'false')) && 
+        (!data.maxStops || isNaN(Number(data.maxStops))) &&
+        (!data.airline || typeof data.airline !== 'string') &&
+        (!data.sortBy || typeof data.sortBy !== 'string') &&
+        (!data.order || typeof data.order !== 'string')
     )
         throw Error("Searching an itinerary not valid");
 
     if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');
+    if(data.maxStops) data.maxStops = Number(data.maxStops)
+
+    if(
+        (data.sortBy && !["departure", "arrival", "duration"].includes(data.sortBy)) || 
+        (data.order && !data.sortBy)
+    )
+        throw Error("Sorting parameters not valid");
+
+    if(data.order && data.order !== "desc" && data.order !== "asc")
+        throw Error("Order parameter not valid");
         
     // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "onlyDirect"])) return true;
+    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "onlyDirect", "maxStops", "airline", "sortBy", "order"])) return true;
     else
         throw Error("Not valid data");
 }

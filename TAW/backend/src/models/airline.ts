@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
 import { User } from './user'
 import {getModel as getUserModel} from './user'
+import { checkKeys } from '../utils/utils';
 
 // Interface
 export interface Airline extends User{
@@ -64,6 +65,25 @@ function validateUpdate(data: any): boolean{
     return true;
 }
 
+function validateSearch(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    const keys = Object.keys(data);
+
+    if (keys.length === 0) return true;
+
+    if(
+        (!data.name || typeof data.name !== 'string')
+    )
+        throw Error("Searching an airline not valid"); 
+
+    // Check if there are not valid keys
+    if(checkKeys(keys, ["name"])) return true;
+    else
+        throw Error("Not valid data");
+}
+
 // Model
 
 let airlineModel: mongoose.Model<Airline>;
@@ -83,4 +103,4 @@ export function newAirline(data: Partial<Airline>): mongoose.HydratedDocument<Ai
     return airline;
 }
 
-export default {getModel, newAirline, validateUpdate}
+export default {getModel, newAirline, validateUpdate, validateSearch}

@@ -97,14 +97,25 @@ function validateSearch(data: any): boolean{
         (!data.to || typeof data.to !== 'string') &&
         (!data.fromDate || typeof data.fromDate !== 'string') &&
         (!data.toDate || typeof data.toDate !== 'string') &&
-        (!data.onlyDirect || (data.onlyDirect !== 'true' && data.onlyDirect !== 'false'))
+        (!data.airline || typeof data.airline !== 'string') &&
+        (!data.sortBy || typeof data.sortBy !== 'string') &&
+        (!data.order || typeof data.order !== 'string')
     )
-        throw Error("Searching a route not valid");
+        throw Error("Searching a flight not valid");
 
-    if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');
-        
+    if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');  
+
+    if(
+        (data.sortBy && data.sortBy !== "duration" && data.sortBy !== "departure" && data.sortBy !== "arrival") || 
+        (data.order && !data.sortBy)
+    )
+        throw Error("Sorting parameters not valid");
+
+    if(data.order && data.order !== "desc" && data.order !== "asc")
+        throw Error("Order parameter not valid");
+
     // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "onlyDirect"])) return true;
+    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "airline", "sortBy", "order"])) return true;
     else
         throw Error("Not valid data");
 }

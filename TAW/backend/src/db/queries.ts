@@ -85,6 +85,29 @@ export function unMatchAirport(location: string, regEx){
     }
 }
 
+export function getAirlinesContidions(locations: string[], regEx, qnt){
+
+    const cond = []
+
+    for(let i = 0; i < qnt; i++){
+        cond.push(
+            { [`${locations[i]}.code`]: regEx },
+            { [`${locations[i]}.PIVA`]: regEx },
+            { [`${locations[i]}.name`]: regEx },
+        )
+    }
+
+    return cond;
+}
+
+export function matchAirlines(locations: string[], regEx){
+    return {
+        $match: {
+            $or: getAirlinesContidions(locations, regEx, locations.length)
+        }
+    }
+}
+
 export function matchDate(attribute: string, fromDate: string, toDate: string){
     return {
         $match: {
