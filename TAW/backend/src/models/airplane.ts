@@ -54,11 +54,11 @@ function validateInput(data: any): boolean{
         throw Error("Code required");
     if(!data.model || typeof data.model !== 'string') 
         throw Error("Model required");
-    if(data.route || typeof data?.route !== 'string')
+    if(data.route && typeof data?.route !== 'string')
         throw Error("Route not valid")
-    if(data.rows || isNaN(Number(data.rows)))
+    if(!data.rows || isNaN(Number(data.rows)))
         throw Error("Number of rows not valid")
-    if(data.letters || isNaN(Number(data.letters)))
+    if(!data.letters || isNaN(Number(data.letters)))
         throw Error("Number of letters not valid")
 
     data.code = Number(data.code);
