@@ -7,9 +7,9 @@ export interface Passenger{
     surname: String;
     CF?: String;
     passportNumber?: String;
-    extra: Array<'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG'>;
+    extra?: Array<'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG'>;
     seat: String;
-    ticket: mongoose.Schema.Types.ObjectId;
+    ticket: number
 }
 
 // Schema: CF or passportNumber
@@ -43,7 +43,7 @@ const passengerSchema = new mongoose.Schema<Passenger>({
             required: true,
             match: /^[A-Z]\d+$/ // ensures format like "A1", "C12"
     },
-    ticket: {type: mongoose.Schema.Types.ObjectId, ref: "Ticket"},
+    ticket: {type: Number},
 });
 
 // Model
@@ -71,7 +71,7 @@ function validateInput(data: any): boolean{
 
     if(!data.name || typeof data.name !== 'string') 
         throw Error("Name required");
-    if(!data.surname || typeof data.city !== 'string') 
+    if(!data.surname || typeof data.surname !== 'string') 
         throw Error("Surname required");
     if(
         (!data.CF || typeof data.CF !== 'string') && 
@@ -93,8 +93,10 @@ function validateInput(data: any): boolean{
         throw Error("Seat must be in format like 'A1', 'C12'");
 
     // Ticket
-    if (!data.ticket || !mongoose.isValidObjectId(data.ticket))
-        throw Error("Ticket must be a valid ObjectId");
+    if (!data.ticket || isNaN(data.ticket))
+        throw Error("Ticket must be valid");
+
+    data.ticket = Number(data.ticket);
 
     // Check if there are not valid keys
     if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat", "ticket"])) return true;
@@ -115,9 +117,12 @@ export function validate(data: any): boolean{
         (!data.passportNumber || typeof data.passportNumber !== 'string') &&
         (!data.extra || !Array.isArray(data.extra)) &&
         (!data.seat || typeof data.seat !== 'string') &&
-        (!data.ticket || !mongoose.isValidObjectId(data.ticket))
+        (!data.ticket || isNaN(data.ticket))
     )
         throw Error("Updating a passenger requires a new name, surname, CF, Passport number, extra, seat or ticket")
+
+    if(data.ticket) data.ticket = Number(data.ticket);
+
 
     // Check if there are not valid keys
     if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat", "ticket"])) return true;

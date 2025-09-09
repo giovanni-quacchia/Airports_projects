@@ -8,7 +8,7 @@ export function SELECT(projection: string){
     return projectStage // [ [ $project: {attr_1: 1, ..., attr_n: 1} ] ]
 }
 
-export function JOIN(collection: string, field: string, projection?: string){
+export function JOIN(collection: string, local: string,  projection?: string, FK: string = "_id"){
 
     // SELECT
     const projectStage = projection ? SELECT(projection) : [];
@@ -17,13 +17,13 @@ export function JOIN(collection: string, field: string, projection?: string){
         {
             $lookup: {
                 from: collection,
-                localField: field,
-                foreignField: "_id",
-                as: field,
+                localField: local,
+                foreignField: FK,
+                as: local,
                 pipeline: projectStage
             }
         },
-        { $unwind: `$${field}` }
+        { $unwind: {path: `$${local}`, preserveNullAndEmptyArrays: true} }
     ]
 
     return stages;
@@ -50,6 +50,7 @@ export function JOINStop(collection: string, FK: string, PK: string, newAttr: st
                     unMatchAirport("route.from", dest),
 
                     ...JOIN("users", "airline", "code PIVA name logo"),
+                    ...JOIN("airplanes", "airplane"),
                 ],
                 as: newAttr
             },
@@ -60,19 +61,25 @@ export function JOINStop(collection: string, FK: string, PK: string, newAttr: st
 
 // WHERE location LIKE regEx
 
-export function getAirportContidions(location: string, regEx){
+export function getAirportContidions(location: string, match, isRegex){
+
+    if(!isRegex) match = match ? { $regex: match, $options: "i" } : { $exists: true };
+
     return [
-        { [`${location}.name`]: regEx },
-        { [`${location}.city`]: regEx },
-        { [`${location}.code`]: regEx },
-        { [`${location}.country`]: regEx },
+        { [`${location}.name`]: match },
+        { [`${location}.city`]: match },
+        { [`${location}.code`]: match },
+        { [`${location}.country`]: match },
     ] 
 }
 
-export function matchAirport(location: string, regEx){
+export function matchAirport(location: string, match: string){
+
+    const regEx = match ? { $regex: match, $options: "i" } : { $exists: true };
+
     return {
         $match: {
-            $or: getAirportContidions(location, regEx)
+            $or: getAirportContidions(location, regEx, true)
         }
     }
 }
@@ -80,7 +87,7 @@ export function matchAirport(location: string, regEx){
 export function unMatchAirport(location: string, regEx){
     return {
         $match: {
-            $nor: getAirportContidions(location, regEx)
+            $nor: getAirportContidions(location, regEx, true)
         }
     }
 }

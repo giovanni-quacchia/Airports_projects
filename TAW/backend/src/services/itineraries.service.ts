@@ -3,15 +3,10 @@ import { checkKeys } from "../utils/utils";
 import Fl from '../models/flight';
 import { getAllFlights } from "../services/flights.service";
 
-// TODO: Ricerca per campi numStops, totDuration, finalArrival
-// TODO: ricerca per "code"
-
 async function getAllItineraries(query){
     checkQuery(query);
     let { from, to, fromDate = "", toDate = "", onlyDirect = false, maxStops = 2, airline, sortBy = "departure", order = "asc"} = query;
-
-    from = from ? { $regex: from, $options: "i" } : /.*/;
-    to = to ? { $regex: to, $options: "i" } : /.*/;
+    
     airline = airline ? { $regex: airline, $options: "i" } : /.*/;
 
     const sortOrder = order === "asc" ? 1 : -1;
@@ -36,6 +31,8 @@ async function getAllItineraries(query){
         ...JOIN("airports", "route.to"),
 
         ...JOIN("users", "airline", "code PIVA name logo"),
+        
+        ...JOIN("airplanes", "airplane"),
 
         // Manage 1 stop
         ...JOINStop("flights", "route.to._id", "route.from", "stop1", to, "departure"),
@@ -51,9 +48,9 @@ async function getAllItineraries(query){
             {
                 $match:{
                     $or: [
-                        ...getAirportContidions("route.to", to),
-                        ...getAirportContidions("stop1.route.to", to),
-                        ...getAirportContidions("stop2.route.to", to),
+                        ...getAirportContidions("route.to", to, false),
+                        ...getAirportContidions("stop1.route.to", to, false),
+                        ...getAirportContidions("stop2.route.to", to, false),
                     ]
                 }
             }
@@ -63,8 +60,8 @@ async function getAllItineraries(query){
             {
                 $match:{
                     $or: [
-                        ...getAirportContidions("route.to", to),
-                        ...getAirportContidions("stop1.route.to", to),
+                        ...getAirportContidions("route.to", to, false),
+                        ...getAirportContidions("stop1.route.to", to, false),
                     ]
                 }
             }        )

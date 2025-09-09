@@ -1,99 +1,47 @@
+import mongoose from 'mongoose';
+import { JOIN, matchAirport } from '../db/queries';
 import Ti, {Ticket} from '../models/Ticket';
 
-async function getAllTickets(query) {
+async function getAllTickets(query, flightId?: string) {
     Ti.validateSearch(query);
-    const { minPrice = 0, maxPrice = 99999, minQuantity = 0, maxQuantity = 99999, type = /.*/, from = /.*/, to = /.*/} = query
-    const fromMatch = from ? { $regex: from, $options: "i" } : { $exists: true };
-    const toMatch = to ? { $regex: to, $options: "i" } : { $exists: true };
     
-    return Ti.getModel().aggregate([
-        // WHERE price, quantity
+    let { minPrice = 0, maxPrice = 99999, minQuantity = 0, maxQuantity = 99999, type = /.*/, from = /.*/, to = /.*/, sortBy = "price", order = "asc"} = query
+
+    const typeMatch = type ? { $regex: type, $options: "i" } : { $exists: true };
+
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    const pipeline: any[] = []
+
+    if(flightId){
+        pipeline.push({
+            $match: {flight: new mongoose.Types.ObjectId(flightId)}
+        })
+    }
+    
+    pipeline.push(
+        // WHERE type, price, quantity, flight?
         { 
             $match: {
-                "type": type,
+                "type": typeMatch,
                 "price":{ $gte: minPrice, $lte: maxPrice},
-                "quantity":{$gte: minQuantity, $lte: maxQuantity}
+                "quantity":{$gte: minQuantity, $lte: maxQuantity},
             }
         },
-        // JOIN Flight
-        {
-            
-            $lookup: {
-                from: "flights", 
-                localField: "flight", 
-                foreignField: "_id", 
-                as: "flight"
-            }
-        },
-        { $unwind: "$flight" },
-        // JOIN Route
-        {
-            $lookup: {
-                from: "routes", 
-                localField: "flight.route", 
-                foreignField: "_id", 
-                as: "flight.route"
-            }
-        },
-        { $unwind: "$flight.route" },
-        // JOIN From Airport
-        {
-            $lookup: {
-                from: "airports", 
-                localField: "flight.route.from", 
-                foreignField: "_id", 
-                as: "flight.route.from",
-            }
-        },
-        { $unwind: "$flight.route.from" },
-        // JOIN To Airport
-        {
-            $lookup: {
-                from: "airports", 
-                localField: "flight.route.to", 
-                foreignField: "_id", 
-                as: "flight.route.to",
-            }
-        },
-        { $unwind: "$flight.route.to" },
-        // JOIN Airline
-        {
-            $lookup: {
-                from: "users", 
-                localField: "flight.airline", 
-                foreignField: "_id", 
-                as: "flight.airline",
-                pipeline: [
-                    { $project: {name: 1, code: 1, PIVA: 1, logo: 1 } }
-                ]
-            }
-        },
-        { $unwind: "$flight.airline" },
-        // Match direct flights
-        // WHERE ( from.name LIKE ... OR ... from.country LIKE ... ) AND (to.name LIKE ... OR to.country LIKE ...)
-        { 
-            $match: {
-                $and: [
-                    {
-                    $or: [
-                        {"flight.route.from.name": fromMatch }, // LIKE operator: /text/i (i: case insensitive)
-                        {"flight.route.from.city": fromMatch },
-                        {"flight.route.from.code": fromMatch },
-                        {"flight.route.from.country": fromMatch }
-                    ],
-                    },
-                    {
-                    $or: [
-                        {"flight.route.to.name": toMatch }, // LIKE operator: /text/i (i: case insensitive)
-                        {"flight.route.to.city": toMatch },
-                        {"flight.route.to.code": toMatch},
-                        {"flight.route.to.country": toMatch }
-                    ]
-                    }
-                ]
-            }
-        },
-    ])
+        ...JOIN("flights", "flight"),
+        ...JOIN("routes", "flight.route"),
+        ...JOIN("airports", "flight.route.from"),
+        ...JOIN("airports", "flight.route.to"),
+        ...JOIN("users", "flight.airline", "name code PIVA logo"),
+        ...JOIN("airplanes", "flight.airplane"),
+
+        matchAirport("flight.route.from", from),
+        matchAirport("flight.route.to", to),
+
+        { $sort: { [sortBy]: sortOrder } }
+    )
+
+    return Ti.getModel().aggregate(pipeline);
 }
 
 async function getTicket(id: string){

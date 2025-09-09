@@ -1,12 +1,19 @@
+import { JOIN } from '../db/queries';
 import {Airplane, getModel, newAirplane, validateUpdate} from '../models/airplane';
 
 // Add airlines (if not exist)
 async function getAllAirplanes() {
-    return getModel().find();
+    return getModel().aggregate([
+        ...JOIN("users", "airline", "code PIVA name logo -__t")
+    ]);
 }
 
 async function getAirplane(id: string){
-    return getModel().findById(id);
+    return getModel().findById(id)
+        .populate({
+            path: "airline",
+            select: "code PIVA name logo -__t"
+        })
 }
 
 async function createAirplane(airplane: Partial<Airplane>){

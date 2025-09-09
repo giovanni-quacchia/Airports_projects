@@ -2,7 +2,8 @@ import Tickets from '../services/tickets.service'
 
 export async function getAllTickets(req, res, next) {
     try {
-        const result = await Tickets.getAllTickets(req.query);
+        const {flightId} = req.params;
+        const result = await Tickets.getAllTickets(req.query, flightId);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

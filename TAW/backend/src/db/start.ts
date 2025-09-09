@@ -8,9 +8,11 @@ import {getModel as getUserModel} from '../models/user';
 import {getModel as getRouteModel} from '../models/route';
 import {getModel as getFlightModel} from '../models/flight'
 import {getModel as getTicketModel} from '../models/Ticket'
+import {getModel as getPassengerModel} from '../models/passenger'
+
 
 // Data
-import { airlines, airplanes, airports, flights, routes, tickets, users } from "./data";
+import { airlines, airplanes, airports, flights, passengers, routes, tickets, users } from "./data";
 
 // Services
 import AirlinesSer from '../services/airlines.service'
@@ -19,8 +21,8 @@ import AirportsServ from '../services/airports.service';
 import UsersServ from '../services/users.service'
 import RoutesServ from '../services/routes.service'
 import FlightServ from '../services/flights.service'
-import TicketServ from '../services/tickets.service'
 import Ticket from '../models/Ticket';
+import Passenger from '../models/passenger'
 
 
 export async function AddUsers(){
@@ -45,13 +47,17 @@ export async function AddAirlines() {
     }
 }
 
-export async function addAirplanes() {
+export async function addAirplanes(airlines) {
     console.log(pc.green("\n[Airplanes creation]\n"));
     for (const airplane of airplanes) {
-        const exists = await getAirplaneModel().findOne(airplane);
+        const a = {
+            ...airplane,
+            airline: airlines.get(airplane.airline)
+        }
+        const exists = await getAirplaneModel().findOne({code: a.code});
         if (!exists) {
-            const a = await AirplanesSer.createAirplane(airplane);
-            a.save();
+            const airDoc = await AirplanesSer.createAirplane(a);
+            airDoc.save();
         }
     }
 }
@@ -82,14 +88,15 @@ export async function addRoutes(airportsMap: Map<string, any>) {
     }
 }
 
-export async function addFlights(routes, airlines) {
+export async function addFlights(routes, airlines, airplanes) {
     console.log(pc.green("\n[Flights creation]\n"));
     for (const flight of flights) {
         const { from, to } = flight.route;
         const f = {
             ...flight,
             route: routes.get(`${from}-${to}`),
-            airline: airlines.get(flight.airline)
+            airline: airlines.get(flight.airline),
+            airplane: airplanes.get(flight.airplane)
         };
         const exists = await getFlightModel().findOne({ code: f.code });
         if (!exists) {
@@ -110,6 +117,17 @@ export async function addTickets(flights) {
         if (!exists) {
             const ticketDoc = Ticket.createTicket(t);
             await ticketDoc.save();
+        }
+    }
+}
+
+export async function addPassengers() {
+    console.log(pc.green("\n[Passengers creation]\n"));
+    for (const passenger of passengers) {
+        const exists = await getTicketModel().findOne(passenger);
+        if (!exists) {
+            const passDoc = Passenger.createPassenger(passenger);
+            await passDoc.save();
         }
     }
 }

@@ -3,13 +3,15 @@ const mongoose = require('mongoose');
 const DBname = "AirplanesDB"
 const mongoUri = "mongodb://localhost:27017/" + DBname;
 
-import { AddAirlines, addAirplanes, addAirports, addFlights, addRoutes, addTickets, AddUsers } from './start';
+import { AddAirlines, addAirplanes, addAirports, addFlights, addPassengers, addRoutes, addTickets, AddUsers } from './start';
 
 import {getModel as getAirportsModel} from '../models/Airport';
 import {getModel as getRoutesModel, Route} from '../models/route';
 import {getModel as getAirlinesModel} from '../models/airline';
 import {getModel as getFlightsModel} from '../models/flight';
 import {getModel as getTicketsModel} from '../models/Ticket';
+import {getModel as getAirplanesModel} from '../models/airplane';
+
 
 export async function connectDB(){
     mongoose.connect(mongoUri)
@@ -25,10 +27,12 @@ export async function connectDB(){
         const airlines = new Map(air.map(airline => [airline.name, airline._id]));
 
         await addAirports();
-        addAirplanes();
+        const airp = await getAirportsModel().find({}, "_id code").exec();
+        const airports = new Map(airp.map(airport => [airport.code, airport._id]));
 
-        const a = await getAirportsModel().find({}, "_id code").exec();
-        const airports = new Map(a.map(airport => [airport.code, airport._id]));
+        await addAirplanes(airlines);
+        const airpl = await getAirplanesModel().find({}, "_id code").exec();
+        const airplanes = new Map(airpl.map(airplane => [airplane.code, airplane._id]));
 
         await addRoutes(airports);
 
@@ -42,10 +46,13 @@ export async function connectDB(){
         }));
         
         // Flights
-        await addFlights(routes, airlines);
+        await addFlights(routes, airlines, airplanes);
         const fl = await getFlightsModel().find({}, "_id code").exec();
         const flights = new Map(fl.map(flight => [flight.code, flight._id]));
+
+        // Tickets
         await addTickets(flights);
+        addPassengers();
     })
     .catch((err: string) => console.error('MongoDB connection error:', err));
 }

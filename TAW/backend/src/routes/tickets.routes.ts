@@ -2,7 +2,8 @@ import express from "express";
 const router = express.Router();
 import ticket from '../controllers/tickets.controller'
 
-// Get All tickets: ? [type]
+// Get All tickets: ? [type, minPrice, maxPrice, minQuantity, maxQuantity, from, to, sortyBy, order]
+// sortBy: price, quantity, type
 
 router.get("/", ticket.getAllTickets);
 

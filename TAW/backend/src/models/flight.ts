@@ -8,7 +8,8 @@ export interface Flight{
     arrival: Date
     duration: Number, // minutes
     route: mongoose.Schema.Types.ObjectId,
-    airline: mongoose.Schema.Types.ObjectId
+    airline: mongoose.Schema.Types.ObjectId,
+    airplane: mongoose.Schema.Types.ObjectId
 }
 
 // Schema
@@ -26,6 +27,7 @@ const FlightSchema = new mongoose.Schema<Flight>({
     },
     route: {type: mongoose.Schema.Types.ObjectId, ref: 'Route'},
     airline: {type: mongoose.Schema.Types.ObjectId, ref: 'Airline'},
+    airplane: {type: mongoose.Schema.Types.ObjectId, ref: 'Airplane'},
 });
 
 // Validate
@@ -50,9 +52,11 @@ function validateInput(data: any): boolean{
         throw Error("Route required");
     if(!data.airline || !mongoose.Types.ObjectId.isValid(data.airline)) 
         throw Error("Airline required");
+    if(!data.airplane || !mongoose.Types.ObjectId.isValid(data.airplane)) 
+        throw Error("Airplane required");
 
     // Check if there are not valid keys
-    if(keys.length === 6) return true;
+    if(keys.length === 7) return true;
     else
         throw Error("Not valid data");
 }
@@ -72,14 +76,15 @@ function validate(data: any): boolean{
         (!data.arrival || isNaN(+testArrival)) &&
         (!data.duration || typeof data.duration !== 'number') &&
         (!data.route || !mongoose.Types.ObjectId.isValid(data.route)) &&
-        (!data.airline || !mongoose.Types.ObjectId.isValid(data.airline))
+        (!data.airline || !mongoose.Types.ObjectId.isValid(data.airline)) &&
+        (!data.airplane || !mongoose.Types.ObjectId.isValid(data.airplane))
     )
-        throw Error("Updating a flight requires a new departure date, arrival date, duration, route or airline")
+        throw Error("Updating a flight requires a new departure date, arrival date, duration, route, airline or airplane")
     if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same")
 
     // Check if there are not valid keys
      // Check if there are not valid keys
-    if(checkKeys(keys, ["departure", "arrival", "duration", "route", "airline", "code"])) return true;
+    if(checkKeys(keys, ["departure", "arrival", "duration", "route", "airline", "code", "airplane"])) return true;
     else
         throw Error("Not valid data");
 }
@@ -99,7 +104,9 @@ function validateSearch(data: any): boolean{
         (!data.toDate || typeof data.toDate !== 'string') &&
         (!data.airline || typeof data.airline !== 'string') &&
         (!data.sortBy || typeof data.sortBy !== 'string') &&
-        (!data.order || typeof data.order !== 'string')
+        (!data.order || typeof data.order !== 'string') && 
+        (!data.airplane || typeof data.airplane !== 'string') &&
+        (!data.code || typeof data.code !== 'string')
     )
         throw Error("Searching a flight not valid");
 
@@ -115,7 +122,7 @@ function validateSearch(data: any): boolean{
         throw Error("Order parameter not valid");
 
     // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "airline", "sortBy", "order"])) return true;
+    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "airline", "sortBy", "order", "airplane", "code"])) return true;
     else
         throw Error("Not valid data");
 }

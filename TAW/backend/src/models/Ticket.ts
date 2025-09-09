@@ -3,6 +3,7 @@ import { checkKeys } from '../utils/utils';
 
 // Interface
 export interface Ticket{
+    code: number,
     type: 'ECONOMY' | 'BUSINESS' | 'FIRST CLASS',
     price: number,
     quantity: number,
@@ -11,6 +12,7 @@ export interface Ticket{
 
 // Schema
 const TicketSchema = new mongoose.Schema<Ticket>({
+    code: { type: Number, required: true, unique: true},
     type: {
         type: String,
         enum: ["ECONOMY", "BUSINESS", "FIRST CLASS"],
@@ -55,6 +57,8 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data);
 
+    if(!data.code || isNaN(data.code)) 
+        throw Error("Ticket code required");
     if(!data.type || typeof data.type !== 'string') 
         throw Error("Ticket type required");
     if(!data.price || isNaN(data.price)) 
@@ -64,13 +68,14 @@ function validateInput(data: any): boolean{
     if(!data.flight || !mongoose.Types.ObjectId.isValid(data.flight)) 
         throw Error("Flight required");
 
+    data.code = Number(data.code)
     data.price = Number(data.price);
     data.quantity = Number(data.quantity);
 
     // Check if there are not valid keys
-    if(keys.length === 4) return true;
+    if(keys.length === 5) return true;
     else
-        throw Error("Credentials not valid");
+        throw Error("Data not valid");
 }
 
 // Validate update
@@ -103,6 +108,7 @@ function validateSearch(data: any): boolean {
     if (keys.length === 0) return true;
 
     // Optional search fields, must be correct type if provided
+
     if (data.type && typeof data.type !== 'string') throw Error("Ticket type must be a string");
     if (data.from && typeof data.from !== 'string') throw Error("Departure must be a string");
     if (data.to && typeof data.to !== 'string') throw Error("Arrival must be a string");
@@ -110,16 +116,25 @@ function validateSearch(data: any): boolean {
     if (data.maxPrice && isNaN(data.maxPrice)) throw Error("maxPrice must be a number");
     if (data.minQuantity && isNaN(data.minQuantity)) throw Error("minQuantity must be a number");
     if (data.maxQuantity && isNaN(data.maxQuantity)) throw Error("maxQuantity must be a number");
+    if (data.sortBy && typeof data.sortBy !== 'string') throw Error("sortBy must be valid");
+    if (data.order && typeof data.order !== 'string') throw Error("order must be desc or asc");
+
+    if(
+        (data.sortBy && !["price", "quantity", "type"].includes(data.sortBy)) || 
+        (data.order && !data.sortBy)
+    )
+        throw Error("Sorting parameters not valid");
+
+    if(data.order && data.order !== "desc" && data.order !== "asc")
+        throw Error("Order parameter not valid");
 
     if(data.minPrice) data.minPrice = Number(data.minPrice)
     if(data.maxPrice) data.maxPrice = Number(data.maxPrice)
     if(data.minQuantity) data.minQuantity = Number(data.minQuantity)
     if(data.maxQuantity) data.maxQuantity = Number(data.maxQuantity)
 
-    console.log(data.minPrice)
-
     // Check if keys are valid
-    if (checkKeys(keys, ["type", "flight", "minPrice", "maxPrice", "minQuantity", "maxQuantity", "from", "to"])) return true;
+    if (checkKeys(keys, ["type", "flight", "minPrice", "maxPrice", "minQuantity", "maxQuantity", "from", "to", "sortBy", "order"])) return true;
     else throw Error("Not valid data");
 }
 

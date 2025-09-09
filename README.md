@@ -4,6 +4,10 @@
 
 ## Progetto TAW
 
+### TODO
+
+- Le FK non devono essere per forza objectID, aggiornare quelle gia create
+
 ### Specifiche
 
 - Backend with Express for routing
@@ -46,3 +50,9 @@ ADMIN INFO
 /airlines (CRUD) ✅
 /airplanes
 /customers
+
+## Progetto DB
+
+- Trigger per flight.airline = flight.airplane.airline
+- Un volo di una compagnia per una certa rotta deve avere lo stesso codice (TRIGGER)
+- Flight.code = airline.code + number (TRIGGER)

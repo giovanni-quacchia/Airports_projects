@@ -55,12 +55,13 @@ export const airlines: Partial<Airline>[] = [
   }
 ];
 
-export const airplanes: Airplane[] = [
-  { code: 1, model: "Airbus A320neo", rows: 30, letters: 6 },  // A-F
-  { code: 2, model: "Boeing 737-800", rows: 32, letters: 6 },  // A-F
-  { code: 3, model: "Embraer E190", rows: 28, letters: 4 },    // A-D
-  { code: 4, model: "Bombardier CRJ900", rows: 24, letters: 4 }, // A-D
-  { code: 5, model: "Boeing 787-9 Dreamliner", rows: 40, letters: 9 } // A-I
+export const airplanes = [
+  { code: 1, model: "Airbus A320neo", airline: "Ryanair", rows: 30, letters: 6 },           
+  { code: 2, model: "Boeing 737-800", airline: "British Airways", rows: 32, letters: 6 },   
+  { code: 3, model: "Embraer E190", airline: "Air France", rows: 28, letters: 4 },          
+  { code: 4, model: "Boeing 777-300ER", airline: "Lufthansa", rows: 40, letters: 9 },       
+  { code: 5, model: "Airbus A330-200", airline: "ITA Airways", rows: 28, letters: 6 },      
+  { code: 6, model: "Boeing 777-200LR", airline: "Emirates", rows: 42, letters: 10 }        
 ];
 
 export const airports: Airport[] = [
@@ -110,6 +111,7 @@ export const flights = [
     duration: 720,
     route: { from: "DXB", to: "SYD" },
     airline: "Emirates",
+    airplane: 6,
     arrival: new Date(new Date('2025-09-10T08:30:00Z').getTime() + 720 * 60000)
   },
   {
@@ -118,6 +120,7 @@ export const flights = [
     duration: 660,
     route: { from: "FCO", to: "LAX" },
     airline: "Air France",
+    airplane: 3,
     arrival: new Date(new Date('2025-09-12T13:45:00Z').getTime() + 660 * 60000)
   },
   {
@@ -126,6 +129,7 @@ export const flights = [
     duration: 90,
     route: { from: "VCE", to: "FCO" },
     airline: "ITA Airways",
+    airplane: 5,
     arrival: new Date(new Date('2025-09-14T07:00:00Z').getTime() + 90 * 60000)
   },
   {
@@ -134,7 +138,8 @@ export const flights = [
     duration: 840,
     route: { from: "JFK", to: "HND" },
     airline: "Lufthansa",
-    arrival: new Date(new Date('2025-09-15T22:00:00Z').getTime() + 840 * 60000)
+    airplane: 4,
+    arrival: new Date(new Date('2025-09-16T22:00:00Z').getTime() + 840 * 60000)
   },
   {
     code: "FR505",
@@ -142,6 +147,7 @@ export const flights = [
     duration: 540,
     route: { from: "VCE", to: "JFK" },
     airline: "Ryanair",
+    airplane: 1,
     arrival: new Date(new Date('2025-09-16T09:30:00Z').getTime() + 540 * 60000)
   },
   {
@@ -150,6 +156,7 @@ export const flights = [
     duration: 600,
     route: { from: "HND", to: "BER" },
     airline: "British Airways",
+    airplane: 2,
     arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
   },
   {
@@ -158,6 +165,7 @@ export const flights = [
     duration: 600,
     route: { from: "JFK", to: "BER" },
     airline: "British Airways",
+    airplane: 2,
     arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
   },
   {
@@ -166,6 +174,7 @@ export const flights = [
     duration: 720,
     route: { from: "LAX", to: "DXB" },
     airline: "Emirates",
+    airplane: 6,
     arrival: new Date(new Date('2025-09-19T20:45:00Z').getTime() + 720 * 60000)
   },
   {
@@ -174,6 +183,7 @@ export const flights = [
     duration: 480,
     route: { from: "BER", to: "PEK" },
     airline: "Air France",
+    airplane: 3,
     arrival: new Date(new Date('2025-09-20T06:00:00Z').getTime() + 480 * 60000)
   },
   {
@@ -182,6 +192,7 @@ export const flights = [
     duration: 480,
     route: { from: "EZE", to: "BCN" },
     airline: "Ryanair",
+    airplane: 1,
     arrival: new Date(new Date('2025-09-22T14:30:00Z').getTime() + 480 * 60000)
   },
   {
@@ -190,6 +201,7 @@ export const flights = [
     duration: 360,
     route: { from: "CDG", to: "VCE" },
     airline: "ITA Airways",
+    airplane: 5,
     arrival: new Date(new Date('2025-09-25T18:00:00Z').getTime() + 360 * 60000)
   },
   {
@@ -198,19 +210,103 @@ export const flights = [
     duration: 600,
     route: { from: "HND", to: "DXB" },
     airline: "Emirates",
+    airplane: 6,
     arrival: new Date(new Date('2025-09-20T09:30:00Z').getTime() + 600 * 60000)
   }
 ];
 
 export const tickets = [
-  { type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },
-  { type: "BUSINESS", price: 1200, quantity: 20, flight: "EK101" },
-  { type: "FIRST CLASS", price: 2500, quantity: 10, flight: "AF202" },
-  { type: "ECONOMY", price: 400, quantity: 60, flight: "AZ303" },
-  { type: "BUSINESS", price: 1000, quantity: 25, flight: "LH404" },
-  { type: "FIRST CLASS", price: 2200, quantity: 8, flight: "FR505" },
-  { type: "ECONOMY", price: 550, quantity: 55, flight: "BA606" },
-  { type: "BUSINESS", price: 1300, quantity: 18, flight: "EK707" },
-  { type: "ECONOMY", price: 450, quantity: 45, flight: "AF808" },
-  { type: "FIRST CLASS", price: 2000, quantity: 12, flight: "FR909" }
+  { code: "1", type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },
+  { code: "2", type: "BUSINESS", price: 1200, quantity: 20, flight: "EK101" },
+  { code: "3", type: "FIRST CLASS", price: 2500, quantity: 10, flight: "AF202" },
+  { code: "4", type: "ECONOMY", price: 400, quantity: 60, flight: "AZ303" },
+  { code: "5", type: "BUSINESS", price: 1000, quantity: 25, flight: "LH404" },
+  { code: "6", type: "FIRST CLASS", price: 2200, quantity: 8, flight: "FR505" },
+  { code: "7", type: "ECONOMY", price: 550, quantity: 55, flight: "BA606" },
+  { code: "8", type: "BUSINESS", price: 1300, quantity: 18, flight: "EK707" },
+  { code: "9", type: "ECONOMY", price: 450, quantity: 45, flight: "AF808" },
+  { code: "10", type: "FIRST CLASS", price: 2000, quantity: 12, flight: "FR909" }
+];
+
+export const passengers = [
+  {
+    name: "Luca",
+    surname: "Bianchi",
+    CF: "LCABNC90A01H501Z",
+    seat: "A1",
+    ticket: "1", // EK101 - ECONOMY
+    extra: ["PRIORITY"]
+  },
+  {
+    name: "Maria",
+    surname: "Rossi",
+    passportNumber: "YA1234567",
+    seat: "B2",
+    ticket: "2", // EK101 - BUSINESS
+    extra: ["LARGER SEAT"]
+  },
+  {
+    name: "Jean",
+    surname: "Dupont",
+    passportNumber: "FR9876543",
+    seat: "C3",
+    ticket: "3", // AF202 - FIRST CLASS
+    extra: ["EXTRA BAG", "PRIORITY"]
+  },
+  {
+    name: "Giulia",
+    surname: "Verdi",
+    CF: "GLV1234567Z",
+    seat: "D4",
+    ticket: "4", // AZ303 - ECONOMY
+    extra: []
+  },
+  {
+    name: "Hans",
+    surname: "Müller",
+    passportNumber: "DE4567890",
+    seat: "E5",
+    ticket: "5", // LH404 - BUSINESS
+    extra: ["LARGER SEAT"]
+  },
+  {
+    name: "Patrick",
+    surname: "O’Connor",
+    passportNumber: "IE7654321",
+    seat: "F6",
+    ticket: "6", // FR505 - FIRST CLASS
+    extra: []
+  },
+  {
+    name: "Sophie",
+    surname: "Smith",
+    passportNumber: "GB1230987",
+    seat: "A7",
+    ticket: "7", // BA606 - ECONOMY
+    extra: ["EXTRA BAG"]
+  },
+  {
+    name: "Ahmed",
+    surname: "Al-Farsi",
+    passportNumber: "AE9988776",
+    seat: "B8",
+    ticket: "8", // EK707 - BUSINESS
+    extra: ["PRIORITY"]
+  },
+  {
+    name: "Wei",
+    surname: "Zhang",
+    passportNumber: "CN12345678",
+    seat: "C9",
+    ticket: "9", // AF808 - ECONOMY
+    extra: []
+  },
+  {
+    name: "Carlos",
+    surname: "Gonzalez",
+    passportNumber: "AR11223344",
+    seat: "D10",
+    ticket: "10", // FR909 - FIRST CLASS
+    extra: ["LARGER SEAT", "EXTRA BAG"]
+  }
 ];

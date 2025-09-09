@@ -6,7 +6,7 @@ export interface Airplane{
     code: number,
     model: string,
     route?: mongoose.Schema.Types.ObjectId,
-    airline?: mongoose.Schema.Types.ObjectId,
+    airline: mongoose.Schema.Types.ObjectId,
     rows: number,
     letters: number
 }
@@ -60,13 +60,15 @@ function validateInput(data: any): boolean{
         throw Error("Number of rows not valid")
     if(!data.letters || isNaN(Number(data.letters)))
         throw Error("Number of letters not valid")
+    if(!data.airline || !mongoose.Types.ObjectId.isValid(data.airline))
+        throw Error("Airline required")
 
     data.code = Number(data.code);
     data.rows = Number(data.rows);
     data.letters = Number(data.letters)
 
     // Check if there are not valid keys
-    const validKeys = ["code", "model", "route", "rows", "letters"];
+    const validKeys = ["code", "model", "route", "rows", "letters", "airline"];
     keys.forEach(key => {
         if(!validKeys.includes(key))
             throw Error("Not valid data");
@@ -85,16 +87,18 @@ export function validateUpdate(data: any): boolean{
         (!data.route || typeof data.route !== 'string') &&
         (!data.model || typeof data.model !== 'string') &&
         (!data.rows || isNaN(Number(data.rows))) &&
-        (!data.letters || isNaN(Number(data.letters)))  
+        (!data.airline || typeof data.airline !== 'string') &&
+        (!data.letters || isNaN(Number(data.letters))) &&
+        (!data.airline || !mongoose.Types.ObjectId.isValid(data.airline))
     )
-        throw Error("Updating an airplane requires a new code, model or route")
+        throw Error("Updating an airplane requires a new code, model, route or airline")
 
     if(data.code) data.code = Number(data.code);
     if(data.rows) data.rows = Number(data.rows);
     if(data.letters) data.letters = Number(data.letters);
 
     // Check if there are not valid keys
-    const validKeys = ["code", "route", "model", "rows", "letters"];
+    const validKeys = ["code", "route", "model", "rows", "airline", "letters", "airline"];
     keys.forEach(key => {
         if(!validKeys.includes(key))
             throw Error("Not valid data");

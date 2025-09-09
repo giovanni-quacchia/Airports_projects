@@ -4,15 +4,16 @@ import Fl, {Flight} from '../models/flight';
 // Direct Flights
 export async function getAllFlights(query){
     Fl.validateSearch(query);
-    let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc"} = query;
+    let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code} = query;
 
-    from = from ? { $regex: from, $options: "i" } : /.*/;
-    to = to ? { $regex: to, $options: "i" } : /.*/;
     airline = airline ? { $regex: airline, $options: "i" } : /.*/;
+    code = code ? { $regex: code, $options: "i" } : /.*/;
 
     const sortOrder = order === "asc" ? 1 : -1;
 
     const pipeline: any[] = [
+
+        { $match: {"code": code} },
 
         matchDate("departure", fromDate, toDate),
 
@@ -29,6 +30,9 @@ export async function getAllFlights(query){
         ...JOIN("users", "airline", "code PIVA name logo"),
 
         matchAirlines(["airline"], airline),
+
+        ...JOIN("airplanes", "airplane"),
+
         { $sort: { [sortBy]: sortOrder as 1 | -1 } } // type assertion: tells the compiler to consider the object as another type
     ]
 
