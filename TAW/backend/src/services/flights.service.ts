@@ -12,7 +12,7 @@ export async function getAllFlights(query){
 
     const sortOrder = order === "asc" ? 1 : -1;
 
-    const pipeline = [
+    const pipeline: any[] = [
 
         matchDate("departure", fromDate, toDate),
 

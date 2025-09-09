@@ -136,3 +136,54 @@ export function matchDeparture(attr: string){
         }
     }
 }
+
+// Returns true if field exists
+export function fieldExists(field: string){
+    return {
+        $not: { $in: [{ $type: `$${field}` }, ["missing", "null"]] }
+    }
+}
+
+export function addItineraryFields(){
+    const finalArrival = "arrival";
+    const totDuration = "duration";
+
+    return [
+        {
+            $addFields: {
+                numStops: {
+                    $add: [
+                        0, 
+                        { $cond: [fieldExists("stop1"), 1, 0] },
+                        { $cond: [fieldExists("stop2"), 1, 0] }
+                    ]
+                }
+            }
+        },
+        {
+            $addFields: {
+            finalArrival: {
+                $switch: {
+                    branches: [
+                        {case: { $eq: ["$numStops", 0]}, then: "$arrival"},
+                        {case: { $eq: ["$numStops", 1]}, then: "$stop1.arrival"},
+                        {case: { $eq: ["$numStops", 2]}, then: "$stop2.arrival"}
+                    ],
+                    default: 0
+                }
+            }
+        }
+        },
+        {
+            $addFields: {
+            totDuration: {
+                $add: [
+                    "$duration",
+                    { $cond: [fieldExists("stop1"), "$stop1.duration", 0] },
+                    { $cond: [fieldExists("stop2"), "$stop2.duration", 0] },
+                ]
+            }
+        }
+        }
+    ]
+}
