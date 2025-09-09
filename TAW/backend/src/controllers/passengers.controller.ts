@@ -2,7 +2,8 @@ import passengers from '../services/passengers.service'
 
 export async function getAllPassengers(req, res, next) {
     try {
-        const result = await passengers.getAllpassengers(req.query);
+        const {flightId} = req.params;
+        const result = await passengers.getAllpassengers(req.query, flightId);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -26,7 +27,8 @@ export async function createPassenger(req, res, next){
 
         console.log("\npassenger created:");
         for(const value of Object.values(ar))
-            console.log(`-${value}`);     
+            console.log(`-${value}`);   
+          
         res.json(result);
     } catch (err) {
         // duplicate error

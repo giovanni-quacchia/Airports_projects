@@ -216,16 +216,16 @@ export const flights = [
 ];
 
 export const tickets = [
-  { code: "1", type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },
-  { code: "2", type: "BUSINESS", price: 1200, quantity: 20, flight: "EK101" },
-  { code: "3", type: "FIRST CLASS", price: 2500, quantity: 10, flight: "AF202" },
-  { code: "4", type: "ECONOMY", price: 400, quantity: 60, flight: "AZ303" },
-  { code: "5", type: "BUSINESS", price: 1000, quantity: 25, flight: "LH404" },
-  { code: "6", type: "FIRST CLASS", price: 2200, quantity: 8, flight: "FR505" },
-  { code: "7", type: "ECONOMY", price: 550, quantity: 55, flight: "BA606" },
-  { code: "8", type: "BUSINESS", price: 1300, quantity: 18, flight: "EK707" },
-  { code: "9", type: "ECONOMY", price: 450, quantity: 45, flight: "AF808" },
-  { code: "10", type: "FIRST CLASS", price: 2000, quantity: 12, flight: "FR909" }
+  { code: 1, type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },
+  { code: 2, type: "BUSINESS", price: 1200, quantity: 20, flight: "EK101" },
+  { code: 3, type: "FIRST CLASS", price: 2500, quantity: 10, flight: "AF202" },
+  { code: 4, type: "ECONOMY", price: 400, quantity: 60, flight: "AZ303" },
+  { code: 5, type: "BUSINESS", price: 1000, quantity: 25, flight: "LH404" },
+  { code: 6, type: "FIRST CLASS", price: 2200, quantity: 8, flight: "FR505" },
+  { code: 7, type: "ECONOMY", price: 550, quantity: 55, flight: "BA606" },
+  { code: 8, type: "BUSINESS", price: 1300, quantity: 18, flight: "EK707" },
+  { code: 9, type: "ECONOMY", price: 450, quantity: 45, flight: "AF808" },
+  { code: 10, type: "FIRST CLASS", price: 2000, quantity: 12, flight: "FR909" }
 ];
 
 export const passengers = [
@@ -234,7 +234,7 @@ export const passengers = [
     surname: "Bianchi",
     CF: "LCABNC90A01H501Z",
     seat: "A1",
-    ticket: "1", // EK101 - ECONOMY
+    ticket: 1, // EK101 - ECONOMY
     extra: ["PRIORITY"]
   },
   {
@@ -242,7 +242,7 @@ export const passengers = [
     surname: "Rossi",
     passportNumber: "YA1234567",
     seat: "B2",
-    ticket: "2", // EK101 - BUSINESS
+    ticket: 2, // EK101 - BUSINESS
     extra: ["LARGER SEAT"]
   },
   {
@@ -250,7 +250,7 @@ export const passengers = [
     surname: "Dupont",
     passportNumber: "FR9876543",
     seat: "C3",
-    ticket: "3", // AF202 - FIRST CLASS
+    ticket: 3, // AF202 - FIRST CLASS
     extra: ["EXTRA BAG", "PRIORITY"]
   },
   {
@@ -258,7 +258,7 @@ export const passengers = [
     surname: "Verdi",
     CF: "GLV1234567Z",
     seat: "D4",
-    ticket: "4", // AZ303 - ECONOMY
+    ticket: 4, // AZ303 - ECONOMY
     extra: []
   },
   {
@@ -266,7 +266,7 @@ export const passengers = [
     surname: "Müller",
     passportNumber: "DE4567890",
     seat: "E5",
-    ticket: "5", // LH404 - BUSINESS
+    ticket: 5, // LH404 - BUSINESS
     extra: ["LARGER SEAT"]
   },
   {
@@ -274,7 +274,7 @@ export const passengers = [
     surname: "O’Connor",
     passportNumber: "IE7654321",
     seat: "F6",
-    ticket: "6", // FR505 - FIRST CLASS
+    ticket: 6, // FR505 - FIRST CLASS
     extra: []
   },
   {
@@ -282,7 +282,7 @@ export const passengers = [
     surname: "Smith",
     passportNumber: "GB1230987",
     seat: "A7",
-    ticket: "7", // BA606 - ECONOMY
+    ticket: 7, // BA606 - ECONOMY
     extra: ["EXTRA BAG"]
   },
   {
@@ -290,7 +290,7 @@ export const passengers = [
     surname: "Al-Farsi",
     passportNumber: "AE9988776",
     seat: "B8",
-    ticket: "8", // EK707 - BUSINESS
+    ticket: 8, // EK707 - BUSINESS
     extra: ["PRIORITY"]
   },
   {
@@ -298,7 +298,7 @@ export const passengers = [
     surname: "Zhang",
     passportNumber: "CN12345678",
     seat: "C9",
-    ticket: "9", // AF808 - ECONOMY
+    ticket: 9, // AF808 - ECONOMY
     extra: []
   },
   {
@@ -306,7 +306,7 @@ export const passengers = [
     surname: "Gonzalez",
     passportNumber: "AR11223344",
     seat: "D10",
-    ticket: "10", // FR909 - FIRST CLASS
+    ticket: 10, // FR909 - FIRST CLASS
     extra: ["LARGER SEAT", "EXTRA BAG"]
   }
 ];

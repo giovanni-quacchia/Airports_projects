@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import users from '../services/users.service'
 
 export async function logIn(req, res, next) {
@@ -21,6 +22,7 @@ export async function getAllUsers(req, res, next) {
 export async function getUser(req, res, next){
     try {
         const {id} = req.params;
+        if(!mongoose.Types.ObjectId.isValid(id)) throw Error("Id not valid");
         const result = await users.getUser(id);
         res.json(result);
     } catch (err) {

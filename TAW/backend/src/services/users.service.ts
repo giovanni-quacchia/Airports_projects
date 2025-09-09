@@ -1,10 +1,18 @@
 import Us, {User} from '../models/user';
+const auth = require('../utils/auth.utils')
 
 async function logIn(data) {
     Us.validateLogin(data);
-    const user: User = await Us.getModel().findOne({mail: data.mail});
-    if(!user || !user.checkPassword(data.password)) throw Error("Credentials not valid")
-    return "Log in successful";
+    const user = await Us.getModel().findOne({mail: data.mail});
+    if(!user || !user.checkPassword(data.password)) throw Error("Credentials not valid");
+    // create JWT
+    const token = auth.generateAccessToken({
+        id: user._id,
+        mail: user.mail,
+        isAdmin: user.isAdmin()
+    });
+
+    return {token: token, expireDays: 7};
 }
 
 async function getAllUsers() {
@@ -12,14 +20,27 @@ async function getAllUsers() {
 }
 
 async function getUser(id: string){
-    return Us.getModel().findById(id);
+    const user = await Us.getModel().findById(id);
+    return user
 }
 
 export async function createUser(User: {mail: string, password: string, isAdmin: boolean}){
-    const ar = Us.createUser(User);
-    ar.setPassword(User.password);
-    if(User.isAdmin) ar.setAdmin();
-    return ar.save();
+
+    const exists: User = await Us.getModel().findOne({mail: User.mail});
+    if(exists) throw Error("User already exists");
+
+    const user = Us.createUser(User);
+    user.setPassword(User.password);
+    if(User.isAdmin) user.setAdmin();
+    user.save();
+
+    // create JWT
+    const token = auth.generateAccessToken({
+        mail: user.mail,
+        isAdmin: user.isAdmin()
+    });
+
+    return {token: token, expireDays: 7};
 }
 
 async function deleteUser(id: string){

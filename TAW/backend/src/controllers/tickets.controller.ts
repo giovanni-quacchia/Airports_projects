@@ -1,9 +1,14 @@
+import mongoose from 'mongoose';
 import Tickets from '../services/tickets.service'
 
 export async function getAllTickets(req, res, next) {
     try {
-        const {flightId} = req.params;
-        const result = await Tickets.getAllTickets(req.query, flightId);
+        const {flightId, airlineId} = req.params;
+
+        if(flightId && !mongoose.Types.ObjectId.isValid(flightId)) throw Error("Flight Id not valid");
+        if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline Id not valid");
+
+        const result = await Tickets.getAllTickets(req.query, flightId, airlineId);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

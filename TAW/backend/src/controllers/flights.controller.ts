@@ -1,8 +1,11 @@
+import mongoose from 'mongoose';
 import flights from '../services/flights.service'
 
 export async function getAllFlights(req, res, next) {
     try {
-        const result = await flights.getAllFlights(req.query);
+        const { airlineId } = req.params
+        if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline id not valid");
+        const result = await flights.getAllFlights(req. query, airlineId);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -23,7 +26,7 @@ export async function createFlight(req, res, next){
     const ar = req.body
     try {
         const result = await flights.createFlight(ar);
-
+        result.save();
         console.log("\nFlight created:");
         for(const value of Object.values(ar))
             console.log(`-${value}`);     

@@ -3,10 +3,9 @@ const router = express.Router();
 import passenger from '../controllers/passengers.controller'
 import ticket from '../controllers/tickets.controller'
 
-// Get All flights: ? [from, to, fromDate, toDate, airline]
-// Date: year-month-day
+// Get All passengers: ? [name, surname, CF, passportNumber, sortBy, order]
+// sortBy: name, surname, seat, CF, passportNumber
 
-// Get all passengers
 router.get("/", passenger.getAllPassengers);
 
 // Get :id passenger
@@ -20,8 +19,5 @@ router.delete("/:id", passenger.deletePassenger);
 
 // Update passenger
 router.put("/:id", passenger.updatePassenger);
-
-// Get tickets of a :id flight
-// router.get("/:flightId/tickets", ticket.getAllTickets);
 
 module.exports = router;

@@ -26,6 +26,8 @@ function validateInput(data: any): boolean{
 
     const keys = Object.keys(data)
 
+    console.log(data)
+
     if(!data.code || typeof data.code !== 'string') 
         throw Error("Code required");
     if(!data.mail || typeof data.mail !== 'string') 
@@ -33,14 +35,11 @@ function validateInput(data: any): boolean{
     if(!data.PIVA || typeof data.PIVA !== 'string') 
         throw Error("PIVA required");
     if(!data.name || typeof data.name !== 'string') 
-        throw Error("PIVA required");
+        throw Error("name required");
     // Check if there are not valid keys
-    const validKeys = ["code", "mail", "PIVA", "name", "logo"];
-    keys.forEach(key => {
-        if(!validKeys.includes(key))
-            throw Error("Not valid data");
-        })
-    return true;
+    if(checkKeys(keys, ["name", "code", "PIVA", "mail", "logo"])) return true;
+    else
+        throw Error("Not valid data");
 }
 
 function validateUpdate(data: any): boolean{
@@ -53,16 +52,15 @@ function validateUpdate(data: any): boolean{
         (!data.mail || typeof data.mail !== 'string') &&
         (!data.PIVA || typeof data.PIVA !== 'string') &&
         (!data.name || typeof data.name !== 'string') &&
-        (!data.logo || typeof data.logo !== 'string') 
+        (!data.logo || typeof data.logo !== 'string') &&
+        (!data.code || typeof data.code !== 'string') 
     )
-        throw Error("Updating an airline requires a new mail, PIVA, name or logo")
+        throw Error("Updating an airline requires a new mail, PIVA, name, logo or code")
+
     // Check if there are not valid keys
-    const validKeys = ["mail", "PIVA", "name", "logo"];
-    keys.forEach(key => {
-        if(!validKeys.includes(key))
-            throw Error("Not valid data");
-        })
-    return true;
+    if(checkKeys(keys, ["name", "code", "PIVA", "mail", "logo"])) return true;
+    else
+        throw Error("Not valid data");
 }
 
 function validateSearch(data: any): boolean{

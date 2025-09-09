@@ -11,6 +11,8 @@ import {getModel as getAirlinesModel} from '../models/airline';
 import {getModel as getFlightsModel} from '../models/flight';
 import {getModel as getTicketsModel} from '../models/Ticket';
 import {getModel as getAirplanesModel} from '../models/airplane';
+import {getModel as getPassengerModel} from '../models/passenger';
+
 
 
 export async function connectDB(){
@@ -52,7 +54,10 @@ export async function connectDB(){
 
         // Tickets
         await addTickets(flights);
-        addPassengers();
+        const tic = await getTicketsModel().find({}, "_id code").exec();
+        const tickets = new Map(tic.map(ticket => [ticket.code, ticket._id]));
+
+        addPassengers(tickets);
     })
     .catch((err: string) => console.error('MongoDB connection error:', err));
 }

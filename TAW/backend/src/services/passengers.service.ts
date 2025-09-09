@@ -1,19 +1,74 @@
+import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
 import Pa from '../models/passenger';
+import Ticket from './tickets.service';
 
-async function getAllpassengers(query) {
-    return Pa.getModel().aggregate([
-        ...JOIN("tickets", "ticket", "code, type price flight", "code")
-    ])
+
+async function getAllpassengers(query, flightId?: string) {
+    Pa.validateSearch(query);
+
+    const {sortBy = "seat", order = "asc"} = query;
+    let { name = "", surname = "", CF = "", passportNumber = "", seat = "" } = query
+
+    name = name ? { $regex: name, $options: "i" } : /.*/;
+    surname = surname ? { $regex: surname, $options: "i" } : /.*/;
+    CF = CF ? { $regex: CF, $options: "i" } : /.*/;
+    passportNumber = passportNumber ? { $regex: passportNumber, $options: "i" } : /.*/;
+    seat = seat ? { $regex: seat, $options: "i" } : /.*/;
+
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    const pipeline: any[] = [
+
+        { $match: {name: name, surname: surname, seat: seat }},
+
+        ...JOIN("tickets", "ticket"),
+    ]
+
+    if(query.CF) pipeline.push( { $match: {CF: CF}} )
+    if(query.passportNumber) pipeline.push( { $match: {passportNumber: passportNumber}} )
+
+    if(flightId){
+        pipeline.push({
+            $match: {"ticket.flight": new mongoose.Types.ObjectId(flightId)}
+        })
+    }
+
+    pipeline.push(
+        { $sort: { [sortBy]: sortOrder } }
+    )
+
+    return Pa.getModel().aggregate(pipeline);
 }
 
 async function getPassenger(id: string){
     return Pa.getModel().findById(id);
 }
 
-export async function createPassenger(passenger: {mail: string, password: string, isAdmin: boolean}){
-    const pa = Pa.createPassenger(passenger);
-    return pa.save();
+// Check ticket.qnt and update it and create new passenger
+export async function createPassenger(passenger){
+
+    Pa.validateInput(passenger)
+
+    const {ticket: ticketId} = passenger
+    let res;
+
+    // check ticket.qnt
+    const ticket: any = await Ticket.getTicket(ticketId);
+    if(ticket.quantity <= 0) throw Error("Tickets not available");
+
+    // decrease ticket.qnt
+    ticket.quantity -= 1;
+
+    await ticket.save();
+
+    // check seat
+    const p: any[] = await getAllpassengers({seat: passenger.seat}, String(ticket.flight._id));
+    if(p.length !== 0) throw Error("Seat already taken")
+
+    // create new passenger
+    res = Pa.createPassenger(passenger);
+    return res.save();
 }
 
 async function deletePassenger(id: string){

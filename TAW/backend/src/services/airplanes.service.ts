@@ -1,11 +1,22 @@
+import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
 import {Airplane, getModel, newAirplane, validateUpdate} from '../models/airplane';
 
-// Add airlines (if not exist)
-async function getAllAirplanes() {
-    return getModel().aggregate([
+// TODO: get airplanes of an airline
+async function getAllAirplanes(airlineId = "") {
+
+    const pipeline = []
+    if(airlineId){
+        pipeline.push(
+            { $match: {airline: new mongoose.Types.ObjectId(airlineId)}}
+        )
+    }
+
+    pipeline.push(
         ...JOIN("users", "airline", "code PIVA name logo -__t")
-    ]);
+    );
+
+    return getModel().aggregate(pipeline);
 }
 
 async function getAirplane(id: string){

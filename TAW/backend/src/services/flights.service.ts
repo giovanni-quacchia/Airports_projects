@@ -1,8 +1,9 @@
+import mongoose from 'mongoose';
 import { JOIN, matchAirlines, matchAirport, matchDate } from '../db/queries';
 import Fl, {Flight} from '../models/flight';
 
 // Direct Flights
-export async function getAllFlights(query){
+export async function getAllFlights(query, airlineId = ""){
     Fl.validateSearch(query);
     let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code} = query;
 
@@ -11,7 +12,15 @@ export async function getAllFlights(query){
 
     const sortOrder = order === "asc" ? 1 : -1;
 
-    const pipeline: any[] = [
+    const pipeline: any[] = [];
+
+    if(airlineId){
+        pipeline.push(
+            { $match: {airline: new mongoose.Types.ObjectId(airlineId)}}
+        )
+    }
+
+    pipeline.push(
 
         { $match: {"code": code} },
 
@@ -34,7 +43,7 @@ export async function getAllFlights(query){
         ...JOIN("airplanes", "airplane"),
 
         { $sort: { [sortBy]: sortOrder as 1 | -1 } } // type assertion: tells the compiler to consider the object as another type
-    ]
+    );
 
     return Fl.getModel().aggregate(pipeline)
 }

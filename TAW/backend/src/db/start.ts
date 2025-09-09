@@ -31,7 +31,6 @@ export async function AddUsers(){
         const exists = await getUserModel().findOne({mail: user.mail});
         if(!exists){
             let u = await UsersServ.createUser(user);
-            u.save();
         }
     }
 }
@@ -41,13 +40,14 @@ export async function AddAirlines() {
     for (const airline of airlines) {
         const exists = await getAirlineModel().findOne({mail: airline.mail});
         if (!exists) {
-            const [a, pw] = await AirlinesSer.createAirline(airline);
+            const {airline: a, password} = await AirlinesSer.createAirline(airline);
             a.save();
         }
     }
 }
 
 export async function addAirplanes(airlines) {
+
     console.log(pc.green("\n[Airplanes creation]\n"));
     for (const airplane of airplanes) {
         const a = {
@@ -113,7 +113,7 @@ export async function addTickets(flights) {
             ...ticket,
             flight: flights.get(ticket.flight)
         };
-        const exists = await getTicketModel().findOne({ type: t.type, flight: t.flight });
+        const exists = await getTicketModel().findOne({ code: t.code });
         if (!exists) {
             const ticketDoc = Ticket.createTicket(t);
             await ticketDoc.save();
@@ -121,12 +121,21 @@ export async function addTickets(flights) {
     }
 }
 
-export async function addPassengers() {
+export async function addPassengers(tickets) {
     console.log(pc.green("\n[Passengers creation]\n"));
     for (const passenger of passengers) {
-        const exists = await getTicketModel().findOne(passenger);
+
+        const p = {
+            ...passenger,
+            ticket: tickets.get(passenger.ticket)
+        };
+
+        const key = passenger.CF ? "CF" : "passportNumber"
+        const value = passenger.CF ? passenger.CF : passenger.passportNumber
+
+        const exists = await getPassengerModel().findOne({[key]: value});
         if (!exists) {
-            const passDoc = Passenger.createPassenger(passenger);
+            const passDoc = Passenger.createPassenger(p);
             await passDoc.save();
         }
     }

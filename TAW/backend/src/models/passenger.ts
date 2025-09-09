@@ -9,7 +9,7 @@ export interface Passenger{
     passportNumber?: String;
     extra?: Array<'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG'>;
     seat: String;
-    ticket: number
+    ticket: mongoose.Schema.Types.ObjectId
 }
 
 // Schema: CF or passportNumber
@@ -39,11 +39,15 @@ const passengerSchema = new mongoose.Schema<Passenger>({
         default: []
     },
     seat: {
-            type: String,
-            required: true,
-            match: /^[A-Z]\d+$/ // ensures format like "A1", "C12"
+        type: String,
+        required: true,
+        match: /^[A-Z]\d+$/ // ensures format like "A1", "C12"
     },
-    ticket: {type: Number},
+    ticket: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Flight",
+        required: true
+    }
 });
 
 // Model
@@ -93,10 +97,8 @@ function validateInput(data: any): boolean{
         throw Error("Seat must be in format like 'A1', 'C12'");
 
     // Ticket
-    if (!data.ticket || isNaN(data.ticket))
+    if (!data.ticket || !mongoose.Types.ObjectId.isValid(data.ticket))
         throw Error("Ticket must be valid");
-
-    data.ticket = Number(data.ticket);
 
     // Check if there are not valid keys
     if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat", "ticket"])) return true;
@@ -116,18 +118,50 @@ export function validate(data: any): boolean{
         (!data.CF || typeof data.CF !== 'string') &&
         (!data.passportNumber || typeof data.passportNumber !== 'string') &&
         (!data.extra || !Array.isArray(data.extra)) &&
-        (!data.seat || typeof data.seat !== 'string') &&
-        (!data.ticket || isNaN(data.ticket))
+        (!data.seat || typeof data.seat !== 'string') 
     )
-        throw Error("Updating a passenger requires a new name, surname, CF, Passport number, extra, seat or ticket")
-
-    if(data.ticket) data.ticket = Number(data.ticket);
-
+        throw Error("Updating a passenger requires a new name, surname, CF, Passport number, extra or seat")
 
     // Check if there are not valid keys
-    if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat", "ticket"])) return true;
+    if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat"])) return true;
     else
         throw Error("Not valid data");
 }
 
-export default {getModel, createPassenger, validate}
+export function validateSearch(data: any): boolean{
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    const keys = Object.keys(data);
+
+    if(keys.length === 0) return true;
+
+    if(
+        (!data.CF || typeof data.CF !== 'string') &&
+        (!data.passportNumber || typeof data.passportNumber !== 'string') &&
+        (!data.name || typeof data.name !== 'string') &&
+        (!data.surname || typeof data.surname !== 'string') &&
+        (!data.seat || typeof data.seat !== 'string') &&
+        (!data.sortBy || typeof data.sortBy !== 'string') &&
+        (!data.order || typeof data.order !== 'string') 
+    )
+        throw Error("Searching a passenger not valid");
+
+    if(
+        (data.sortBy && !["name", "surname", "seat", "CF", "passportNumber"].includes(data.sortBy)) || 
+        (data.order && !data.sortBy)
+    )
+        throw Error("Sorting parameters not valid");
+
+    if(data.order && data.order !== "desc" && data.order !== "asc")
+        throw Error("Order parameter not valid");
+
+    if(data.ticket) data.ticket = Number(data.ticket);
+
+    // Check if there are not valid keys
+    if (checkKeys(keys, ["seat", "sortBy", "order", "name", "surname", "CF", "passportNumber"])) return true;
+    else
+        throw Error("Not valid data");
+}
+
+export default {getModel, createPassenger, validate, validateInput, validateSearch}

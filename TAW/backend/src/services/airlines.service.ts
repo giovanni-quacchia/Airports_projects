@@ -1,33 +1,64 @@
 import Ar, {Airline} from '../models/airline';
 import { getRandomPassword } from '../utils/utils';
+import Us from '../models/user'
+import mongoose from 'mongoose';
+
+const auth = require('../utils/auth.utils')
+
+async function logIn(data) {
+
+    Us.validateLogin(data);
+    const airline = await Ar.getModel().findOne({mail: data.mail});
+    if(!airline || !airline.checkPassword(data.password)) throw Error("Credentials not valid");
+    // create JWT
+    const token = auth.generateAccessToken({
+        id: airline._id,
+        mail: airline.mail,
+        isAirline: true,
+    });
+
+    return {token: token, expireDays: 7};
+}
 
 // Add airlines (if not exist)
-async function getAllAirlines(query) {
+async function getAllAirlines(user, query) {
     Ar.validateSearch(query);
     
-    let {name = /.*/} = query
+    let {name = ""} = query;
 
     name = name ? { $regex: name, $options: "i" } : /.*/;
 
-    return Ar.getModel().aggregate([
-        {
-            $match: { name: name }
-        },
-        {
-            $project: {__t: 0}
-        }
-    ]);
+    const pipeline: any[] = [ { $match: { name: name } } ]
+
+    // Keep password info if Admin
+    if(user?.isAdmin !== true){
+        pipeline.push(
+            { $project: {mail: 1, code: 1, PIVA: 1, name: 1, logo: 1} }
+        )
+    }
+
+    return Ar.getModel().aggregate(pipeline);
 }
 
-async function getAirline(id: string){
-    return Ar.getModel().findById(id);
+async function getAirline(user, id: string){
+    const pipeline: any[] = [ { $match: {"_id": new mongoose.Types.ObjectId(id)}}]
+
+    if(user?.isAdmin !== true){
+        pipeline.push(
+            { $project: {mail: 1, code: 1, PIVA: 1, name: 1, logo: 1} }
+        )
+    }
+
+    return Ar.getModel().aggregate(pipeline);
 }
 
 async function createAirline(airline: Partial<Airline>){
-    const ar = Ar.newAirline(airline);
-    const pw = getRandomPassword(16);
+    const ar = await Ar.newAirline(airline);
+    // const pw = getRandomPassword(16);
+    const pw = "password";
     ar.setPassword(pw);
-    return [ar, pw];
+    await ar.save();
+    return {airline: ar, password: pw};
 }
 
 async function deleteAirline(id: string){
@@ -44,5 +75,6 @@ export default {
     getAirline,
     createAirline,
     deleteAirline,
-    updateAirline
+    updateAirline,
+    logIn
 }

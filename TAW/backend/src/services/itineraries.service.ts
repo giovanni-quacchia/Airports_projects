@@ -14,7 +14,7 @@ async function getAllItineraries(query){
     sortBy = (sortBy === "duration") ? "totDuration" : (sortBy === "arrival") ? "finalArrival" : sortBy;
 
     if(onlyDirect || maxStops === 0){
-        const { maxStops, ...rest} = query
+        const { maxStops, onlyDirect, ...rest} = query
         return getAllFlights(rest);
     }
 

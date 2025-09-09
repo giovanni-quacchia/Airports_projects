@@ -6,7 +6,10 @@
 
 ### TODO
 
-- Le FK non devono essere per forza objectID, aggiornare quelle gia create
+- change password after first login for airlines
+- Aggiungere ricerca, sort su airplanes
+- Aggiungere check primo accesso airline
+- Statistiche
 
 ### Specifiche
 

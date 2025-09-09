@@ -1,8 +1,11 @@
+import mongoose from 'mongoose';
 import airplanes from '../services/airplanes.service'
 
 export async function getAllAirplanes(req, res, next) {
     try {
-        const result = await airplanes.getAllAirplanes();
+        const { airlineId = ""} = req.params
+        if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline Id not valid")
+        const result = await airplanes.getAllAirplanes(airlineId);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

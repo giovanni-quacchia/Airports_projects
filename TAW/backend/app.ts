@@ -19,6 +19,9 @@ const ItinerariesRouter = require('./src/routes/itineraries.routes');
 const TicketSRouter = require('./src/routes/tickets.routes');
 const PassengersRouter = require('./src/routes/passengers.router');
 
+// Manage JWT
+const auth = require('./src/utils/auth.utils')
+
 
 // Middleware
 app.use(cors());
@@ -48,6 +51,7 @@ app.use((err, req, res, next) => {
 
 // Connect to DB, then start server
 connectDB().then(() => {
+  auth.generateSecret();
   app.listen(PORT, function(){
       console.log(pc.green("[Server starts]\n"));
       console.log('Listening on port 3000');

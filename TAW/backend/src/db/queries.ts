@@ -84,7 +84,10 @@ export function matchAirport(location: string, match: string){
     }
 }
 
-export function unMatchAirport(location: string, regEx){
+export function unMatchAirport(location: string, match: string){
+
+    const regEx = match ? { $regex: match, $options: "i" } : { $exists: true };
+
     return {
         $match: {
             $nor: getAirportContidions(location, regEx, true)

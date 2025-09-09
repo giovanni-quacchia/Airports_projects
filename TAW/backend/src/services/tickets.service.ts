@@ -2,7 +2,10 @@ import mongoose from 'mongoose';
 import { JOIN, matchAirport } from '../db/queries';
 import Ti, {Ticket} from '../models/Ticket';
 
-async function getAllTickets(query, flightId?: string) {
+
+// TODO: aggiungere ricerca per airline
+
+async function getAllTickets(query, flightId = "", airlineId = "") {
     Ti.validateSearch(query);
     
     let { minPrice = 0, maxPrice = 99999, minQuantity = 0, maxQuantity = 99999, type = /.*/, from = /.*/, to = /.*/, sortBy = "price", order = "asc"} = query
@@ -29,6 +32,15 @@ async function getAllTickets(query, flightId?: string) {
             }
         },
         ...JOIN("flights", "flight"),
+    );
+
+    if(airlineId){
+        pipeline.push({
+            $match: {"flight.airline": new mongoose.Types.ObjectId(airlineId)}
+        })
+    }
+    
+    pipeline.push(
         ...JOIN("routes", "flight.route"),
         ...JOIN("airports", "flight.route.from"),
         ...JOIN("airports", "flight.route.to"),
@@ -38,15 +50,16 @@ async function getAllTickets(query, flightId?: string) {
         matchAirport("flight.route.from", from),
         matchAirport("flight.route.to", to),
 
-        { $sort: { [sortBy]: sortOrder } }
+        { $sort: { [sortBy]: sortOrder } }        
     )
 
     return Ti.getModel().aggregate(pipeline);
 }
 
 async function getTicket(id: string){
-    return (await Ti.getModel().findById(id))
-        .populate({
+    const ticket = await Ti.getModel().findById(id);
+    if(!ticket) throw Error("ticket not found");
+    return ticket.populate({
             path: "flight",
             populate: [
                 {
