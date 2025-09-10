@@ -3,6 +3,8 @@ import { JOIN, matchAirlines, matchAirport, matchDate } from '../db/queries';
 import Fl, {Flight} from '../models/flight';
 
 // Direct Flights
+
+//TODO: aggiungere statistics: solo per singola airline?
 export async function getAllFlights(data, airlineId = ""){
     const query: any = Fl.validateSearch(data);
     let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code} = query;
