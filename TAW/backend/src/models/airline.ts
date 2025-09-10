@@ -1,85 +1,72 @@
 import mongoose = require('mongoose');
 import { User } from './user'
 import {getModel as getUserModel} from './user'
-import { checkKeys } from '../utils/utils';
+import { checkKeys, validateObj, validatePartialObj } from '../utils/utils';
 
 // Interface
 export interface Airline extends User{
+
+    // mail: string;
+    // salt?: string;
+    // digest?: string;
+    // isFirstLogin?: boolean
+
     code: String,
-    PIVA: String,
     name: String,
+    PIVA: String,
     logo: String,
 }
 
 // Schema
 const AirlineSchema = new mongoose.Schema<Airline>({
+
+    // mail: { type: String, required: true, unique: true },
+    // salt: { type: String, required: true},
+    // digest: { type: String, required: true},
+    // isFirstLogin: {type: Boolean, required: true, default: true},
+
     code: {type: String, required: true, unique: true},
-    PIVA: {type: String, required: true, unique: true},
     name: {type: String, required: true, unique: true},
-    logo: {type: String}
+    PIVA: {type: String, required: true, unique: true},
+    logo: {type: String},
 });
 
 // Validate
-function validateInput(data: any): boolean{
+function validateNew(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data)
-
-    console.log(data)
-
-    if(!data.code || typeof data.code !== 'string') 
-        throw Error("Code required");
-    if(!data.mail || typeof data.mail !== 'string') 
-        throw Error("Mail required");
-    if(!data.PIVA || typeof data.PIVA !== 'string') 
-        throw Error("PIVA required");
-    if(!data.name || typeof data.name !== 'string') 
-        throw Error("name required");
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["name", "code", "PIVA", "mail", "logo"])) return true;
-    else
-        throw Error("Not valid data");
+    return validateObj({
+        code: [data.code, "string", /^[A-Z]{2}$/],
+        mail: [data.mail, "mail"],
+        PIVA: [data.PIVA, "string"],
+        name: [data.name, "string"],
+    });
 }
 
-function validateUpdate(data: any): boolean{
+function validatePut(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data)
+    const parsedData = validatePartialObj({
+        code: [data.code, "string", /^[A-Z]{2}$/],
+        mail: [data.mail, "mail"],
+        PIVA: [data.PIVA, "string"],
+        name: [data.name, "string"],
+    }); 
 
-    if(
-        (!data.mail || typeof data.mail !== 'string') &&
-        (!data.PIVA || typeof data.PIVA !== 'string') &&
-        (!data.name || typeof data.name !== 'string') &&
-        (!data.logo || typeof data.logo !== 'string') &&
-        (!data.code || typeof data.code !== 'string') 
-    )
-        throw Error("Updating an airline requires a new mail, PIVA, name, logo or code")
+    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new code, mail, PIVA or name")
 
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["name", "code", "PIVA", "mail", "logo"])) return true;
-    else
-        throw Error("Not valid data");
+    return parsedData;
 }
 
-function validateSearch(data: any): boolean{
+function validateSearch(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data);
-
-    if (keys.length === 0) return true;
-
-    if(
-        (!data.name || typeof data.name !== 'string')
-    )
-        throw Error("Searching an airline not valid"); 
-
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["name"])) return true;
-    else
-        throw Error("Not valid data");
+    return validatePartialObj({
+        name: [data.name, "string"]
+    });
 }
 
 // Model
@@ -95,10 +82,10 @@ export function getModel(): mongoose.Model<Airline>{
 
 // Partial?
 export function newAirline(data: Partial<Airline>): mongoose.HydratedDocument<Airline> {
-    validateInput(data);
+    const parsedData = validateNew(data);
     const _airlineModel = getModel();
-    const airline = new _airlineModel(data);
+    const airline = new _airlineModel(parsedData);
     return airline;
 }
 
-export default {getModel, newAirline, validateUpdate, validateSearch}
+export default {getModel, newAirline, validatePut, validateSearch}

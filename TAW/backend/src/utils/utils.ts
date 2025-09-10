@@ -12,3 +12,71 @@ export function getRandomPassword(length: Number){
     return crypto.randomBytes(length).toString("hex");
 
 }
+
+// INPUT: {code: ["123", "number"], mail: {"mail@gmail.com", "string"}}
+// OUTPUT: {code: 123, mail: "mail@gmail.com"}
+
+export function validateObj(data: {[key: string]: [value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp]}){
+
+    const res = {}
+
+    for( const [key, [value, type, regEx]] of Object.entries(data)){
+        if(!isValidType(value, type, regEx)){
+            if(value === null || value === undefined) throw Error(`${key} is required`);
+            throw Error(`${key} "${value}" is not Valid. ${type} expected`);
+        }
+        res[key] = castValue(value, type);
+    }
+
+    return res;
+}
+
+// Skip keys when values are undefined or null
+export function validatePartialObj(data: {[key: string]: [value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp]}){
+
+    const res = {}
+
+    for( const [key, [value, type, regEx]] of Object.entries(data)){
+        
+        if(value === null || value === undefined) continue;
+
+        if(!isValidType(value, type, regEx, true)){
+            throw Error(`${key} "${value}" is not Valid. ${type} expected`);
+        }
+
+        res[key] = castValue(value, type);
+    }
+
+    return res;
+}
+
+function castValue(value, type: string){
+    return (type === "number" ? Number(value) : type === "boolean" ? value === "true" || value === true : value)
+}
+
+function isValidType(value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp, allowNull: boolean = false){
+    
+    if(value === null || value === undefined) return allowNull;
+
+    const match = regEx ?? /.*/; // ??: nullish coalesce operator
+    // https://www.geeksforgeeks.org/javascript/javascript-program-to-validate-an-email-address/
+    const mailMatch = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
+
+    switch(type){
+        case "string":
+            return typeof value === "string" && match.test(value);
+        case "number":
+            return !isNaN(Number(value));
+        case "boolean":
+            return(
+                value === true || value === false ||
+                value === "true" || value === "false"
+            )
+        case "mail":
+            return (
+                typeof value === "string" && mailMatch.test(value)
+            )
+        default:
+            return false;
+    }
+}

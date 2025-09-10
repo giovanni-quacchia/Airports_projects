@@ -66,8 +66,8 @@ async function deleteAirline(id: string){
 }
 
 async function updateAirline(id: string, data: any){
-    Ar.validateUpdate(data);
-    return Ar.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    const parsedData = Ar.validatePut(data);
+    return Ar.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
 }
 
 export default {
