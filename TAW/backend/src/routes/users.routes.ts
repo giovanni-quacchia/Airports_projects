@@ -16,7 +16,7 @@ router.get("/", auth.authenticateToken, auth.checkAdmin, users.getAllUsers);
 router.get("/:id", users.getUser);
 
 // Delete user
-// TODO: only user can delete its account
+// TODO: only admin or user can delete its account 
 router.delete("/:id", auth.authenticateToken, users.deleteUser);
 
 // Update User

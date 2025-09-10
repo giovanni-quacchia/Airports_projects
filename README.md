@@ -6,6 +6,7 @@
 
 ### TODO
 
+- Sistemare Users - Airlines
 - Sistemare i validate delle interfacce
 - change password after first login for airlines
 - Aggiungere ricerca, sort su airplanes

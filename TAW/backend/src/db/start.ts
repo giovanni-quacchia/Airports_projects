@@ -38,7 +38,7 @@ export async function AddUsers(){
 export async function AddAirlines() {
     console.log(pc.green("\n[Airlines creation]\n"));
     for (const airline of airlines) {
-        const exists = await getAirlineModel().findOne({mail: airline.mail});
+        const exists = await getAirlineModel().findOne({code: airline.code});
         if (!exists) {
             const {airline: a, password} = await AirlinesSer.createAirline(airline);
             a.save();

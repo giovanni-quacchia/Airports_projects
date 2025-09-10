@@ -7,9 +7,13 @@ const auth = require('../utils/auth.utils')
 
 async function logIn(data) {
 
+    // Check login
     Us.validateLogin(data);
     const airline = await Ar.getModel().findOne({mail: data.mail});
     if(!airline || !airline.checkPassword(data.password)) throw Error("Credentials not valid");
+    
+    if(airline.isFirstLogin) throw Error("Please update your password on first login");
+
     // create JWT
     const token = auth.generateAccessToken({
         id: airline._id,
@@ -22,18 +26,17 @@ async function logIn(data) {
 
 // Add airlines (if not exist)
 async function getAllAirlines(user, query) {
+
     Ar.validateSearch(query);
-    
     let {name = ""} = query;
+    const nameMatch = name ? { $regex: name, $options: "i" } : /.*/;
 
-    name = name ? { $regex: name, $options: "i" } : /.*/;
+    const pipeline: any[] = [ { $match: { name: nameMatch } } ]
 
-    const pipeline: any[] = [ { $match: { name: name } } ]
-
-    // Keep password info if Admin
+    // Keep mail:password info if Admin
     if(user?.isAdmin !== true){
         pipeline.push(
-            { $project: {mail: 1, code: 1, PIVA: 1, name: 1, logo: 1} }
+            { $project: {code: 1, PIVA: 1, name: 1, logo: 1} }
         )
     }
 
@@ -45,7 +48,7 @@ async function getAirline(user, id: string){
 
     if(user?.isAdmin !== true){
         pipeline.push(
-            { $project: {mail: 1, code: 1, PIVA: 1, name: 1, logo: 1} }
+            { $project: {code: 1, PIVA: 1, name: 1, logo: 1} }
         )
     }
 
@@ -67,7 +70,15 @@ async function deleteAirline(id: string){
 
 async function updateAirline(id: string, data: any){
     const parsedData = Ar.validatePut(data);
-    return Ar.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
+
+    const airline = await Ar.getModel().findById(id);
+
+    // TODO: first password update
+    if(parsedData.hasOwnProperty("password")){
+        airline.setPassword(parsedData.password)
+    }
+
+    // return Ar.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
 }
 
 export default {
