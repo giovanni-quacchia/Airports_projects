@@ -2,17 +2,29 @@ import Ar, {Airline} from '../models/airline';
 import { getRandomPassword } from '../utils/utils';
 import Us from '../models/user'
 import mongoose from 'mongoose';
+import { validateLogin } from '../utils/auth.utils';
 
 const auth = require('../utils/auth.utils')
 
 async function logIn(data) {
 
     // Check login
-    Us.validateLogin(data);
+    const query = validateLogin(data);
+    let res = {}
+
+    // Check credentials
     const airline = await Ar.getModel().findOne({mail: data.mail});
     if(!airline || !airline.checkPassword(data.password)) throw Error("Credentials not valid");
     
-    if(airline.isFirstLogin) throw Error("Please update your password on first login");
+    // Update pw on first login
+    if(airline.isFirstLogin){
+        if(!data.newPassword) throw Error("Please provide a new password on first login");
+        if(airline.checkPassword(data.newPassword)) throw Error("Please provide a new password");
+        airline.setPassword(data.newPassword);
+        airline.isFirstLogin = false;
+        airline.save();
+        res = {msg: "Password updated"}
+    }
 
     // create JWT
     const token = auth.generateAccessToken({
@@ -21,7 +33,9 @@ async function logIn(data) {
         isAirline: true,
     });
 
-    return {token: token, expireDays: 7};
+    res = {...res, token: token, expireDays: 7};
+
+    return res;
 }
 
 // Add airlines (if not exist)
@@ -65,20 +79,25 @@ async function createAirline(airline: Partial<Airline>){
 }
 
 async function deleteAirline(id: string){
-    return Ar.getModel().findByIdAndDelete(id);
+    return Ar.getModel().findByIdAndDelete(id).select("code PIVA name logo");
 }
 
 async function updateAirline(id: string, data: any){
-    const parsedData = Ar.validatePut(data);
+    const parsedData: any = Ar.validatePut(data);
 
     const airline = await Ar.getModel().findById(id);
 
-    // TODO: first password update
-    if(parsedData.hasOwnProperty("password")){
-        airline.setPassword(parsedData.password)
+    if(!airline) throw Error("Airline not found");
+    
+    if(parsedData.password){
+        airline.setPassword(parsedData.password);
+        delete parsedData.password;
     }
 
-    // return Ar.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
+    // Update other fields
+    Object.assign(airline, parsedData);
+    await airline.save();
+    return {name: airline.name, code: airline.code, PIVA: airline.PIVA, logo: airline.logo};
 }
 
 export default {

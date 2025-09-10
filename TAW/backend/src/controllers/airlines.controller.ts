@@ -71,6 +71,11 @@ export async function updateAirline(req, res, next){
         const result = await airlines.updateAirline(id, req.body);
         res.json(result);
     } catch (err) {
+        console.log(err.keyPattern)
+        if (err.code === 11000){
+            const field = Object.keys(err.keyPattern)[0];
+            err.message = `Airline with ${field}: ${req.body[field]} already exists`;
+        }
         res.status(400).send(err.message);
     }
 }

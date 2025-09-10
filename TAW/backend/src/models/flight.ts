@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, validatePartialObj } from '../utils/utils';
 
 // Interface
 export interface Flight{
@@ -89,42 +89,33 @@ function validate(data: any): boolean{
         throw Error("Not valid data");
 }
 
-function validateSearch(data: any): boolean{
+function validateSearch(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data);
+    const query = validatePartialObj({
+        from: [data.from, "string"],
+        to: [data.to, "string"],
+        fromDate: [data.fromDate, "string"],
+        toDate: [data.toDate, "string"],
+        airline: [data.airline, "string"],
+        sortBy: [data.sortBy, "string"],
+        order: [data.order, "string"],
+        airplane: [data.airplane, "string"],
+        code: [data.code, "string"],
+        statistics: [data.statistics, "string"],
+    });
 
-    if (keys.length === 0) return true;
+    // sortBy: duration, departure, arrival
+    if(data.sortBy && !["duration", "departure", "arrival"].includes(data.sortBy))
+        throw Error("Flights can be sorted by duration, departure or arrival")
 
-    if(
-        (!data.from || typeof data.from !== 'string') &&
-        (!data.to || typeof data.to !== 'string') &&
-        (!data.fromDate || typeof data.fromDate !== 'string') &&
-        (!data.toDate || typeof data.toDate !== 'string') &&
-        (!data.airline || typeof data.airline !== 'string') &&
-        (!data.sortBy || typeof data.sortBy !== 'string') &&
-        (!data.order || typeof data.order !== 'string') && 
-        (!data.airplane || typeof data.airplane !== 'string') &&
-        (!data.code || typeof data.code !== 'string')
-    )
-        throw Error("Searching a flight not valid");
-
-    if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');  
-
-    if(
-        (data.sortBy && data.sortBy !== "duration" && data.sortBy !== "departure" && data.sortBy !== "arrival") || 
-        (data.order && !data.sortBy)
-    )
-        throw Error("Sorting parameters not valid");
+    if(data.order && !data.sortBy) throw Error("Please provide sortBy value")
 
     if(data.order && data.order !== "desc" && data.order !== "asc")
-        throw Error("Order parameter not valid");
+        throw Error("Order value must be desc or asc");
 
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "airline", "sortBy", "order", "airplane", "code"])) return true;
-    else
-        throw Error("Not valid data");
+    return query;
 }
 
 // Model

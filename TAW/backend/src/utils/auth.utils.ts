@@ -85,6 +85,26 @@ function checkAirlineId(req, res, next){
   return next();
 }
 
+import { validateObj, validatePartialObj } from "./utils";
+
+export function validateLogin(data: any){
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    // mail:password mandatory
+    const query: any = validateObj({
+        mail: [data.mail, "mail"],
+        password: [data.password, "string"],
+    })
+
+    // newPassword opt (to update pw on first login)
+    const optQuery = validatePartialObj({
+        newPassword: [data.oldPassword, "string"],
+    });
+
+    return {...query, ...optQuery};
+}
+
 module.exports = {
   generateSecret,
   generateAccessToken,
@@ -92,5 +112,6 @@ module.exports = {
   checkAdmin,
   checkAirline,
   checkAirlineId,
-  optionalCheckToken
+  optionalCheckToken,
+  validateLogin
 };

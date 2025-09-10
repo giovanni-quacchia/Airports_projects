@@ -71,13 +71,13 @@ function validatePut(data: any){
 
     // TODO: add password type like email
 
-    const parsedData = validatePartialObj({
+    const parsedData: any = validatePartialObj({
         code: [data.code, "string", /^[A-Z]{2}$/],
         mail: [data.mail, "mail"],
         PIVA: [data.PIVA, "string"],
         name: [data.name, "string"],
         logo: [data.logo, "string"],
-        password: [data.password, "string"]
+        password: [data.password, "string"],
     }); 
 
     if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new code, mail, password, PIVA or name")

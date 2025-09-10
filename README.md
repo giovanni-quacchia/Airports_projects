@@ -6,11 +6,9 @@
 
 ### TODO
 
-- Sistemare Users - Airlines
+
 - Sistemare i validate delle interfacce
-- change password after first login for airlines
 - Aggiungere ricerca, sort su airplanes
-- Aggiungere check primo accesso airline
 - Statistiche: num passeggeri per volo, tot revenue, rotte + richieste
 - Rotte gestite da admin e airlines
 - Aerei hanno una rotta in un certo periodo

@@ -3,8 +3,8 @@ import { JOIN, matchAirlines, matchAirport, matchDate } from '../db/queries';
 import Fl, {Flight} from '../models/flight';
 
 // Direct Flights
-export async function getAllFlights(query, airlineId = ""){
-    Fl.validateSearch(query);
+export async function getAllFlights(data, airlineId = ""){
+    const query: any = Fl.validateSearch(data);
     let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code} = query;
 
     airline = airline ? { $regex: airline, $options: "i" } : /.*/;
@@ -36,7 +36,7 @@ export async function getAllFlights(query, airlineId = ""){
 
         matchAirport("route.to", to),
 
-        ...JOIN("users", "airline", "code PIVA name logo"),
+        ...JOIN("airlines", "airline", "code PIVA name logo"),
 
         matchAirlines(["airline"], airline),
 
