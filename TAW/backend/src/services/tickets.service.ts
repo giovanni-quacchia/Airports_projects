@@ -2,9 +2,6 @@ import mongoose from 'mongoose';
 import { JOIN, matchAirport } from '../db/queries';
 import Ti, {Ticket} from '../models/Ticket';
 
-
-// TODO: aggiungere ricerca per airline
-
 async function getAllTickets(query, flightId = "", airlineId = "") {
     Ti.validateSearch(query);
     
@@ -44,7 +41,7 @@ async function getAllTickets(query, flightId = "", airlineId = "") {
         ...JOIN("routes", "flight.route"),
         ...JOIN("airports", "flight.route.from"),
         ...JOIN("airports", "flight.route.to"),
-        ...JOIN("users", "flight.airline", "name code PIVA logo"),
+        ...JOIN("airlines", "flight.airline", "name code PIVA logo"),
         ...JOIN("airplanes", "flight.airplane"),
 
         matchAirport("flight.route.from", from),

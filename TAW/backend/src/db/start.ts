@@ -111,8 +111,9 @@ export async function addTickets(flights) {
     for (const ticket of tickets) {
         const t = {
             ...ticket,
-            flight: flights.get(ticket.flight)
+            flight: flights.get(`${ticket.flight}_${ticket.departure.getTime()}`)
         };
+        delete t.departure; // remove departure
         const exists = await getTicketModel().findOne({ code: t.code });
         if (!exists) {
             const ticketDoc = Ticket.createTicket(t);

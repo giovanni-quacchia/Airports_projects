@@ -2,7 +2,8 @@ import routes from '../services/routes.service'
 
 export async function getAllRoutes(req, res, next) {
     try {
-        const result = await routes.getAllRoutes(req.query);
+        const {airlineId} = req.params
+        const result = await routes.getAllRoutes(req.query, airlineId, req.user);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -23,7 +24,7 @@ export async function createRoute(req, res, next){
     const ar = req.body
     try {
         const result = await routes.createRoute(ar);
-
+        result.save();
         console.log("\nRoute created:");
         for(const value of Object.values(ar))
             console.log(`-${value}`);     

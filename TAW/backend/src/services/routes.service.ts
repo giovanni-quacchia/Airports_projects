@@ -1,57 +1,64 @@
+import mongoose from 'mongoose';
+import { GROUPBY, JOIN, matchAirport } from '../db/queries';
 import Ro, {Route} from '../models/route';
+import Airport from '../models/Airport';
 
-// Aggregate per query più complesse
-// $lookup              join
-// $project             SELECT
-// $unwind: $campo      1 Obj instead of Array
-// $match               FROM ($And, $Or)
-// /.*/:                math anything
+async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
-async function getAllRoutes(query) {
-    Ro.validateSearch(query)
-    const { fromCountry = /.*/, toCountry = /.*/, fromCity = /.*/, toCity = /.*/ } = query
+    const parsedData: any = Ro.validateSearch(query);
+    const { from = /.*/, to = /.*/ } = parsedData;
+    const pipeline = []
 
-    return Ro.getModel().aggregate([
-        {
-            // $lookup: join
-            $lookup: {
-                from: "airports", // collection's name
-                localField: "from", // FK
-                foreignField: "_id", 
-                as: "from"
-            }
-        },
-        { $unwind: "$from" },
-        {
-            $lookup: {
-                from: "airports",
-                localField: "to", // FK
-                foreignField: "_id", 
-                as: "to"
+    if(airlineId){
+        pipeline.push(
+            ...JOIN("flights", "_id", undefined, "route", "flight"),
+            {
+                $match: {
+                    "flight.airline": new mongoose.Types.ObjectId(airlineId)
+                }
             },
-        },   
-        { $unwind: "$to" },  
-        {
-            $match: {
-                    "from.country": fromCountry,
-                    "to.country": toCountry,
-                    "from.city": fromCity,
-                    "to.city": toCity
+            ...JOIN("tickets", "flight._id", "", "flight", "flight.ticket"),
+            ...JOIN("passengers", "flight.ticket._id", "", "ticket", "flight.passenger"),
+                    
+            ...GROUPBY("$_id",{ // group by route._id
+                numPassengers: {$sum: 1},
             }
-        }
-    ])
+            ),
+            // Group by flight._id but it keeps one tuple ticket,passenger, the $first it finds
+            { $project: { "flight": 0 } },
+        )
+    }
 
-    // return Ro.getModel().find({}, "from, to")
-    // .populate("from", "name city code country")
-    // .populate("to", "name city code country")
+    pipeline.push(
+        ...JOIN("airports", "from", undefined, "_id"),
+        matchAirport("from", from),
+        ...JOIN("airports", "to", undefined, "_id"),
+        matchAirport("to", to)
+    )
+
+    return Ro.getModel().aggregate(pipeline);
 }
 
 async function getRoute(id: string){
     return Ro.getModel().findById(id);
 }
 
-async function createRoute(route: Partial<Route>){
-    const ro = Ro.createRoute(route);
+async function createRoute(data){
+    const parsedData = Ro.validateNew(data);
+   
+    // Find airports
+    const fromAirport = await Airport.getModel().findOne({code: data.from});
+    const toAirport = await Airport.getModel().findOne({code: data.to});
+
+    if(!fromAirport || !toAirport) throw Error("One or both airports ID do not exist");
+
+    const query = {from: String(fromAirport._id), to: String(toAirport._id)}
+
+    // Check if route already exists
+    const exists = await Ro.getModel().findOne(query)
+    if(exists) throw Error("Route already exists")
+
+    const ro = await Ro.createRoute(query);
     return ro;
 }
 

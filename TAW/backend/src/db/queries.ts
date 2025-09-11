@@ -8,23 +8,25 @@ export function SELECT(projection: string){
     return projectStage // [ [ $project: {attr_1: 1, ..., attr_n: 1} ] ]
 }
 
-export function JOIN(collection: string, local: string,  projection?: string, FK: string = "_id"){
+export function JOIN(collection: string, local: string,  projection?: string, FK: string = "_id", alias = "", unwind = true){
 
     // SELECT
     const projectStage = projection ? SELECT(projection) : [];
-
-    const stages =  [
+    const stages: any =  [
         {
             $lookup: {
                 from: collection,
                 localField: local,
                 foreignField: FK,
-                as: local,
+                as: alias || local,
                 pipeline: projectStage
             }
         },
-        { $unwind: {path: `$${local}`, preserveNullAndEmptyArrays: true} }
     ]
+
+    if(unwind){
+        stages.push({ $unwind: {path: `$${alias || local}`, preserveNullAndEmptyArrays: true} })
+    }
 
     return stages;
 }
@@ -196,4 +198,52 @@ export function addItineraryFields(){
         }
         }
     ]
+}
+
+/*
+
+fields
+
+{ 
+            numPassengers: {$sum: 1},
+            totRevenue: { $sum: "$ticket.price" }
+        }
+
+*/
+
+// fields: {field: {accumulator: expr}}
+export function GROUPBY(groupKey: {}, fields: Object){
+
+    // {field1: $field1, ...}
+    const newFields = Object.keys(fields).reduce((acc, key) => {
+        acc[key] = `$${key}`;
+        return acc;
+    }, {});
+
+    const fieldsKeys = Object.keys(fields);
+
+    return [
+        {
+            $group: {
+                _id: groupKey,
+                root: {$first: "$$ROOT"}, // $first prende il primo elemento che trova tra quelli con stessa groupKey
+                ...fields
+            }
+        },
+        // [ {id: 1, root: {id: 1, ...}} ] ==> [{id: 1, ...}] (porta fuori root)
+        {
+            $replaceRoot: {
+                newRoot: { 
+                    $mergeObjects: [
+                        "$root", newFields
+                    ]
+                }
+            }
+        }
+    ]
+}
+
+export function SORT(sortBy, order: "asc" | "desc"){
+    const sortOrder = order === "asc" ? 1 : -1;
+    return { $sort: { [sortBy]: sortOrder as 1 | -1 } }; // type assertion: tells the compiler to consider the object as another type)
 }

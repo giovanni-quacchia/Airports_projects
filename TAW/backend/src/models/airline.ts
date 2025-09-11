@@ -50,19 +50,22 @@ AirlineSchema.methods.checkPassword = function(this: Airline, pwd: string){
 }
 
 // Validate
-function validateNew(data: any){
+export function validateNew(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    // TODO: come gestire field logo opzionale?
-
-    return validateObj({
+    const query = validateObj({
         code: [data.code, "string", /^[A-Z]{2}$/],
         mail: [data.mail, "mail"],
         PIVA: [data.PIVA, "string"],
         name: [data.name, "string"],
-        logo: [data.logo, "string"] // TODO: opzionale
     });
+
+    const optQuery = validatePartialObj({
+        logo: [data.logo, "string"]
+    })
+
+    return {...query, ...optQuery}
 }
 
 function validatePut(data: any){
@@ -109,4 +112,4 @@ export function newAirline(data: Partial<Airline>): mongoose.HydratedDocument<Ai
     return airline;
 }
 
-export default {getModel, newAirline, validatePut, validateSearch}
+export default {getModel, newAirline, validateNew, validatePut, validateSearch}

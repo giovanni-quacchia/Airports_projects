@@ -6,14 +6,14 @@
 
 ### TODO
 
-
 - Sistemare i validate delle interfacce
 - Aggiungere ricerca, sort su airplanes
-- Statistiche: num passeggeri per volo, tot revenue, rotte + richieste
+- Statistiche: rotte + richieste (aggiungere sortBy numPasseggeri)
 - Rotte gestite da admin e airlines
 - Aerei hanno una rotta in un certo periodo
 - Acquisto biglietto solo per utenti loggati
 - Mostrare disponibilità posti in tempo reale
+- Aggiungere campo populate: boolean per decidere se aggiungere info (Ad esempio per flight aggiungo le info su airports, airline, airplane). Allora forse è meglio tenere l'objectId per le richerche con :id. magari solo per singolo volo. Perche ad esempio mi servono le info per from e to su tutti gli aerei boh
 
 ### Specifiche
 
@@ -57,6 +57,30 @@ ADMIN INFO
 /airlines (CRUD) ✅
 /airplanes
 /customers
+
+#### Group by
+
+Query per numPasseggeri + totalRevenue
+
+- Result senza group by
+
+    [
+        {
+            id: f1,
+            ticket: {id: t1, flight: f1, price: 2000},
+            passenger: {ticket: t1}
+        },
+        {
+            id: f1,
+            ticket: {id: t2, flight: f1, price: 600},
+            passenger: {ticket: t2}
+        },
+        {
+            id: f2,
+            ticket: {id: t3, flight: f2, price: 300},
+            passenger: {ticket: t3}
+        },
+    ]
 
 ## Progetto DB
 

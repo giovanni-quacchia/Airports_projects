@@ -151,6 +151,15 @@ export const flights = [
     arrival: new Date(new Date('2025-09-16T09:30:00Z').getTime() + 540 * 60000)
   },
   {
+    code: "FR505",
+    departure: new Date('2025-10-16T09:30:00Z'),
+    duration: 540,
+    route: { from: "VCE", to: "JFK" },
+    airline: "Ryanair",
+    airplane: 1,
+    arrival: new Date(new Date('2025-10-16T09:30:00Z').getTime() + 540 * 60000)
+  },
+  {
     code: "BA606",
     departure: new Date('2025-09-18T11:15:00Z'),
     duration: 600,
@@ -216,17 +225,19 @@ export const flights = [
 ];
 
 export const tickets = [
-  { code: 1, type: "ECONOMY", price: 500, quantity: 50, flight: "EK101" },
-  { code: 2, type: "BUSINESS", price: 1200, quantity: 20, flight: "EK101" },
-  { code: 3, type: "FIRST CLASS", price: 2500, quantity: 10, flight: "AF202" },
-  { code: 4, type: "ECONOMY", price: 400, quantity: 60, flight: "AZ303" },
-  { code: 5, type: "BUSINESS", price: 1000, quantity: 25, flight: "LH404" },
-  { code: 6, type: "FIRST CLASS", price: 2200, quantity: 8, flight: "FR505" },
-  { code: 7, type: "ECONOMY", price: 550, quantity: 55, flight: "BA606" },
-  { code: 8, type: "BUSINESS", price: 1300, quantity: 18, flight: "EK707" },
-  { code: 9, type: "ECONOMY", price: 450, quantity: 45, flight: "AF808" },
-  { code: 10, type: "FIRST CLASS", price: 2000, quantity: 12, flight: "FR909" }
+  { code: 1, type: 'ECONOMY', price: 500, quantity: 50, flight: 'EK101', departure: new Date('2025-09-10T08:30:00Z') },
+  { code: 2, type: 'BUSINESS', price: 1200, quantity: 20, flight: 'EK101', departure: new Date('2025-09-10T08:30:00Z') },
+  { code: 3, type: 'FIRST CLASS', price: 2500, quantity: 10, flight: 'AF202', departure: new Date('2025-09-12T13:45:00Z') },
+  { code: 4, type: 'ECONOMY', price: 400, quantity: 60, flight: 'AZ303', departure: new Date('2025-09-14T07:00:00Z') },
+  { code: 5, type: 'BUSINESS', price: 1000, quantity: 25, flight: 'LH404', departure: new Date('2025-09-16T22:00:00Z') },
+  { code: 6, type: 'FIRST CLASS', price: 2200, quantity: 8, flight: 'FR505', departure: new Date('2025-09-16T09:30:00Z') },
+  { code: 7, type: 'ECONOMY', price: 550, quantity: 55, flight: 'BA606', departure: new Date('2025-09-18T11:15:00Z') },
+  { code: 8, type: 'BUSINESS', price: 1300, quantity: 18, flight: 'EK707', departure: new Date('2025-09-19T20:45:00Z') },
+  { code: 9, type: 'ECONOMY', price: 450, quantity: 45, flight: 'AF808', departure: new Date('2025-09-20T06:00:00Z') },
+  { code: 10, type: 'FIRST CLASS', price: 2000, quantity: 12, flight: 'FR909', departure: new Date('2025-09-22T14:30:00Z') },
+  { code: 11, type: 'ECONOMY', price: 600, quantity: 8, flight: 'FR505', departure: new Date('2025-10-16T09:30:00Z') },
 ];
+
 
 export const passengers = [
   {
@@ -275,6 +286,22 @@ export const passengers = [
     passportNumber: "IE7654321",
     seat: "F6",
     ticket: 6, // FR505 - FIRST CLASS
+    extra: []
+  },
+  {
+    name: "Sofia",
+    surname: "Martinez",
+    passportNumber: "ES9988776",
+    seat: "F7",
+    ticket: 6, // FR505 - FIRST CLASS
+    extra: []
+  },
+  {
+    name: "Liam",
+    surname: "Nguyen",
+    passportNumber: "US1239874",
+    seat: "F8",
+    ticket: 11, // FR505 - ECONOMY
     extra: []
   },
   {

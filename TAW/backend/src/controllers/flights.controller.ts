@@ -5,7 +5,7 @@ export async function getAllFlights(req, res, next) {
     try {
         const { airlineId } = req.params
         if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline id not valid");
-        const result = await flights.getAllFlights(req. query, airlineId);
+        const result = await flights.getAllFlights(req.query, airlineId, req.user);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

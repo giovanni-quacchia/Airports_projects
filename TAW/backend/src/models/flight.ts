@@ -103,7 +103,7 @@ function validateSearch(data: any){
         order: [data.order, "string"],
         airplane: [data.airplane, "string"],
         code: [data.code, "string"],
-        statistics: [data.statistics, "string"],
+        statistics: [data.statistics, "boolean"],
     });
 
     // sortBy: duration, departure, arrival

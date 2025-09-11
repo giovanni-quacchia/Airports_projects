@@ -1,18 +1,19 @@
 import mongoose from 'mongoose';
-import { JOIN, matchAirlines, matchAirport, matchDate } from '../db/queries';
+import { GROUPBY, JOIN, matchAirlines, matchAirport, matchDate, SORT } from '../db/queries';
 import Fl, {Flight} from '../models/flight';
+import { CheckStatisticsReq } from '../utils/flight.utils';
 
 // Direct Flights
 
 //TODO: aggiungere statistics: solo per singola airline?
-export async function getAllFlights(data, airlineId = ""){
+export async function getAllFlights(data, airlineId = "", user: any = {}){
+    
     const query: any = Fl.validateSearch(data);
-    let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code} = query;
+
+    let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code, statistics = false} = query;
 
     airline = airline ? { $regex: airline, $options: "i" } : /.*/;
     code = code ? { $regex: code, $options: "i" } : /.*/;
-
-    const sortOrder = order === "asc" ? 1 : -1;
 
     const pipeline: any[] = [];
 
@@ -43,9 +44,25 @@ export async function getAllFlights(data, airlineId = ""){
         matchAirlines(["airline"], airline),
 
         ...JOIN("airplanes", "airplane"),
-
-        { $sort: { [sortBy]: sortOrder as 1 | -1 } } // type assertion: tells the compiler to consider the object as another type
     );
+
+    // STATISTICS
+    if (CheckStatisticsReq(user, airlineId, statistics)){
+        pipeline.push(
+            ...JOIN("tickets", "_id", "flight price", "flight", "ticket"),
+            ...JOIN("passengers", "ticket._id", "ticket", "ticket", "passenger"),
+        
+            ...GROUPBY("$_id",{ 
+                numPassengers: {$sum: 1},
+                totRevenue: { $sum: "$ticket.price" }
+            }
+            ),
+            // Group by flight._id but it keeps one tuple ticket,passenger, the $first it finds
+            { $project: { "ticket": 0, "passenger": 0 } },
+        );
+    }
+
+    pipeline.push( SORT(sortBy, order) );
 
     return Fl.getModel().aggregate(pipeline)
 }
@@ -61,7 +78,7 @@ async function getFlight(id: string){
         })
         .populate({
             path: "airline",
-            select: "code PIVA name logo -__t"
+            select: "code PIVA name logo"
         });
 }
 

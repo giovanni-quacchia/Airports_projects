@@ -66,7 +66,8 @@ function checkAdmin(req, res, next) {
 }
 
 function checkAirline(req, res, next) {
-  if (!req.user?.isAirline) {
+  
+  if (!req.user?.isAirline && !req.user?.isAdmin) {
     return res.sendStatus(403);
   }
 

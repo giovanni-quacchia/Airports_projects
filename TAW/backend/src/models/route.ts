@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, validateObj, validatePartialObj } from '../utils/utils';
 
 // Interface
 export interface Route{
@@ -15,23 +15,20 @@ const RouteSchema = new mongoose.Schema<Route>({
 });
 
 //Validate
-function validateInput(data: any): boolean{
+
+// TODO: sistemare validate, poi aggiungere sortBy, ricerca
+export function validateNew(data: any): boolean{
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data);
+    const query: any = validateObj({
+        from: [data.from, "string"],
+        to: [data.to, "string"],
+    });
 
-    if(!data.from || !mongoose.Types.ObjectId.isValid(data.from)) 
-        throw Error("Departure airport required");
-    if(!data.to || !mongoose.Types.ObjectId.isValid(data.to)) 
-        throw Error("Arrival airport required");
+    // if(query.from === query.to) throw Error("Departure and Arrivial airports cannot be the same")
 
-    if(data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same")
-
-    // Check if there are not valid keys
-    if(keys.length === 2) return true;
-    else
-        throw Error("Credentials not valid");
+    return query;
 }
 
 function validate(data: any): boolean{
@@ -55,26 +52,14 @@ function validate(data: any): boolean{
         throw Error("Not valid data");
 }
 
-function validateSearch(data: any): boolean{
+function validateSearch(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data);
-
-    if (keys.length === 0) return true;
-
-    if(
-        (!data.fromCity || typeof data.fromCity !== 'string') &&
-        (!data.toCity || typeof data.toCity !== 'string') &&
-        (!data.fromCountry || typeof data.fromCountry !== 'string') &&
-        (!data.toCountry || typeof data.toCountry !== 'string')
-    )
-        throw Error("Searching a route not valid");
-
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["fromCity", "toCity", "fromCountry", "toCountry"])) return true;
-    else
-        throw Error("Not valid data");
+    return validatePartialObj({
+        from: [data.from, "string"],
+        to: [data.to, "string"]
+    });
 }
 
 // Model
@@ -86,10 +71,10 @@ export function getModel(): mongoose.Model<Route> {
 }
 
 export function createRoute(data): mongoose.HydratedDocument<Route> {
-    validateInput(data);
+    validateNew(data);
     const _routeModel = getModel();
     const route = new _routeModel(data);
     return route;
 }
 
-export default {getModel, createRoute, validate, validateSearch}
+export default {getModel, createRoute, validateNew, validate, validateSearch}

@@ -49,8 +49,8 @@ export async function connectDB(){
         
         // Flights
         await addFlights(routes, airlines, airplanes);
-        const fl = await getFlightsModel().find({}, "_id code").exec();
-        const flights = new Map(fl.map(flight => [flight.code, flight._id]));
+        const fl = await getFlightsModel().find({}, "_id code departure").exec();
+        const flights = new Map(fl.map(flight => [`${flight.code}_${flight.departure.getTime()}`, flight._id]));
 
         // Tickets
         await addTickets(flights);
