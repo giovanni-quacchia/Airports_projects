@@ -1,0 +1,75 @@
+/* TAW Airlines Skyscanner-like theme */
+@use './styles/taw-theme' as *;
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  color: var(--text);
+  background: var(--bg-page);
+}
+
+/* Material outline soft look */
+.mdc-text-field--outlined {
+  --mdc-outlined-text-field-container-shape: 12px;
+}
+.mat-mdc-form-field {
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: var(--border) !important;
+  }
+  &:hover .mdc-notched-outline__leading,
+  &:hover .mdc-notched-outline__notch,
+  &:hover .mdc-notched-outline__trailing {
+    border-color: var(--primary-400) !important;
+  }
+}
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+.mat-mdc-form-field-subscript-wrapper { display: none; }
+
+.mat-mdc-form-field-infix { padding-top: 14px; padding-bottom: 14px; }
+
+.cdk-overlay-container .mat-mdc-select-panel,
+.cdk-overlay-container .mat-mdc-autocomplete-panel {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12) !important;
+  border-radius: 12px !important;
+}
+
+.cdk-overlay-container .mat-mdc-option,
+.cdk-overlay-container .mat-mdc-option .mdc-list-item__primary-text {
+  color: #0f172a !important;
+}
+.cdk-overlay-container .mat-mdc-option.mdc-list-item--selected
+  .mdc-list-item__primary-text {
+  font-weight: 600;
+}
+
+/* Datepicker */
+.cdk-overlay-container .mat-datepicker-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12) !important;
+}
+
+.cdk-overlay-container .mat-calendar-body-cell-content {
+  color: #0f172a !important;
+  font-weight: 500;
+}
+.cdk-overlay-container .mat-calendar-body-today .mat-calendar-body-cell-content {
+  border: 2px solid #0b7285 !important;
+  border-radius: 50%;
+}
+.cdk-overlay-container .mat-calendar-body-selected {
+  background: #0b7285 !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+}
+
