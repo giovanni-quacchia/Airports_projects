@@ -15,7 +15,6 @@ import {getModel as getAirplanesModel} from '../models/airplane';
 import {getModel as getPassengerModel} from '../models/passenger';
 
 
-
 export async function connectDB(){
     mongoose.connect(mongoUri)
     .then(() => {
@@ -26,8 +25,8 @@ export async function connectDB(){
         AddUsers();
         await AddAirlines();
 
-        const air = await getAirlinesModel().find({}, "_id name").exec();
-        const airlines = new Map(air.map(airline => [airline.name, airline._id]));
+        const air = await getAirlinesModel().find({}, "_id code").exec();
+        const airlines = new Map(air.map(airline => [airline.code, airline._id]));
 
         await addAirports();
         const airp = await getAirportsModel().find({}, "_id code").exec();

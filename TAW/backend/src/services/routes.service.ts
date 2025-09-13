@@ -4,6 +4,7 @@ import Ro, {Route} from '../models/route';
 import Airport from '../models/Airport';
 import { AppError } from '../models/AppError';
 
+// TODO: check req.user
 async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
     const parsedData: any = Ro.validateSearch(query);
@@ -46,7 +47,7 @@ async function getRoute(id: string){
 
 async function createRoute(data){   
 
-    let newRoute: any =  {}
+    let newRoute: any =  {};
 
     // Start transaction
     const session = await mongoose.startSession();
@@ -84,8 +85,7 @@ async function deleteRoute(id: string){
 }
 
 async function updateRoute(id: string, data: any){
-    const parsedData = Ro.validatePut(data);
-    return Ro.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
+    return Ro.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
 }
 
 export default {

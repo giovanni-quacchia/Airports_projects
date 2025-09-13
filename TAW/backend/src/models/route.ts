@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { checkKeys, isObject, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Route{
@@ -16,42 +17,41 @@ const RouteSchema = new mongoose.Schema<Route>({
 
 //Validate
 
-// TODO: sistemare validate, poi aggiungere sortBy, ricerca
 export function validateNew(data: any){
 
-    if(!isObject(data)) throw Error("Object expected");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const query: any = validateObj({
         from: [data.from, "ID"],
         to: [data.to, "ID"],
     });
 
-    if(query.from === query.to) throw Error("Departure and Arrivial airports cannot be the same")
+    if(query.from === query.to) throw new AppError("Departure and Arrivial airports cannot be the same", 4005)
 
-    if(!isObjSameSize(query, data)) throw Error("A new Route must include: from, to")
+    if(!isObjSameSize(query, data)) throw new AppError("A new Route must include: from, to", 4005);
 
     return query;
 }
 
-function validatePut(data: any){
+export function validatePut(data: any){
 
-    if(!isObject(data)) throw Error("Object expected");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const parsedData: any = validatePartialObj({
         from: [data.from, "ID"],
         to: [data.to, "ID"]
     })
 
-    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new from or to IATA code");
+    if(isObjectEmpty(parsedData)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
 
-    if(parsedData.from && parsedData.to && parsedData.from === parsedData.to) throw Error("Departure and Arrivial airports cannot be the same");
+    if(parsedData.from && parsedData.to && parsedData.from === parsedData.to) throw new AppError("Departure and Arrivial airports cannot be the same", 4005);
 
     return parsedData;
 }
 
-function validateSearch(data: any){
+export function validateSearch(data: any){
 
-    if(!isObject(data)) throw Error("Object expected");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     return validatePartialObj({
         from: [data.from, "string"],

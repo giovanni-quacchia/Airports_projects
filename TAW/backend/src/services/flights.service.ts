@@ -1,14 +1,14 @@
 import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirlines, matchAirport, matchDate, SORT } from '../db/queries';
-import Fl, {Flight} from '../models/flight';
+import Fl, {Flight, validateSearch} from '../models/flight';
 import { CheckStatisticsReq } from '../utils/flight.utils';
+import {getModel as getRouteModel} from'../models/route';
+import {getModel as getAirlineModel} from'../models/airline';
+import {getModel as getAirplaneModel} from'../models/airplane';
+import { AppError } from '../models/AppError';
 
 // Direct Flights
-
-//TODO: aggiungere statistics: solo per singola airline?
-export async function getAllFlights(data, airlineId = "", user: any = {}){
-    
-    const query: any = Fl.validateSearch(data);
+export async function getAllFlights(query, airlineId = "", user: any = {}){
 
     let { from, to, fromDate = "", toDate = "", airline, sortBy = "departure", order = "asc", code, statistics = false} = query;
 
@@ -65,10 +65,11 @@ export async function getAllFlights(data, airlineId = "", user: any = {}){
     pipeline.push( SORT(sortBy, order) );
 
     return Fl.getModel().aggregate(pipeline)
+    // return Fl.getModel().find();
 }
 
 async function getFlight(id: string){
-    return Fl.getModel().findById(id)
+    const flight = await Fl.getModel().findById(id)
         .populate({
             path: "route",
             populate: [
@@ -79,21 +80,122 @@ async function getFlight(id: string){
         .populate({
             path: "airline",
             select: "code PIVA name logo"
-        });
+        })
+        .populate("airplane");
+    if(!flight) throw new AppError("Flight not found", 4004);
+    return flight;
 }
 
-async function createFlight(flight: Partial<Flight>){
-    const fl = Fl.createFlight(flight);
-    return fl;
+async function createFlight(data){
+
+    // Start transaction
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
+
+        // check route exists
+        const route: any = await getRouteModel().findById(data.route).session(session);
+        if(!route) throw new AppError("Route does not exist", 4005);
+
+        // check airline
+        const airline: any = await getAirlineModel().findById(data.airline).session(session);
+        if(!airline) throw new AppError("Airline does not exist", 4005);
+
+        // check airplane
+        const airplane: any = await getAirplaneModel().findById(data.airplane).session(session);
+        if(!airplane) throw new AppError("Airplane does not exist", 4005);
+
+        // check airplane belong to airline
+        if(!airline._id.equals(airplane.airline)) throw new AppError("This airplane belongs to another airline", 4005);
+
+        // check if airplane is assigned to the route
+        //if(!route._id.equals(airplane.route)) throw new AppError("This airplane is not assigned to the specified route", 4005)
+
+        const newFlight = Fl.newFlight(data);
+        await newFlight.save({session});
+        return newFlight;
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
 }
 
-async function deleteFlight(id: string){
-    return Fl.getModel().findByIdAndDelete(id);
+async function deleteFlight(id: string, user){
+
+    let res = {};
+
+    // Start transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+
+        // Find flight
+        const flight = await Fl.getModel().findById(id).session(session);
+        if(!flight) throw new AppError("Flight not found", 4004);
+
+        // Only specific airline or admin can delete
+        if(!user.isAdmin && String(flight.airline) !== user.id) throw new AppError("Flight modifications are not allowed", 4005)
+        
+        res = await flight.deleteOne({session});
+
+        await session.commitTransaction();
+        return res;
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
 }
 
-async function updateFlight(id: string, data: any){
-    Fl.validate(data);
-    return Fl.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
+async function updateFlight(id: string, data: any, user){
+
+    // Start transaction
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        // Find flight
+        const flight = await Fl.getModel().findById(id).session(session);
+        if(!flight) throw new AppError("Flight not found", 4004);
+
+        // Only specific airline or admin can update
+        if(!user.isAdmin && String(flight.airline) !== user.id) throw new AppError("Flight modifications are not allowed", 4005)
+
+        const newFlight = await Fl.getModel().findByIdAndUpdate(id, data, {new: true, runValidators: true, session})
+
+        // check route exists
+        const route: any = await getRouteModel().findById(newFlight.route).session(session);
+        if(!route) throw new AppError("Route does not exist", 4005);
+
+        // check airline
+        const airline: any = await getAirlineModel().findById(newFlight.airline).session(session);
+        if(!airline) throw new AppError("Airline does not exist", 4005);
+
+        // check airplane
+        const airplane: any = await getAirplaneModel().findById(newFlight.airplane).session(session);
+        if(!airplane) throw new AppError("Airplane does not exist", 4005);
+
+        // check airplane belong to airline
+        if(!airline._id.equals(airplane.airline)) throw new AppError("This airplane belongs to another airline", 4005);
+
+        // check if airplane is assigned to the route
+        //if(!route._id.equals(airplane.route)) throw new AppError("This airplane is not assigned to the specified route", 4005)
+
+        await session.commitTransaction();
+        return newFlight;
+
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 }
 
 export default {

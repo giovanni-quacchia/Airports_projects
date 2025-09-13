@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
 import crypto = require('crypto');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface User{
@@ -49,40 +50,47 @@ userSchema.methods.checkPassword = function(this: User, pwd: string){
 
 // Validation
 
-function validateLogin(data: any): boolean{
+export function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data)
+    const query: any = validateObj({
+        mail: [data.mail, "mail"],
+        password: [data.password, "password"],
+    });
 
-    if(!data.mail || typeof data.mail !== 'string') 
-        throw Error("Mail required");
-    if(!data.password || typeof data.password !== 'string') 
-        throw Error("Password required");
-
-    // Check if there are not valid keys
-    return true;
-    // if(keys.length === 2) return true;
-    // else
-    //     throw Error("Credentials not valid");
+    if(!isObjSameSize(query, data)) throw new AppError("mail and password are required", 4005);
+    return query;
 }
 
-export function validateUpdate(data: any): boolean{
+export function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data)
+    const query: any = validatePartialObj({
+        mail: [data.mail, "mail"],
+        password: [data.password, "password"],
+        newPassword: [data.newPassword, "password"]
+    });
 
-    if(
-        (!data.mail || typeof data.mail !== 'string') &&
-        (!data.password || typeof data.password !== 'string')
-    )
-        throw Error("Updating a user requires a new mail or password")
+    // ![ newPw && pw    ||    !newPw && !pw ]
+    if( (!query.password || !query.newPassword) && (query.password || query.newPassword))
+        throw new AppError("Please provide both password and new password", 4005)
 
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["mail", "password"])) return true;
-    else
-        throw Error("Not valid data");
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+    
+    return query;
+}
+
+export function validateSearch(data: any){
+    
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
+
+    const query = validatePartialObj({
+        mail: [data.mail, "string"]
+    });
+
+    return query;
 }
 
 // Model
@@ -94,10 +102,9 @@ export function getModel(): mongoose.Model<User> {
 }
 
 export function createUser(data): mongoose.HydratedDocument<User> {
-    validateLogin(data);
     const _usermodel = getModel();
     const user = new _usermodel({mail: data.mail});
     return user;
 }
 
-export default { getModel, createUser, validateUpdate, validateLogin };
+export default { getModel, createUser, validatePut, validateNew, validateSearch };

@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
 import type { FlightSearchParams } from './searchbar.component';
+
+// ADDED
+import { HttpClient } from '@angular/common/http';
+
+
 export interface FlightResult {
   carrier: string;
   cabin: string;

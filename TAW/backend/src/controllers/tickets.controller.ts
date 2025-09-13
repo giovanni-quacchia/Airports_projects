@@ -1,65 +1,71 @@
-import mongoose from 'mongoose';
 import Tickets from '../services/tickets.service'
+import { manageErrors, printObject, validateObj } from '../utils/utils';
+import { validateNew, validatePut, validateSearch } from '../models/Ticket';
 
 export async function getAllTickets(req, res, next) {
     try {
         const {flightId, airlineId} = req.params;
 
-        if(flightId && !mongoose.Types.ObjectId.isValid(flightId)) throw Error("Flight Id not valid");
-        if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline Id not valid");
+        if(flightId) validateObj({id: [flightId, "ID"]});
+        if(airlineId) validateObj({id: [airlineId, "ID"]});
 
-        const result = await Tickets.getAllTickets(req.query, flightId, airlineId);
+        const query: any = validateSearch(req.query);
+        const result = await Tickets.getAllTickets(query, flightId, airlineId);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Ticket"));
     }
 }
 
 export async function getTicket(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] })
+
         const result = await Tickets.getTicket(id);
+
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Ticket"));
     }
 }
 
 export async function createTicket(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const result = await Tickets.createTicket(ar);
-
-        console.log("\nTicket created:");
-        for(const value of Object.values(ar))
-            console.log(`-${value}`);     
+        parsedData = validateNew(req.body);
+        const result = await Tickets.createTicket(parsedData, req.user);
+        printObject("Ticket created", parsedData);
         res.json(result);
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `Ticket with code ${ar.code} already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Ticket"));
     }
 }
 
 export async function deleteTicket(req, res, next){
     try {
         const {id} = req.params;
-        const result = await Tickets.deleteTicket(id);
+        validateObj({ id: [id, "ID"] })
+
+        const result = await Tickets.deleteTicket(id, req.user);
+
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Ticket"));
     }
 }
 
 export async function updateTicket(req, res, next){
-    const ar = req.body;
     try {
         const {id} = req.params;
-        const result = await Tickets.updateTicket(id, ar);
+        validateObj({ id: [id, "ID"] })
+
+        const parsedData = validatePut(req.body)
+
+        const result = await Tickets.updateTicket(id, parsedData, req.user);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Ticket"));
     }
 }
 

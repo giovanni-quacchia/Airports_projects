@@ -86,11 +86,21 @@ function checkAirlineId(req, res, next){
   return next();
 }
 
-import { validateObj, validatePartialObj } from "./utils";
+function checkUserId(req, res, next){
+
+  if(req.user?.isAdmin) return next();
+
+  if(req.user?.id !== req.params?.id) return res.sendStatus(403);
+
+  return next();
+}
+
+import { isObject, validateObj, validatePartialObj } from "./utils";
+import { AppError } from '../models/AppError';
 
 export function validateLogin(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     // mail:password mandatory
     const query: any = validateObj({
@@ -100,7 +110,7 @@ export function validateLogin(data: any){
 
     // newPassword opt (to update pw on first login)
     const optQuery = validatePartialObj({
-        newPassword: [data.oldPassword, "string"],
+        newPassword: [data.newPassword, "password"],
     });
 
     return {...query, ...optQuery};
@@ -114,5 +124,6 @@ module.exports = {
   checkAirline,
   checkAirlineId,
   optionalCheckToken,
-  validateLogin
+  validateLogin,
+  checkUserId
 };

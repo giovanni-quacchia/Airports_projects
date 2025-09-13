@@ -9,17 +9,16 @@ router.post("/", users.createUser);
 // Log in
 router.post("/sessions", users.logIn);
 
-// Get All users
+// Get All users: only admin
 router.get("/", auth.authenticateToken, auth.checkAdmin, users.getAllUsers);
 
-// Get :id user
-router.get("/:id", users.getUser);
+// Get :id user: only admin or specific user
+router.get("/:id", auth.authenticateToken, auth.checkUserId, users.getUser);
 
-// Delete user
-// TODO: only admin or user can delete its account 
-router.delete("/:id", auth.authenticateToken, users.deleteUser);
+// Delete user: only admin or user itself
+router.delete("/:id", auth.authenticateToken, auth.checkUserId, users.deleteUser);
 
-// Update User
-router.put("/:id", auth.authenticateToken, users.updateUser);
+// Update User: only admin or user itself
+router.put("/:id", auth.authenticateToken, auth.checkUserId, users.updateUser);
 
 module.exports = router;

@@ -1,5 +1,6 @@
+import { validateNew, validatePut } from '../models/Airport';
 import airports from '../services/airports.service'
-import { manageErrors, printObject } from '../utils/utils';
+import { manageErrors, printObject, validateObj } from '../utils/utils';
 
 export async function getAllAirports(req, res, next) {
     try {
@@ -13,7 +14,10 @@ export async function getAllAirports(req, res, next) {
 export async function getAirport(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] })
+
         const result = await airports.getAirport(id);
+
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -21,35 +25,42 @@ export async function getAirport(req, res, next){
 }
 
 export async function createAirport(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const result = await airports.createAirport(ar);
+        parsedData = validateNew(req.body);
+        const result = await airports.createAirport(parsedData);
         result.save();
-        printObject("New Airport", ar);   
+        printObject("Airport created", parsedData);   
         res.json(result);
     } catch (err) {
-        res.status(400).send(manageErrors(err, "Airport", ar));
+        res.status(400).send(manageErrors(err, "Airport"));
     }
 }
 
 export async function deleteAirport(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] })
+
         const result = await airports.deleteAirport(id);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airport"));
     }
 }
 
 export async function updateAirport(req, res, next){
-    const ar = req.body;
+    let parsedData: any = {}
     try {
         const {id} = req.params;
-        const result = await airports.updateAirport(id, ar);
+        validateObj({ id: [id, "ID"] })
+
+        parsedData = validatePut(req.body);
+
+        const result = await airports.updateAirport(id, parsedData);
         res.json(result);
     } catch (err) {
-        res.status(400).send(manageErrors(err, "Airport", ar));
+        res.status(400).send(manageErrors(err, "Airport"));
     }
 }
 

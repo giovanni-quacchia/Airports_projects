@@ -6,10 +6,9 @@ import {getModel as getAirplaneModel} from '../models/airplane';
 import {getModel as getAirportsModel} from '../models/Airport';
 import {getModel as getUserModel} from '../models/user';
 import {getModel as getRouteModel} from '../models/route';
-import {getModel as getFlightModel} from '../models/flight'
-import {getModel as getTicketModel} from '../models/Ticket'
+import {getModel as getFlightModel, newFlight} from '../models/flight'
+import {getModel as getTicketModel, newTicket} from '../models/Ticket'
 import {getModel as getPassengerModel} from '../models/passenger'
-
 
 // Data
 import { airlines, airplanes, airports, flights, passengers, routes, tickets, users } from "./data";
@@ -47,7 +46,6 @@ export async function AddAirlines() {
 }
 
 export async function addAirplanes(airlines) {
-
     console.log(pc.green("\n[Airplanes creation]\n"));
     for (const airplane of airplanes) {
         const a = {
@@ -57,7 +55,6 @@ export async function addAirplanes(airlines) {
         const exists = await getAirplaneModel().findOne({code: a.code});
         if (!exists) {
             const airDoc = await AirplanesSer.createAirplane(a);
-            airDoc.save();
         }
     }
 }
@@ -68,7 +65,6 @@ export async function addAirports() {
         const exists = await getAirportsModel().findOne(airport);
         if (!exists) {
             const a = await AirportsServ.createAirport(airport);
-            a.save();
         }
     }
 }
@@ -97,9 +93,9 @@ export async function addFlights(routes, airlines, airplanes) {
             airline: airlines.get(flight.airline),
             airplane: airplanes.get(flight.airplane)
         };
-        const exists = await getFlightModel().findOne({ code: f.code });
+        const exists = await getFlightModel().findOne({ code: f.code, departure: f.departure });
         if (!exists) {
-            const flightDoc = await FlightServ.createFlight(f);
+            const flightDoc = newFlight(f);
             flightDoc.save();
         }
     }
@@ -113,9 +109,9 @@ export async function addTickets(flights) {
             flight: flights.get(`${ticket.flight}_${ticket.departure.getTime()}`)
         };
         delete t.departure; // remove departure
-        const exists = await getTicketModel().findOne({ code: t.code });
+        const exists = await getTicketModel().findOne({ code: t.code, flight: t.flight });
         if (!exists) {
-            const ticketDoc = Ticket.createTicket(t);
+            const ticketDoc = Ticket.newTicket(t);
             await ticketDoc.save();
         }
     }

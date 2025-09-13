@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { checkKeys, validatePartialObj } from '../utils/utils';
+import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Flight{
@@ -21,83 +22,68 @@ const FlightSchema = new mongoose.Schema<Flight>({
     duration: {
         type: Number, 
         min: 0,
+        required: true,
         validate: {
             validator: Number.isInteger
         }
     },
-    route: {type: mongoose.Schema.Types.ObjectId, ref: 'Route'},
-    airline: {type: mongoose.Schema.Types.ObjectId, ref: 'Airline'},
-    airplane: {type: mongoose.Schema.Types.ObjectId, ref: 'Airplane'},
+    route: {type: mongoose.Schema.Types.ObjectId, ref: 'Route', required: true},
+    airline: {type: mongoose.Schema.Types.ObjectId, ref: 'Airline', required: true},
+    airplane: {type: mongoose.Schema.Types.ObjectId, ref: 'Airplane', required: true},
 });
 
 // Validate
-function validateInput(data: any): boolean{
+export function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
+    const query: any = validateObj({
+        code: [data.code, "string"],
+        departure: [data.departure, "date"],
+        arrival: [data.arrival, "date"],
+        duration: [data.duration, "number"],
+        route: [data.route, "ID"],
+        airline: [data.airline, "ID"],
+        airplane: [data.airplane, "ID"]
+    });
 
-    data.departure = new Date(data.departure)
-    data.arrival = new Date(data.arrival)
+    if(query.departure > query.arrival) throw new AppError("Departure date cannot be after arrival date", 4005);
 
-    if(!data.code || typeof data.code !== 'string')
-        throw Error("Code required");
-    if(!data.departure || isNaN(data.departure))
-        throw Error("Departure date required");
-    if(!data.arrival || isNaN(data.arrival))
-        throw Error("Arrival date required");
-    if(!data.duration || typeof data.duration !== 'number')
-        throw Error("Duration required");
-    if(!data.route || !mongoose.Types.ObjectId.isValid(data.route)) 
-        throw Error("Route required");
-    if(!data.airline || !mongoose.Types.ObjectId.isValid(data.airline)) 
-        throw Error("Airline required");
-    if(!data.airplane || !mongoose.Types.ObjectId.isValid(data.airplane)) 
-        throw Error("Airplane required");
-
-    // Check if there are not valid keys
-    if(keys.length === 7) return true;
-    else
-        throw Error("Not valid data");
+    if(!isObjSameSize(query, data)) throw new AppError("A new Flight must include: code, departure, arrival, duration, route, airline, airplane", 4005);
+    
+    return query;
 }
 
-function validate(data: any): boolean{
+export function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
+    const query: any = validatePartialObj({
+        code: [data.code, "string"],
+        departure: [data.departure, "date"],
+        arrival: [data.arrival, "date"],
+        duration: [data.duration, "number"],
+        route: [data.route, "ID"],
+        airline: [data.airline, "ID"],
+        airplane: [data.airplane, "ID"]
+    });
 
-    const testDeparture = new Date(data.departure)
-    const testArrival = new Date(data.arrival)
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+        
+    if(query.departure && query.arrival && query.departure > query.arrival) throw new AppError("Departure date cannot be after arrival date", 4005);
 
-    if(
-        (!data.code || typeof data.code !== 'string') &&
-        (!data.departure || isNaN(+testDeparture)) &&
-        (!data.arrival || isNaN(+testArrival)) &&
-        (!data.duration || typeof data.duration !== 'number') &&
-        (!data.route || !mongoose.Types.ObjectId.isValid(data.route)) &&
-        (!data.airline || !mongoose.Types.ObjectId.isValid(data.airline)) &&
-        (!data.airplane || !mongoose.Types.ObjectId.isValid(data.airplane))
-    )
-        throw Error("Updating a flight requires a new departure date, arrival date, duration, route, airline or airplane")
-    if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same")
-
-    // Check if there are not valid keys
-     // Check if there are not valid keys
-    if(checkKeys(keys, ["departure", "arrival", "duration", "route", "airline", "code", "airplane"])) return true;
-    else
-        throw Error("Not valid data");
+    return query;
 }
 
-function validateSearch(data: any){
+export function validateSearch(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const query = validatePartialObj({
         from: [data.from, "string"],
         to: [data.to, "string"],
-        fromDate: [data.fromDate, "string"],
-        toDate: [data.toDate, "string"],
+        fromDate: [data.fromDate, "date"],
+        toDate: [data.toDate, "date"],
         airline: [data.airline, "string"],
         sortBy: [data.sortBy, "string"],
         order: [data.order, "string"],
@@ -108,12 +94,12 @@ function validateSearch(data: any){
 
     // sortBy: duration, departure, arrival
     if(data.sortBy && !["duration", "departure", "arrival"].includes(data.sortBy))
-        throw Error("Flights can be sorted by duration, departure or arrival")
+        throw new AppError("Flights can be sorted by duration, departure or arrival", 4005)
 
-    if(data.order && !data.sortBy) throw Error("Please provide sortBy value")
+    if(data.order && !data.sortBy) throw new AppError("Please provide sortBy value", 4005)
 
     if(data.order && data.order !== "desc" && data.order !== "asc")
-        throw Error("Order value must be desc or asc");
+        throw new AppError("Order value must be desc or asc", 4005);
 
     return query;
 }
@@ -126,11 +112,10 @@ export function getModel(): mongoose.Model<Flight> {
     return flightModel;
 }
 
-export function createFlight(data): mongoose.HydratedDocument<Flight> {
-    validateInput(data);
+export function newFlight(data): mongoose.HydratedDocument<Flight> {
     const _flightModel = getModel();
     const flight = new _flightModel(data);
     return flight;
 }
 
-export default {getModel, createFlight, validate, validateSearch}
+export default {getModel, newFlight, validateNew, validatePut, validateSearch}

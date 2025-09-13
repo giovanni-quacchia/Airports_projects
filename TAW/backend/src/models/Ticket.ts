@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Ticket{
@@ -7,7 +8,7 @@ export interface Ticket{
     type: 'ECONOMY' | 'BUSINESS' | 'FIRST CLASS',
     price: number,
     quantity: number,
-    flight: mongoose.Schema.Types.ObjectId
+    flight: mongoose.Schema.Types.ObjectId,
 }
 
 // Schema
@@ -25,7 +26,7 @@ const TicketSchema = new mongoose.Schema<Ticket>({
     },
     quantity: {
         type: Number,
-        requierd: true,
+        required: true,
         min: 0
     },
     flight: {
@@ -43,99 +44,75 @@ export function getModel(): mongoose.Model<Ticket>{
         return ticketModel;
 }
 
-export function createTicket(data): mongoose.HydratedDocument<Ticket> {
-    validateInput(data);
+export function newTicket(data): mongoose.HydratedDocument<Ticket> {
     const _ticketModel = getModel();
     const ticket = new _ticketModel(data);
     return ticket;
 }
 
 //Validate
-function validateInput(data: any): boolean{
+export function validateNew(data: any): boolean{
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
+    const query: any = validateObj({
+        code: [data.code, "positiveInteger"],
+        type: [data.type, "ticketType"],
+        price: [data.price, "positiveNumber"],
+        quantity: [data.quantity, "positiveInteger"],
+        flight: [data.flight, "ID"],
+    });
 
-    if(!data.code || isNaN(data.code)) 
-        throw Error("Ticket code required");
-    if(!data.type || typeof data.type !== 'string') 
-        throw Error("Ticket type required");
-    if(!data.price || isNaN(data.price)) 
-        throw Error("Price required");
-    if(!data.quantity || isNaN(data.quantity)) 
-        throw Error("Quantity required");
-    if(!data.flight || !mongoose.Types.ObjectId.isValid(data.flight)) 
-        throw Error("Flight required");
+    if(!isObjSameSize(query, data)) throw new AppError("A new Ticket must include: code, type, price, quantity and flight ID", 4005);
 
-    data.code = Number(data.code)
-    data.price = Number(data.price);
-    data.quantity = Number(data.quantity);
-
-    // Check if there are not valid keys
-    if(keys.length === 5) return true;
-    else
-        throw Error("Data not valid");
+    return query;
 }
 
 // Validate update
-function validate(data: any): boolean {
+export function validatePut(data: any) {
 
-    if (typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
+    const query: any = validatePartialObj({
+        code: [data.code, "positiveInteger"],
+        type: [data.type, "ticketType"],
+        price: [data.price, "positiveNumber"],
+        quantity: [data.quantity, "positiveInteger"],
+        flight: [data.flight, "ID"]
+    });
 
-    if (
-        (!data.type || typeof data.type !== 'string') &&
-        (!data.price || isNaN(data.price)) &&
-        (!data.quantity || isNaN(data.quantity)) &&
-        (!data.flight || !mongoose.Types.ObjectId.isValid(data.flight))
-    )
-        throw Error("Updating a ticket requires at least one valid field");
-
-    // Check if keys are valid
-    if (checkKeys(keys, ["type", "price", "quantity", "flight"])) return true;
-    else throw Error("Not valid data");
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+    
+    return query;
 }
 
 // Validate search
-function validateSearch(data: any): boolean {
+export function validateSearch(data: any) {
 
-    if (typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
-
-    if (keys.length === 0) return true;
-
-    // Optional search fields, must be correct type if provided
-
-    if (data.type && typeof data.type !== 'string') throw Error("Ticket type must be a string");
-    if (data.from && typeof data.from !== 'string') throw Error("Departure must be a string");
-    if (data.to && typeof data.to !== 'string') throw Error("Arrival must be a string");
-    if (data.minPrice && isNaN(data.minPrice)) throw Error("minPrice must be a number");
-    if (data.maxPrice && isNaN(data.maxPrice)) throw Error("maxPrice must be a number");
-    if (data.minQuantity && isNaN(data.minQuantity)) throw Error("minQuantity must be a number");
-    if (data.maxQuantity && isNaN(data.maxQuantity)) throw Error("maxQuantity must be a number");
-    if (data.sortBy && typeof data.sortBy !== 'string') throw Error("sortBy must be valid");
-    if (data.order && typeof data.order !== 'string') throw Error("order must be desc or asc");
+    const query: any = validatePartialObj({
+        type: [data.type, "ticketType"],
+        from: [data.from, "string"],
+        to: [data.to, "string"],
+        minPrice: [data.minPrice, "positiveNumber"],
+        maxPrice: [data.maxPrice, "positiveNumber"],
+        minQuantity: [data.minQuantity, "positiveInteger"],
+        maxQuantity: [data.maxQuantity, "positiveInteger"],
+        sortBy: [data.sortBy, "string"],
+        order: [data.order, "string"],
+    });
 
     if(
-        (data.sortBy && !["price", "quantity", "type"].includes(data.sortBy)) || 
-        (data.order && !data.sortBy)
+        (query.sortBy && !["price", "quantity", "type", "code"].includes(query.sortBy)) || 
+        (query.order && !query.sortBy)
     )
-        throw Error("Sorting parameters not valid");
+        throw new AppError("Sorting parameters not valid", 4005);
 
-    if(data.order && data.order !== "desc" && data.order !== "asc")
-        throw Error("Order parameter not valid");
+    if(query.order && query.order !== "desc" && query.order !== "asc")
+        throw new AppError("Order parameter not valid", 4005);
 
-    if(data.minPrice) data.minPrice = Number(data.minPrice)
-    if(data.maxPrice) data.maxPrice = Number(data.maxPrice)
-    if(data.minQuantity) data.minQuantity = Number(data.minQuantity)
-    if(data.maxQuantity) data.maxQuantity = Number(data.maxQuantity)
-
-    // Check if keys are valid
-    if (checkKeys(keys, ["type", "flight", "minPrice", "maxPrice", "minQuantity", "maxQuantity", "from", "to", "sortBy", "order"])) return true;
-    else throw Error("Not valid data");
+    return query;
 }
 
-export default {getModel, createTicket, validate, validateSearch}
+export default {getModel, newTicket, validateNew, validatePut, validateSearch}

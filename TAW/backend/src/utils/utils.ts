@@ -23,11 +23,12 @@ export function getRandomPassword(length: Number){
 export function validateObj(data: {[key: string]: [value: unknown, type: string, regEx?: RegExp]}){
 
     const res = {}
+    const pwError = "Minimum 8 chars, at least one upper case letter, one lower case letter, one number and one special char";
 
     for( const [key, [value, type, regEx]] of Object.entries(data)){
         if(!isValidType(value, type, regEx)){
             if(value === null || value === undefined) throw new AppError(`${key} is required`, 4002);
-            throw new AppError(`${key}: '${value}' is not Valid. ${type} expected`, 4001);
+            throw new AppError(`${key}: '${value}' is not Valid. ${type} expected. ${type === "password" ? pwError : ""}`, 4001);
         }
         res[key] = castValue(value, type);
     }
@@ -55,7 +56,7 @@ export function validatePartialObj(data: {[key: string]: [value: unknown, type: 
 }
 
 function castValue(value, type: string){
-    return (type === "number" ? Number(value) : type === "boolean" ? value === "true" || value === true : value)
+    return (type === "number" ? Number(value) : type === "boolean" ? value === "true" || value === true : type === "date" ? new Date(value) : value)
 }
 
 function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = false){
@@ -65,14 +66,24 @@ function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = f
     const match = regEx ?? /.*/; // ??: nullish coalesce operator
     // https://www.geeksforgeeks.org/javascript/javascript-program-to-validate-an-email-address/
     const mailMatch = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
+
+    // https://ihateregex.io/expr/password/
+    const pwMatch = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{8,}$/
+
     const IATAMatch = /^[A-Z]{3}$/
     const IATA2Match = /^[A-Z]{2}$/
 
     switch(type){
+        case "date":
+            return !isNaN(new Date(value).getTime());
         case "string":
             return typeof value === "string" && match.test(value);
         case "number":
             return !isNaN(Number(value));
+        case "positiveInteger":
+            return Number.isInteger(Number(value)) && Number(value) > 0;
+        case "positiveNumber":
+            return !isNaN(Number(value)) && Number(value) > 0;
         case "boolean":
             return(
                 value === true || value === false ||
@@ -92,6 +103,10 @@ function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = f
             )
         case "ID":
             return mongoose.Types.ObjectId.isValid(value);
+        case "password":
+            return typeof value === "string" //&& pwMatch.test(value)
+        case "ticketType":
+            return typeof value === "string" && (["ECONOMY", "BUSINESS", "FIRST CLASS"].includes(value))
         default:
             return false;
     }
@@ -115,7 +130,7 @@ export function printObject(title: string, obj: object){
         console.log(`- ${key}: ${value}`); 
 }
 
-export function manageErrors(err, collection: string, obj: object){
+export function manageErrors(err, collection: string){
 
     switch(err.code){
         case 4001:
@@ -126,6 +141,8 @@ export function manageErrors(err, collection: string, obj: object){
             return {type: "Document not found", msg: err.message};
         case 4005:
             return {type: "Input error", msg: err.message};
+        case 4006:
+            return {type: "Operation not allowed", msg: err.message}
         case 11000:
             return {type: "Duplicate error", msg: `${collection} already exists`};
         default:

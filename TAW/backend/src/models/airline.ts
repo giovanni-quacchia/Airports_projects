@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
-import { getRandomPassword, validateObj, validatePartialObj } from '../utils/utils';
+import { getRandomPassword, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
 import crypto = require('crypto');
+import { AppError } from './AppError';
 
 // Interface
 export interface Airline{
@@ -52,7 +53,7 @@ AirlineSchema.methods.checkPassword = function(this: Airline, pwd: string){
 // Validate
 export function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const query = validateObj({
         code: [data.code, "string", /^[A-Z]{2}$/],
@@ -65,14 +66,17 @@ export function validateNew(data: any){
         logo: [data.logo, "string"]
     })
 
-    return {...query, ...optQuery}
+    const parsedData = {...query, ...optQuery}
+
+    if(!isObjSameSize(parsedData, data)) throw new AppError("A new Airline must include: code, mail, PIVA, name and optional logo", 4005);
+
+    return parsedData;
 }
 
+// TODO: add newPassword
 function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
-
-    // TODO: add password type like email
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const parsedData: any = validatePartialObj({
         code: [data.code, "string", /^[A-Z]{2}$/],
@@ -80,18 +84,18 @@ function validatePut(data: any){
         PIVA: [data.PIVA, "string"],
         name: [data.name, "string"],
         logo: [data.logo, "string"],
-        password: [data.password, "string"],
+        password: [data.password, "password"],
     }); 
 
-    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new code, mail, password, PIVA or name")
+    if(isObjectEmpty(parsedData)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
 
     return parsedData;
 }
 
-function validateSearch(data: any){
+export function validateSearch(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
-
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
+ 
     return validatePartialObj({
         name: [data.name, "string"]
     });
@@ -106,9 +110,8 @@ export function getModel(): mongoose.Model<Airline>{
 }
 
 export function newAirline(data: Partial<Airline>): mongoose.HydratedDocument<Airline> {
-    const parsedData = validateNew(data);
     const _airlineModel = getModel();
-    const airline = new _airlineModel(parsedData);
+    const airline = new _airlineModel(data);
     return airline;
 }
 

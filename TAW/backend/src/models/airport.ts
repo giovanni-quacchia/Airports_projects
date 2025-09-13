@@ -41,7 +41,7 @@ export function newAirport(data): mongoose.HydratedDocument<Airport> {
 
 // Validate
 
-function validateNew(data: any){
+export function validateNew(data: any){
 
     if(!isObject(data)) throw new AppError("Object expected", 4005);
 
@@ -73,15 +73,13 @@ export function validatePut(data: any){
     return query;
 }
 
-function validateSearch(data: any){
+export function validateSearch(data: any){
     
     if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const query = validatePartialObj({
         q: [data.q, "string"]
     });
-
-    if(isObjectEmpty(query)) throw new AppError("Search not valid: q param expected", 4005)
 
     return query;
 }

@@ -3,6 +3,7 @@ const router = express.Router();
 import flight from '../controllers/flights.controller'
 import ticket from '../controllers/tickets.controller'
 import passenger from '../controllers/passengers.controller'
+const auth = require('../utils/auth.utils')
 
 // Get All flights: ? [from, to, fromDate, toDate, airline]
 // Date: year-month-day
@@ -13,19 +14,21 @@ router.get("/", flight.getAllFlights);
 // Get :id flight
 router.get("/:id", flight.getFlight);
 
-// Create a new flight
-router.post("/", flight.createFlight);
+// Create a new flight: airline or admin
+router.post("/", auth.authenticateToken, auth.checkAirline, flight.createFlight);
 
-// Delete flight
-router.delete("/:id", flight.deleteFlight);
+// Delete flight: specific airline or admin
+router.delete("/:id", auth.authenticateToken, auth.checkAirline, flight.deleteFlight);
 
-// Update flight
-router.put("/:id", flight.updateFlight);
+// Update flight: specific flight or airline
+router.put("/:id", auth.authenticateToken, auth.checkAirline, flight.updateFlight);
 
 // Get tickets of a :id flight
 router.get("/:flightId/tickets", ticket.getAllTickets);
 
 // Get passengers of a :id flight
-router.get("/:flightId/passengers", passenger.getAllPassengers);
+router.get("/:flightId/passengers", auth.authenticateToken, auth.checkAirline, passenger.getAllPassengers);
+
+
 
 module.exports = router;

@@ -1,6 +1,7 @@
 import mongoose = require('mongoose');
 import Route from './route';
 import { validateObj, validatePartialObj, isObject, isObjSameSize } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Airplane{
@@ -9,7 +10,7 @@ export interface Airplane{
     airline: mongoose.Schema.Types.ObjectId,
     rows: number,
     letters: number
-    route?: mongoose.Schema.Types.ObjectId,
+    route?: mongoose.Schema.Types.ObjectId, // TODO: periodo
 }
 
 // Schema
@@ -48,7 +49,7 @@ export function newAirplane(data): mongoose.HydratedDocument<Airplane> {
 
 export function validateNew(data: any){
 
-    if(!isObject(data)) throw Error("Object expected");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     let query: any = validateObj({
         code: [data.code, "number"],
@@ -65,14 +66,14 @@ export function validateNew(data: any){
         query = {...query, ...route};
     }
 
-    if(!isObjSameSize(query, data)) throw Error("A new airplane must include: code, model, rows, letter, airline and optional route")
+    if(!isObjSameSize(query, data)) throw new AppError("A new airplane must include: code, model, rows, letter, airline and optional route", 4005)
 
     return query;
 }
 
-export function validateUpdate(data: any){
+export function validatePut(data: any){
 
-    if(!isObject(data)) throw Error("Object expected");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
     const parsedData = validatePartialObj({
         code: [data.code, "number"],
@@ -83,7 +84,7 @@ export function validateUpdate(data: any){
         route: [data.route, "ID"]
     });
 
-    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new from or to IATA code");
+    if(!isObjSameSize(parsedData, data)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
 
     return parsedData;
 }

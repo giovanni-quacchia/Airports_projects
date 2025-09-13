@@ -56,12 +56,12 @@ export const airlines: Partial<Airline>[] = [
 ];
 
 export const airplanes = [
-  { code: 1, model: "Airbus A320neo", airline: "Ryanair", rows: 30, letters: 6 },           
-  { code: 2, model: "Boeing 737-800", airline: "British Airways", rows: 32, letters: 6 },   
-  { code: 3, model: "Embraer E190", airline: "Air France", rows: 28, letters: 4 },          
-  { code: 4, model: "Boeing 777-300ER", airline: "Lufthansa", rows: 40, letters: 9 },       
-  { code: 5, model: "Airbus A330-200", airline: "ITA Airways", rows: 28, letters: 6 },      
-  { code: 6, model: "Boeing 777-200LR", airline: "Emirates", rows: 42, letters: 10 }        
+  { code: 1, model: "Airbus A320neo", airline: "FR", rows: 30, letters: 6 },
+  { code: 2, model: "Boeing 737-800", airline: "BA", rows: 32, letters: 6 },
+  { code: 3, model: "Embraer E190", airline: "AF", rows: 28, letters: 4 },
+  { code: 4, model: "Boeing 777-300ER", airline: "LH", rows: 40, letters: 9 },
+  { code: 5, model: "Airbus A330-200", airline: "AZ", rows: 28, letters: 6 },
+  { code: 6, model: "Boeing 777-200LR", airline: "EK", rows: 42, letters: 10 }
 ];
 
 export const airports: Airport[] = [
@@ -110,7 +110,7 @@ export const flights = [
     departure: new Date('2025-09-10T08:30:00Z'),
     duration: 720,
     route: { from: "DXB", to: "SYD" },
-    airline: "Emirates",
+    airline: "EK",  // Emirates code
     airplane: 6,
     arrival: new Date(new Date('2025-09-10T08:30:00Z').getTime() + 720 * 60000)
   },
@@ -119,7 +119,7 @@ export const flights = [
     departure: new Date('2025-09-12T13:45:00Z'),
     duration: 660,
     route: { from: "FCO", to: "LAX" },
-    airline: "Air France",
+    airline: "AF",  // Air France code
     airplane: 3,
     arrival: new Date(new Date('2025-09-12T13:45:00Z').getTime() + 660 * 60000)
   },
@@ -128,7 +128,7 @@ export const flights = [
     departure: new Date('2025-09-14T07:00:00Z'),
     duration: 90,
     route: { from: "VCE", to: "FCO" },
-    airline: "ITA Airways",
+    airline: "AZ",  // ITA Airways code
     airplane: 5,
     arrival: new Date(new Date('2025-09-14T07:00:00Z').getTime() + 90 * 60000)
   },
@@ -137,7 +137,7 @@ export const flights = [
     departure: new Date('2025-09-16T22:00:00Z'),
     duration: 840,
     route: { from: "JFK", to: "HND" },
-    airline: "Lufthansa",
+    airline: "LH",  // Lufthansa code
     airplane: 4,
     arrival: new Date(new Date('2025-09-16T22:00:00Z').getTime() + 840 * 60000)
   },
@@ -146,7 +146,7 @@ export const flights = [
     departure: new Date('2025-09-16T09:30:00Z'),
     duration: 540,
     route: { from: "VCE", to: "JFK" },
-    airline: "Ryanair",
+    airline: "FR",  // Ryanair code
     airplane: 1,
     arrival: new Date(new Date('2025-09-16T09:30:00Z').getTime() + 540 * 60000)
   },
@@ -155,7 +155,7 @@ export const flights = [
     departure: new Date('2025-10-16T09:30:00Z'),
     duration: 540,
     route: { from: "VCE", to: "JFK" },
-    airline: "Ryanair",
+    airline: "FR",  // Ryanair code
     airplane: 1,
     arrival: new Date(new Date('2025-10-16T09:30:00Z').getTime() + 540 * 60000)
   },
@@ -164,7 +164,7 @@ export const flights = [
     departure: new Date('2025-09-18T11:15:00Z'),
     duration: 600,
     route: { from: "HND", to: "BER" },
-    airline: "British Airways",
+    airline: "BA",  // British Airways code
     airplane: 2,
     arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
   },
@@ -173,7 +173,7 @@ export const flights = [
     departure: new Date('2025-09-18T11:15:00Z'),
     duration: 600,
     route: { from: "JFK", to: "BER" },
-    airline: "British Airways",
+    airline: "BA",  // British Airways code
     airplane: 2,
     arrival: new Date(new Date('2025-09-18T11:15:00Z').getTime() + 600 * 60000)
   },
@@ -182,7 +182,7 @@ export const flights = [
     departure: new Date('2025-09-19T20:45:00Z'),
     duration: 720,
     route: { from: "LAX", to: "DXB" },
-    airline: "Emirates",
+    airline: "EK",  // Emirates code
     airplane: 6,
     arrival: new Date(new Date('2025-09-19T20:45:00Z').getTime() + 720 * 60000)
   },
@@ -191,7 +191,7 @@ export const flights = [
     departure: new Date('2025-09-20T06:00:00Z'),
     duration: 480,
     route: { from: "BER", to: "PEK" },
-    airline: "Air France",
+    airline: "AF",  // Air France code
     airplane: 3,
     arrival: new Date(new Date('2025-09-20T06:00:00Z').getTime() + 480 * 60000)
   },
@@ -200,7 +200,7 @@ export const flights = [
     departure: new Date('2025-09-22T14:30:00Z'),
     duration: 480,
     route: { from: "EZE", to: "BCN" },
-    airline: "Ryanair",
+    airline: "FR",  // Ryanair code
     airplane: 1,
     arrival: new Date(new Date('2025-09-22T14:30:00Z').getTime() + 480 * 60000)
   },
@@ -209,7 +209,7 @@ export const flights = [
     departure: new Date('2025-09-25T18:00:00Z'),
     duration: 360,
     route: { from: "CDG", to: "VCE" },
-    airline: "ITA Airways",
+    airline: "AZ",  // ITA Airways code
     airplane: 5,
     arrival: new Date(new Date('2025-09-25T18:00:00Z').getTime() + 360 * 60000)
   },
@@ -218,7 +218,7 @@ export const flights = [
     departure: new Date('2025-09-20T09:30:00Z'),
     duration: 600,
     route: { from: "HND", to: "DXB" },
-    airline: "Emirates",
+    airline: "EK",  // Emirates code
     airplane: 6,
     arrival: new Date(new Date('2025-09-20T09:30:00Z').getTime() + 600 * 60000)
   }

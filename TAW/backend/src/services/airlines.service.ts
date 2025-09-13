@@ -55,6 +55,7 @@ async function getAllAirlines(user, query) {
     return Ar.getModel().aggregate(pipeline);
 }
 
+// TODO: add mail for specific airline
 async function getAirline(user, id: string){
     const pipeline: any[] = [ { $match: {"_id": new mongoose.Types.ObjectId(id)}}]
 

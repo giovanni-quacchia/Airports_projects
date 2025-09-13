@@ -1,61 +1,67 @@
-import mongoose from 'mongoose';
 import airplanes from '../services/airplanes.service'
+import { validateNew, validatePut } from '../models/airplane';
+import { manageErrors, printObject, validateObj } from '../utils/utils';
 
 export async function getAllAirplanes(req, res, next) {
     try {
         const { airlineId = ""} = req.params
-        if(airlineId && !mongoose.Types.ObjectId.isValid(airlineId)) throw Error("Airline Id not valid")
+        if(airlineId) validateObj({id: [airlineId, "ID"]})
+
         const result = await airplanes.getAllAirplanes(airlineId);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airplane"));
     }
 }
 
 export async function getAirplane(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] })
+
         const result = await airplanes.getAirplane(id);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airplane"));
     }
 }
 
 export async function createAirplane(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const result = await airplanes.createAirplane(ar);
-
-        console.log("\nAirplane created:");
-        console.log(`-${ar.code}\n-${ar.model}\n`); 
-        
+        parsedData = validateNew(req.body);
+        const result = await airplanes.createAirplane(parsedData);
+        printObject("Airplane created", parsedData)    
         res.json(result);
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `Airplane with code ${ar.code} already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airplane"));
     }
 }
 
 export async function deleteAirplane(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] })
+
         const result = await airplanes.deleteAirplane(id);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airplane"));
     }
 }
 
 export async function updateAirplane(req, res, next){
+    let parsedData: any = {}
     try {
         const {id} = req.params;
-        const result = await airplanes.updateAirplane(id, req.body);
+        validateObj({ id: [id, "ID"] })
+
+        parsedData = validatePut(req.body);
+
+        const result = await airplanes.updateAirplane(id, parsedData);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airplane"));
     }
 }
 
