@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys, validateObj, validatePartialObj } from '../utils/utils';
+import { checkKeys, isObject, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
 
 // Interface
 export interface Route{
@@ -17,39 +17,41 @@ const RouteSchema = new mongoose.Schema<Route>({
 //Validate
 
 // TODO: sistemare validate, poi aggiungere sortBy, ricerca
-export function validateNew(data: any): boolean{
+export function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Route must be an object");
+    if(!isObject(data)) throw Error("Object expected");
 
     const query: any = validateObj({
-        from: [data.from, "IATA"],
-        to: [data.to, "IATA"],
+        from: [data.from, "ID"],
+        to: [data.to, "ID"],
     });
 
     if(query.from === query.to) throw Error("Departure and Arrivial airports cannot be the same")
 
+    if(!isObjSameSize(query, data)) throw Error("A new Route must include: from, to")
+
     return query;
 }
 
-function validate(data: any){
+function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw Error("Object expected");
 
-    const parsedData = validatePartialObj({
-        from: [data.from, "IATA"],
-        to: [data.to, "IATA"]
+    const parsedData: any = validatePartialObj({
+        from: [data.from, "ID"],
+        to: [data.to, "ID"]
     })
 
     if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new from or to IATA code");
 
-    if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same");
+    if(parsedData.from && parsedData.to && parsedData.from === parsedData.to) throw Error("Departure and Arrivial airports cannot be the same");
 
     return parsedData;
 }
 
 function validateSearch(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw Error("Object expected");
 
     return validatePartialObj({
         from: [data.from, "string"],
@@ -65,11 +67,10 @@ export function getModel(): mongoose.Model<Route> {
     return routeModel;
 }
 
-export function createRoute(data): mongoose.HydratedDocument<Route> {
-    validateNew(data);
+export function newRoute(data): mongoose.HydratedDocument<Route> {
     const _routeModel = getModel();
     const route = new _routeModel(data);
     return route;
 }
 
-export default {getModel, createRoute, validateNew, validate, validateSearch}
+export default {getModel, newRoute, validateNew, validatePut, validateSearch}

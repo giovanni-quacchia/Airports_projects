@@ -1,9 +1,9 @@
 import { matchAirport } from '../db/queries';
 import Ar, {Airport} from '../models/Airport';
 
-// Add Airports (if not exist)
 async function getAllAirports(query) {
-    const {q} = query
+    const parsedData: any = Ar.validateSearch(query);
+    const {q} = parsedData;
     return Ar.getModel().aggregate([
         matchAirport("", q)
     ])
@@ -15,7 +15,7 @@ async function getAirport(id: string){
 
 async function createAirport(airport: Partial<Airport>){
     const parsedData = Ar.validateNew(airport)
-    const ar = Ar.createAirport(parsedData);
+    const ar = Ar.newAirport(parsedData);
     return ar;
 }
 

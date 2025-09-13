@@ -16,7 +16,7 @@ router.post("/", auth.authenticateToken, auth.checkAirline, airport.createAirpor
 // Delete Airport: only admin
 router.delete("/:id", auth.authenticateToken, auth.checkAdmin, airport.deleteAirport);
 
-// Update Airport
+// Update Airport: only admin
 router.put("/:id", auth.authenticateToken, auth.checkAdmin, airport.updateAirport);
 
 module.exports = router;

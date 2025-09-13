@@ -73,17 +73,16 @@ export async function addAirports() {
     }
 }
 
-export async function addRoutes(airportsMap: Map<string, any>) {
+export async function addRoutes(airports: Map<string, any>) {
     console.log(pc.green("\n[Routes creation]\n"));
     for (const route of routes) {
         const r = {
-            from: airportsMap.get(route.from),
-            to: airportsMap.get(route.to)
+            from: airports.get(route.from),
+            to: airports.get(route.to)
         };
         const exists = await getRouteModel().findOne(r);
         if (!exists) {
             const routeDoc = await RoutesServ.createRoute(r);
-            routeDoc.save();
         }
     }
 }

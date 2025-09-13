@@ -1,4 +1,8 @@
+import mongoose from "mongoose";
+import { AppError } from "../models/AppError";
+
 const crypto = require('crypto');
+
 
 // Check keys is subset or equals to validKeys
 export function checkKeys(keys: string[], validKeys: string[]): boolean {
@@ -22,8 +26,8 @@ export function validateObj(data: {[key: string]: [value: unknown, type: string,
 
     for( const [key, [value, type, regEx]] of Object.entries(data)){
         if(!isValidType(value, type, regEx)){
-            if(value === null || value === undefined) throw Error(`${key} is required`);
-            throw Error(`${key} "${value}" is not Valid. ${type} expected`);
+            if(value === null || value === undefined) throw new AppError(`${key} is required`, 4002);
+            throw new AppError(`${key}: '${value}' is not Valid. ${type} expected`, 4001);
         }
         res[key] = castValue(value, type);
     }
@@ -41,7 +45,7 @@ export function validatePartialObj(data: {[key: string]: [value: unknown, type: 
         if(value === null || value === undefined) continue;
 
         if(!isValidType(value, type, regEx, true)){
-            throw Error(`${key} "${value}" is not Valid. ${type} expected`);
+            throw new AppError(`${key}: '${value}' is not Valid. ${type} expected`, 4001);
         }
 
         res[key] = castValue(value, type);
@@ -86,6 +90,8 @@ function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = f
             return (
                 typeof value == "string" && IATA2Match.test(value)
             )
+        case "ID":
+            return mongoose.Types.ObjectId.isValid(value);
         default:
             return false;
     }
@@ -97,4 +103,33 @@ export function isObject(data){
 
 export function isObjSameSize(obj1: object, obj2: object){
     return Object.keys(obj1).length === Object.keys(obj2).length
+}
+
+export function isObjectEmpty(obj: object){
+    return Object.keys(obj).length === 0;
+}
+
+export function printObject(title: string, obj: object){
+    console.log(title);
+    for(const [key, value] of Object.entries(obj))
+        console.log(`- ${key}: ${value}`); 
+}
+
+export function manageErrors(err, collection: string, obj: object){
+
+    switch(err.code){
+        case 4001:
+            return {type: "Type error", msg: err.message};
+        case 4002:
+            return {type: "Field missing", msg: err.message};
+        case 4004:
+            return {type: "Document not found", msg: err.message};
+        case 4005:
+            return {type: "Input error", msg: err.message};
+        case 11000:
+            return {type: "Duplicate error", msg: `${collection} already exists`};
+        default:
+            console.log(err);
+            return "Internal server error";
+    }
 }

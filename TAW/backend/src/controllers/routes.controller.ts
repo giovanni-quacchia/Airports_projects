@@ -1,4 +1,6 @@
+import { validateNew } from '../models/route';
 import routes from '../services/routes.service'
+import { manageErrors, printObject } from '../utils/utils';
 
 export async function getAllRoutes(req, res, next) {
     try {
@@ -21,19 +23,14 @@ export async function getRoute(req, res, next){
 }
 
 export async function createRoute(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const result = await routes.createRoute(ar);
-        result.save();
-        console.log("\nRoute created:");
-        for(const value of Object.values(ar))
-            console.log(`-${value}`);     
+        parsedData = validateNew(req.body);
+        const result = await routes.createRoute(parsedData);
+        printObject("Route created", parsedData)    
         res.json(result);
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `Route with code ${ar.code} already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Route", parsedData));
     }
 }
 
@@ -48,13 +45,14 @@ export async function deleteRoute(req, res, next){
 }
 
 export async function updateRoute(req, res, next){
-    const ar = req.body;
+    let parsedData: any = {}
     try {
+        parsedData = validateNew(req.body);
         const {id} = req.params;
-        const result = await routes.updateRoute(id, ar);
+        const result = await routes.updateRoute(id, parsedData);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Route", parsedData));
     }
 }
 

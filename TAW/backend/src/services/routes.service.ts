@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirport } from '../db/queries';
 import Ro, {Route} from '../models/route';
 import Airport from '../models/Airport';
+import { AppError } from '../models/AppError';
 
 async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
@@ -43,23 +44,39 @@ async function getRoute(id: string){
     return Ro.getModel().findById(id);
 }
 
-async function createRoute(data){
-    const parsedData = Ro.validateNew(data);
-   
-    // Find airports
-    const fromAirport = await Airport.getModel().findOne({code: data.from});
-    const toAirport = await Airport.getModel().findOne({code: data.to});
+async function createRoute(data){   
 
-    if(!fromAirport || !toAirport) throw Error("One or both airports ID do not exist");
+    let newRoute: any =  {}
 
-    const query = {from: String(fromAirport._id), to: String(toAirport._id)}
+    // Start transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    // Check if route already exists
-    const exists = await Ro.getModel().findOne(query)
-    if(exists) throw Error("Route already exists")
+    try {
+        // Find airports
+        const fromAirport = await Airport.getModel().findById(data.from).session(session);
+        const toAirport = await Airport.getModel().findById(data.to).session(session);
 
-    const ro = Ro.createRoute(query);
-    return ro;
+        // Check from != to
+        if(!fromAirport || !toAirport) throw new AppError("One or both airports ID do not exist", 4004);
+
+        // Check if route already exists
+        const query = {from: data.from, to: data.to}
+        const exists = await Ro.getModel().findOne(query).session(session);
+        if(exists) throw new AppError("Route already exists", 11000)
+
+        newRoute = Ro.newRoute(query);
+        await newRoute.save({session});
+
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
+
+    return newRoute;
 }
 
 async function deleteRoute(id: string){
@@ -67,8 +84,8 @@ async function deleteRoute(id: string){
 }
 
 async function updateRoute(id: string, data: any){
-    Ro.validate(data);
-    return Ro.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    const parsedData = Ro.validatePut(data);
+    return Ro.getModel().findByIdAndUpdate(id, parsedData, { new: true, runValidators: true });
 }
 
 export default {

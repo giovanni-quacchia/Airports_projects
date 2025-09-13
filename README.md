@@ -6,8 +6,6 @@
 
 ### TODO
 
-- Cabmiare le FK???
-
 - Sistemare i validate delle interfacce
 - Aggiungere ricerca, sort su airplanes
 - Statistiche: rotte + richieste (aggiungere sortBy numPasseggeri)
@@ -20,6 +18,8 @@
 - configurare il db e inserire i dati
 
 ### Specifiche
+
+SERVICE lavora sempre sugli id per le FK (create, update)
 
 - Backend with Express for routing
 - Frontend with Angular

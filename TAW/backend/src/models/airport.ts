@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { checkKeys, validateObj, validatePartialObj } from '../utils/utils';
+import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Airport{
@@ -31,7 +32,8 @@ export function getModel(): mongoose.Model<Airport> {
     return airportModel;
 }
 
-export function createAirport(data): mongoose.HydratedDocument<Airport> {
+export function newAirport(data): mongoose.HydratedDocument<Airport> {
+    validateNew(data);
     const _airportModel = getModel();
     const airport = new _airportModel(data);
     return airport;
@@ -41,40 +43,48 @@ export function createAirport(data): mongoose.HydratedDocument<Airport> {
 
 function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    return validateObj({
+    const query = validateObj({
         name: [data.name, "string"],
         city: [data.city, "string"],
         code: [data.code, "IATA"],
         country: [data.country, "string"]
     });
+
+    if(!isObjSameSize(query, data)) throw new AppError("A new airport must include: name, city, code, country", 4005)
+
+    return query;
 }
 
 export function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const parsedData = validatePartialObj({
+    const query = validatePartialObj({
         name: [data.name, "string"],
         city: [data.city, "string"],
         code: [data.code, "IATA"],
         country: [data.country, "string"]
     })
 
-    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new code, name city or country")
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new code, name, city or country", 4005)
 
-    return parsedData;
+    return query;
 }
 
 function validateSearch(data: any){
+    
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
-
-    return validatePartialObj({
+    const query = validatePartialObj({
         q: [data.q, "string"]
     });
+
+    if(isObjectEmpty(query)) throw new AppError("Search not valid: q param expected", 4005)
+
+    return query;
 }
 
 
-export default {getModel, createAirport, validateNew, validatePut, validateSearch}
+export default {getModel, newAirport, validateNew, validatePut, validateSearch}

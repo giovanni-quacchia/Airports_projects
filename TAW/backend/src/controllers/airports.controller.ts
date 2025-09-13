@@ -1,4 +1,5 @@
 import airports from '../services/airports.service'
+import { manageErrors, printObject } from '../utils/utils';
 
 export async function getAllAirports(req, res, next) {
     try {
@@ -24,15 +25,10 @@ export async function createAirport(req, res, next){
     try {
         const result = await airports.createAirport(ar);
         result.save();
-        console.log("\nAirport created:");
-        for(const value of Object.values(ar))
-            console.log(`-${value}`);     
+        printObject("New Airport", ar);   
         res.json(result);
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `Airport with code ${ar.code} already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airport", ar));
     }
 }
 
@@ -53,7 +49,7 @@ export async function updateAirport(req, res, next){
         const result = await airports.updateAirport(id, ar);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airport", ar));
     }
 }
 
