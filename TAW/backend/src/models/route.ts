@@ -19,37 +19,32 @@ const RouteSchema = new mongoose.Schema<Route>({
 // TODO: sistemare validate, poi aggiungere sortBy, ricerca
 export function validateNew(data: any): boolean{
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Route must be an object");
 
     const query: any = validateObj({
-        from: [data.from, "string"],
-        to: [data.to, "string"],
+        from: [data.from, "IATA"],
+        to: [data.to, "IATA"],
     });
 
-    // if(query.from === query.to) throw Error("Departure and Arrivial airports cannot be the same")
+    if(query.from === query.to) throw Error("Departure and Arrivial airports cannot be the same")
 
     return query;
 }
 
-function validate(data: any): boolean{
+function validate(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data);
+    const parsedData = validatePartialObj({
+        from: [data.from, "IATA"],
+        to: [data.to, "IATA"]
+    })
 
-    if(
-        (!data.from || !mongoose.Types.ObjectId.isValid(data.from)) &&
-        (!data.to || !mongoose.Types.ObjectId.isValid(data.to))
-    )
-        throw Error("Updating a route requires a new departure or arrival airport")
+    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new from or to IATA code");
 
-    if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same")
+    if(data.from && data.to && data.from === data.to) throw Error("Departure and Arrivial airports cannot be the same");
 
-    // Check if there are not valid keys
-     // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to"])) return true;
-    else
-        throw Error("Not valid data");
+    return parsedData;
 }
 
 function validateSearch(data: any){

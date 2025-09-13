@@ -67,11 +67,12 @@ export function getAirportContidions(location: string, match, isRegex){
 
     if(!isRegex) match = match ? { $regex: match, $options: "i" } : { $exists: true };
 
+    location = location ? location + "." : "";
     return [
-        { [`${location}.name`]: match },
-        { [`${location}.city`]: match },
-        { [`${location}.code`]: match },
-        { [`${location}.country`]: match },
+        { [`${location}name`]: match },
+        { [`${location}city`]: match },
+        { [`${location}code`]: match },
+        { [`${location}country`]: match },
     ] 
 }
 

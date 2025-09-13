@@ -1,6 +1,4 @@
 import Ar, {Airline} from '../models/airline';
-import { getRandomPassword } from '../utils/utils';
-import Us from '../models/user'
 import mongoose from 'mongoose';
 import { validateLogin } from '../utils/auth.utils';
 
@@ -13,14 +11,14 @@ async function logIn(data) {
     let res = {}
 
     // Check credentials
-    const airline = await Ar.getModel().findOne({mail: data.mail});
-    if(!airline || !airline.checkPassword(data.password)) throw Error("Credentials not valid");
+    const airline = await Ar.getModel().findOne({mail: query.mail});
+    if(!airline || !airline.checkPassword(query.password)) throw Error("Credentials not valid");
     
     // Update pw on first login
     if(airline.isFirstLogin){
-        if(!data.newPassword) throw Error("Please provide a new password on first login");
-        if(airline.checkPassword(data.newPassword)) throw Error("Please provide a new password");
-        airline.setPassword(data.newPassword);
+        if(!query.newPassword) throw Error("Please provide a new password on first login");
+        if(airline.checkPassword(query.newPassword)) throw Error("Please provide a new password");
+        airline.setPassword(query.newPassword);
         airline.isFirstLogin = false;
         airline.save();
         res = {msg: "Password updated"}
@@ -70,7 +68,7 @@ async function getAirline(user, id: string){
 }
 
 async function createAirline(airline: Partial<Airline>){
-    const ar = await Ar.newAirline(airline);
+    const ar = Ar.newAirline(airline);
     // const pw = getRandomPassword(16);
     const pw = "password";
     ar.setPassword(pw);

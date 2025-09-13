@@ -61,9 +61,10 @@ function validateLogin(data: any): boolean{
         throw Error("Password required");
 
     // Check if there are not valid keys
-    if(keys.length === 2) return true;
-    else
-        throw Error("Credentials not valid");
+    return true;
+    // if(keys.length === 2) return true;
+    // else
+    //     throw Error("Credentials not valid");
 }
 
 export function validateUpdate(data: any): boolean{

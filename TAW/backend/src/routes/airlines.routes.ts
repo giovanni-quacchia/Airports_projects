@@ -20,8 +20,7 @@ router.get("/", auth.optionalCheckToken, airlines.getAllAirlines);
 // Only admin can view all info
 router.get("/:id", auth.optionalCheckToken, airlines.getAirline);
 
-// Create a new airline
-// Only the admin creates new airlines
+// Create a new airline: only admin
 router.post("/", auth.authenticateToken, auth.checkAdmin, airlines.createAirline);
 
 // Delete airline: only admin

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const DBname = "AirplanesDB"
-const mongoUri = "mongodb://localhost:27017/" + DBname;
+const replicaSet = "rs0";
+const mongoUri = `mongodb://localhost:27017/${DBname}?replicaSet=${replicaSet}`;
 
 import { AddAirlines, addAirplanes, addAirports, addFlights, addPassengers, addRoutes, addTickets, AddUsers } from './start';
 

@@ -6,14 +6,18 @@
 
 ### TODO
 
+- Cabmiare le FK???
+
 - Sistemare i validate delle interfacce
 - Aggiungere ricerca, sort su airplanes
 - Statistiche: rotte + richieste (aggiungere sortBy numPasseggeri)
 - Rotte gestite da admin e airlines
 - Aerei hanno una rotta in un certo periodo
 - Acquisto biglietto solo per utenti loggati
-- Mostrare disponibilità posti in tempo reale
+- Mostrare disponibilità posti in tempo reale (check posti)
 - Aggiungere campo populate: boolean per decidere se aggiungere info (Ad esempio per flight aggiungo le info su airports, airline, airplane). Allora forse è meglio tenere l'objectId per le richerche con :id. magari solo per singolo volo. Perche ad esempio mi servono le info per from e to su tutti gli aerei boh
+
+- configurare il db e inserire i dati
 
 ### Specifiche
 
@@ -49,9 +53,17 @@ Ticket: volo, prezzo, tipo (economy, ...)
 
 Per eseguire fuori dal docker
 
-- docker run -d -p 27017:27017 --name mymongo mongo:6 // database
-- npm install
-- npx nodemon app.ts
+```bash
+# Container docker
+# replica set con nome rs0, --bind_ip_all rende mongo accessibile anche dall'host esterno
+docker run -d -p 27017:27017 --name mymongo2 -v /path/to/init-scripts:/docker-entrypoint-initdb.d mongo:6 --replSet rs0 --bind_ip_all
+
+# Backend
+npm install
+npx nodemon app.ts
+```
+
+
 
 ADMIN INFO
 /airlines (CRUD) ✅
@@ -81,6 +93,10 @@ Query per numPasseggeri + totalRevenue
             passenger: {ticket: t3}
         },
     ]
+
+#### Transactions
+
+Replica set: Utilizza un transaction coordinator che garantisce atomicità multi-documento
 
 ## Progetto DB
 

@@ -16,7 +16,7 @@ export function getRandomPassword(length: Number){
 // INPUT: {code: ["123", "number"], mail: {"mail@gmail.com", "string"}}
 // OUTPUT: {code: 123, mail: "mail@gmail.com"}
 
-export function validateObj(data: {[key: string]: [value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp]}){
+export function validateObj(data: {[key: string]: [value: unknown, type: string, regEx?: RegExp]}){
 
     const res = {}
 
@@ -32,7 +32,7 @@ export function validateObj(data: {[key: string]: [value: unknown, type: "string
 }
 
 // Skip keys when values are undefined or null
-export function validatePartialObj(data: {[key: string]: [value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp]}){
+export function validatePartialObj(data: {[key: string]: [value: unknown, type: string, regEx?: RegExp]}){
 
     const res = {}
 
@@ -54,13 +54,15 @@ function castValue(value, type: string){
     return (type === "number" ? Number(value) : type === "boolean" ? value === "true" || value === true : value)
 }
 
-function isValidType(value: unknown, type: "string" | "number" | "boolean" | "mail", regEx?: RegExp, allowNull: boolean = false){
+function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = false){
     
     if(value === null || value === undefined) return allowNull;
 
     const match = regEx ?? /.*/; // ??: nullish coalesce operator
     // https://www.geeksforgeeks.org/javascript/javascript-program-to-validate-an-email-address/
     const mailMatch = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ 
+    const IATAMatch = /^[A-Z]{3}$/
+    const IATA2Match = /^[A-Z]{2}$/
 
     switch(type){
         case "string":
@@ -76,7 +78,23 @@ function isValidType(value: unknown, type: "string" | "number" | "boolean" | "ma
             return (
                 typeof value === "string" && mailMatch.test(value)
             )
+        case "IATA":
+            return (
+                typeof value == "string" && IATAMatch.test(value)
+            )
+        case "IATA-2":
+            return (
+                typeof value == "string" && IATA2Match.test(value)
+            )
         default:
             return false;
     }
+}
+
+export function isObject(data){
+    return (typeof data === "object" && data !== null && !Array.isArray(data))
+}
+
+export function isObjSameSize(obj1: object, obj2: object){
+    return Object.keys(obj1).length === Object.keys(obj2).length
 }

@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, validateObj, validatePartialObj } from '../utils/utils';
 
 // Interface
 export interface Airport{
@@ -24,7 +24,6 @@ const AirportSchema = new mongoose.Schema<Airport>({
 });
 
 // Model
-// Discriminator: 
 
 let airportModel: mongoose.Model<Airport>;
 export function getModel(): mongoose.Model<Airport> {
@@ -33,7 +32,6 @@ export function getModel(): mongoose.Model<Airport> {
 }
 
 export function createAirport(data): mongoose.HydratedDocument<Airport> {
-    validateInput(data)
     const _airportModel = getModel();
     const airport = new _airportModel(data);
     return airport;
@@ -41,50 +39,42 @@ export function createAirport(data): mongoose.HydratedDocument<Airport> {
 
 // Validate
 
-function validateInput(data: any): boolean{
+function validateNew(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data)
-
-    if(!data.name || typeof data.name !== 'string') 
-        throw Error("Name required");
-    if(!data.city || typeof data.city !== 'string') 
-        throw Error("City required");
-    if(!data.code || typeof data.code !== 'string') 
-        throw Error("Code required");
-    if(!/^[A-Z]{3}$/.test(data.code))
-        throw Error("Code is not valid");
-    if(!data.country || typeof data.country !== 'string') 
-        throw Error("Country required");
-    
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["name", "city", "code", "country"])) return true;
-    else
-        throw Error("Not valid data");
+    return validateObj({
+        name: [data.name, "string"],
+        city: [data.city, "string"],
+        code: [data.code, "IATA"],
+        country: [data.country, "string"]
+    });
 }
 
-export function validateUpdate(data: any): boolean{
+export function validatePut(data: any){
 
     if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data)
+    const parsedData = validatePartialObj({
+        name: [data.name, "string"],
+        city: [data.city, "string"],
+        code: [data.code, "IATA"],
+        country: [data.country, "string"]
+    })
 
-    if(
-        (!data.name || typeof data.name !== 'string') &&
-        (!data.city || typeof data.city !== 'string') &&
-        (!data.code || typeof data.code !== 'string') &&
-        (!data.country || typeof data.country !== 'string')
-    )
-        throw Error("Updating an airport requires a new name, city, code or country")
+    if(Object.keys(parsedData).length === 0) throw Error("Update not valid, please provide at least a new code, name city or country")
 
-    if(data.code && !/^[A-Z]{3}$/.test(data.code))
-        throw Error("Code is not valid");
-
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["name", "city", "code", "country"])) return true;
-    else
-        throw Error("Not valid data");
+    return parsedData;
 }
 
-export default {getModel, createAirport, validateUpdate}
+function validateSearch(data: any){
+
+    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+
+    return validatePartialObj({
+        q: [data.q, "string"]
+    });
+}
+
+
+export default {getModel, createAirport, validateNew, validatePut, validateSearch}

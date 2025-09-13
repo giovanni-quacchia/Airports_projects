@@ -58,7 +58,7 @@ async function createRoute(data){
     const exists = await Ro.getModel().findOne(query)
     if(exists) throw Error("Route already exists")
 
-    const ro = await Ro.createRoute(query);
+    const ro = Ro.createRoute(query);
     return ro;
 }
 

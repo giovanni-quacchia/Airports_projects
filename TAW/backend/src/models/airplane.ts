@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { Route } from './route';
+import Route from './route';
+import { validateObj, validatePartialObj, isObject, isObjSameSize } from '../utils/utils';
 
 // Interface
 export interface Airplane{
@@ -17,7 +18,8 @@ const AirplaneSchema = new mongoose.Schema<Airplane>({
         type: Number, 
         unique: true,
         validate: {
-            validator: Number.isInteger
+            validator: (code) => Number.isInteger(code) && code > 0,
+            message: (props) => `${props.value} is not a valid positive integer`
         }
     },
     model: {type: String, required: true},
@@ -46,34 +48,23 @@ export function newAirplane(data): mongoose.HydratedDocument<Airplane> {
 
 function validateInput(data: any): boolean{
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw Error("Not valid data");
 
-    const keys = Object.keys(data)
+    let query: any = validateObj({
+        code: [data.code, "number"],
+        model: [data.model, "string"],
+        rows: [data.rows, "number"],
+        letters: [data.letters, "number"],
+        airline: [data.airline, "IATA-2"],
+    });
 
-    if(!data.code || isNaN(Number(data.code))) 
-        throw Error("Code required");
-    if(!data.model || typeof data.model !== 'string') 
-        throw Error("Model required");
-    if(data.route && typeof data?.route !== 'string')
-        throw Error("Route not valid")
-    if(!data.rows || isNaN(Number(data.rows)))
-        throw Error("Number of rows not valid")
-    if(!data.letters || isNaN(Number(data.letters)))
-        throw Error("Number of letters not valid")
-    if(!data.airline || !mongoose.Types.ObjectId.isValid(data.airline))
-        throw Error("Airline required")
+    if(data.route){
+        query = {...query, route: Route.validateNew(data.route)};
+    }
 
-    data.code = Number(data.code);
-    data.rows = Number(data.rows);
-    data.letters = Number(data.letters)
+    if(!isObjSameSize(query, data)) throw Error("A new airplane must include: code, model, rows, letter, airline and optional route")
 
-    // Check if there are not valid keys
-    const validKeys = ["code", "model", "route", "rows", "letters", "airline"];
-    keys.forEach(key => {
-        if(!validKeys.includes(key))
-            throw Error("Not valid data");
-        })
-    return true;
+    return query;
 }
 
 export function validateUpdate(data: any): boolean{

@@ -2,7 +2,7 @@ import airports from '../services/airports.service'
 
 export async function getAllAirports(req, res, next) {
     try {
-        const result = await airports.getAllAirports();
+        const result = await airports.getAllAirports(req.query);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);
@@ -23,7 +23,7 @@ export async function createAirport(req, res, next){
     const ar = req.body
     try {
         const result = await airports.createAirport(ar);
-
+        result.save();
         console.log("\nAirport created:");
         for(const value of Object.values(ar))
             console.log(`-${value}`);     

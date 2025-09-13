@@ -28,8 +28,12 @@ async function getAirplane(id: string){
 }
 
 async function createAirplane(airplane: Partial<Airplane>){
-    const ar = newAirplane(airplane);
-    return ar;
+    const doc = newAirplane(airplane);
+
+
+
+    await doc.save();
+    return doc;
 }
 
 async function deleteAirplane(id: string){
