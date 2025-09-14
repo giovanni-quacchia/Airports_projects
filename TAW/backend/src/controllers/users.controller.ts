@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
 import users from '../services/users.service'
 import { validateLogin } from '../utils/auth.utils';
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 import { validateNew, validatePut, validateSearch } from '../models/user';
+import { AppError } from '../models/AppError';
 
 export async function logIn(req, res, next) {
     try {
@@ -54,9 +54,10 @@ export async function deleteUser(req, res, next){
         const {id} = req.params;
         validateObj({ id: [id, "ID"] });
 
-        const result = await users.deleteUser(id, req.user);
+        const result: any = await users.deleteUser(id);
+        if(!result) throw new AppError("User not found", 4004);
 
-        res.json(result);
+        res.json({message: "User deleted", user: {_id: result._id, mail: result.mail}});
     } catch (err) {
         res.status(400).send(manageErrors(err, "User"));
     }
@@ -69,10 +70,12 @@ export async function updateUser(req, res, next){
 
         const parsedData = validatePut(req.body)
         
-        const result = await users.updateUser(id, parsedData, req.user);
-        res.json(result);
+        const result = await users.updateUser(id, parsedData);
+        if(!result) throw new AppError("User not found", 4004);
+
+        res.json({message: "User updated", user: {_id: result._id, mail: result.mail}});
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "User"));
     }
 }
 

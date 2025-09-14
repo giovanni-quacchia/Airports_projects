@@ -9,7 +9,7 @@ router.post("/", users.createUser);
 // Log in
 router.post("/sessions", users.logIn);
 
-// Get All users: only admin
+// Get All users: only admin ? [mail]
 router.get("/", auth.authenticateToken, auth.checkAdmin, users.getAllUsers);
 
 // Get :id user: only admin or specific user

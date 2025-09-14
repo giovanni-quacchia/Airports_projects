@@ -15,8 +15,6 @@ async function logIn(data) {
         isAdmin: user.isAdmin()
     });
 
-    console.log(user)
-
     return {token: token, expireDays: 7};
 }
 
@@ -35,6 +33,7 @@ async function getAllUsers(query) {
 async function getUser(id: string, user){
     const select = user.isAdmin ? "" : "mail";
     const res = await Us.getModel().findById(id).select(select);
+    if(!res) throw new AppError("User not found", 4004);
     return res;
 }
 
@@ -58,14 +57,13 @@ export async function createUser(User: {mail: string, password: string, isAdmin:
     return {token: token, expireDays: 7};
 }
 
-// TODO: da sistemare delete e update
-async function deleteUser(id: string, user){
-    return Us.getModel().findByIdAndDelete(id);
+async function deleteUser(id: string){
+    return await Us.getModel().findByIdAndDelete(id);
 }
 
-async function updateUser(id: string, data: any, user){
-    Us.validatePut(data);
-    return Us.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
+async function updateUser(id: string, data: any){
+    const query = Us.validatePut(data);
+    return await Us.getModel().findByIdAndUpdate(id, query, { new: true, runValidators: true });
 }
 
 export default {
