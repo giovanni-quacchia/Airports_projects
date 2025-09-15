@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
 import { AppError } from './AppError';
 
 // Interface

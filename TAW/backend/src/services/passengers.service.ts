@@ -2,9 +2,10 @@ import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
 import Pa from '../models/Passenger';
 import Ticket from './tickets.service';
+import { AppError } from '../models/AppError';
 
 
-async function getAllpassengers(query, flightId?: string) {
+async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
     Pa.validateSearch(query);
 
     const {sortBy = "seat", order = "asc"} = query;
@@ -22,15 +23,33 @@ async function getAllpassengers(query, flightId?: string) {
 
         { $match: {name: name, surname: surname, seat: seat }},
 
-        ...JOIN("tickets", "ticket"),
+        ...JOIN("purchases", "purchase", "ticket user"),
+        ...JOIN("tickets", "purchase.ticket", "flight type"),
+        ...JOIN("flights", "purchase.ticket.flight", "airline"),
     ]
 
     if(query.CF) pipeline.push( { $match: {CF: CF}} )
     if(query.passportNumber) pipeline.push( { $match: {passportNumber: passportNumber}} )
 
     if(flightId){
+
+        // Only admin and specific airline of the flight
+        if(!user.isAdmin && user.id !== flightId) throw new AppError("You are not allowed to perform this operation", 4003);
+
         pipeline.push({
-            $match: {"ticket.flight": new mongoose.Types.ObjectId(flightId)}
+            $match: {
+                "purchase.ticket.flight": new mongoose.Types.ObjectId(flightId),
+            }
+        })
+    } else if(purchaseId){
+        pipeline.push({
+            $match: {
+                "purchase._id": new mongoose.Types.ObjectId(purchaseId),
+                $or: [
+                    { "purchase.user" : user.isAdmin ? { $exists: true } : new mongoose.Types.ObjectId(user.id) },
+                    { "purchase.ticket.flight.airline": user.isAdmin ? { $exists: true } : new mongoose.Types.ObjectId(user.id) }
+                ]
+            }
         })
     }
 
@@ -38,19 +57,23 @@ async function getAllpassengers(query, flightId?: string) {
         { $sort: { [sortBy]: sortOrder } }
     )
 
-    return Pa.getModel().aggregate(pipeline);
+    const result = await Pa.getModel().aggregate(pipeline);
+
+    // TODO: se airline o utente non autorizzato ricevono un array vuoto, come distingure da 
+    // il caso in cui non ci sono passeggeri?
+
+    return result;
 }
 
-async function getPassenger(id: string){
+// TODO: da finire da qui
+async function getPassenger(id: string, user){
     return Pa.getModel().findById(id);
 }
 
 // Check ticket.qnt and update it and create new passenger
-export async function createPassenger(passenger){
+export async function createPassenger(data, user){
 
-    Pa.validateInput(passenger)
-
-    const {ticket: ticketId} = passenger
+    const {ticket: ticketId} = data
     let res;
 
     // check ticket.qnt
@@ -63,20 +86,19 @@ export async function createPassenger(passenger){
     await ticket.save();
 
     // check seat
-    const p: any[] = await getAllpassengers({seat: passenger.seat}, String(ticket.flight._id));
-    if(p.length !== 0) throw Error("Seat already taken")
+    // const p: any[] = await getAllpassengers({seat: data.seat}, String(ticket.flight._id));
+    // if(p.length !== 0) throw Error("Seat already taken")
 
     // create new passenger
-    res = Pa.createPassenger(passenger);
+    res = Pa.createPassenger(data);
     return res.save();
 }
 
-async function deletePassenger(id: string){
+async function deletePassenger(id: string, user){
     return Pa.getModel().findByIdAndDelete(id);
 }
 
-async function updatePassenger(id: string, data: any){
-    Pa.validate(data);
+async function updatePassenger(id: string, data: any, user){
     return Pa.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
 }
 

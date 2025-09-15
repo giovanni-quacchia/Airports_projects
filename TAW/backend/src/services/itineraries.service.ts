@@ -1,10 +1,11 @@
 import { addItineraryFields, getAirportContidions, JOIN, JOINStop, matchAirlines, matchAirport, matchDate } from "../db/queries";
-import { checkKeys } from "../utils/utils";
+import { isObject, validateObj, validatePartialObj } from "../utils/utils";
 import Fl from '../models/Flight';
 import { getAllFlights } from "../services/flights.service";
+import { AppError } from "../models/AppError";
 
-async function getAllItineraries(query){
-    checkQuery(query);
+async function getAllItineraries(data){
+    const query: any = checkQuery(data);
     let { from, to, fromDate = "", toDate = "", onlyDirect = false, maxStops = 2, airline, sortBy = "departure", order = "asc"} = query;
     
     airline = airline ? { $regex: airline, $options: "i" } : /.*/;
@@ -30,7 +31,7 @@ async function getAllItineraries(query){
 
         ...JOIN("airports", "route.to"),
 
-        ...JOIN("users", "airline", "code PIVA name logo"),
+        ...JOIN("airlines", "airline", "code PIVA name logo"),
         
         ...JOIN("airplanes", "airplane"),
 
@@ -76,44 +77,35 @@ async function getAllItineraries(query){
     return Fl.getModel().aggregate(pipeline);
 }
 
-function checkQuery(data: any): boolean{
+function checkQuery(data: any){
     
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
+    const query = validateObj({
+        from: [data.from, "string"],
+        to: [data.to, "string"]
+    })
 
-    if(!keys.includes("from") || !keys.includes("to"))
-        throw Error("Searching an itinerary requires at least from and to locations")
-
-    if(
-        (!data.from || typeof data.from !== 'string') &&
-        (!data.to || typeof data.to !== 'string') &&
-        (!data.fromDate || typeof data.fromDate !== 'string') &&
-        (!data.toDate || typeof data.toDate !== 'string') &&
-        (!data.onlyDirect || (data.onlyDirect !== 'true' && data.onlyDirect !== 'false')) && 
-        (!data.maxStops || isNaN(Number(data.maxStops))) &&
-        (!data.airline || typeof data.airline !== 'string') &&
-        (!data.sortBy || typeof data.sortBy !== 'string') &&
-        (!data.order || typeof data.order !== 'string')
-    )
-        throw Error("Searching an itinerary not valid");
-
-    if(data.onlyDirect) data.onlyDirect = (data.onlyDirect === 'true');
-    if(data.maxStops) data.maxStops = Number(data.maxStops)
+    const optQuery = validatePartialObj({
+        fromDate: [data.fromDate, "date"],
+        toDate: [data.toDate, "date"],
+        onlyDirect: [data.onlyDirect, "boolean"],
+        maxStops: [data.maxStops, "number"],
+        airline: [data.airline, "string"],
+        sortBy: [data.sortBy, "string"],
+        order: [data.order, "string"]
+    })
 
     if(
         (data.sortBy && !["departure", "arrival", "duration", "numStops"].includes(data.sortBy)) || 
         (data.order && !data.sortBy)
     )
-        throw Error("Sorting parameters not valid");
+        throw new AppError("Itineraries can be sorted by departure, arrival, duration or numStops", 4005);
 
     if(data.order && data.order !== "desc" && data.order !== "asc")
-        throw Error("Order parameter not valid");
+        throw new AppError("Order parameter not valid", 4005);
         
-    // Check if there are not valid keys
-    if(checkKeys(keys, ["from", "to", "fromDate", "toDate", "onlyDirect", "maxStops", "airline", "sortBy", "order"])) return true;
-    else
-        throw Error("Not valid data");
+    return {...query, ...optQuery};
 }
 
 export default{

@@ -93,6 +93,9 @@ async function createTicket(data, user){
 
         const newTicket = Ti.newTicket(data);
         await newTicket.save({session});
+
+        await session.commitTransaction();
+
         return newTicket;
     } catch (error) {
         await session.abortTransaction(); // rollback

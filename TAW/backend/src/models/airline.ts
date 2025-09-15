@@ -73,23 +73,28 @@ export function validateNew(data: any){
     return parsedData;
 }
 
-// TODO: add newPassword
-function validatePut(data: any){
+export function validatePut(data: any){
 
     if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const parsedData: any = validatePartialObj({
+    const query: any = validatePartialObj({
         code: [data.code, "string", /^[A-Z]{2}$/],
         mail: [data.mail, "mail"],
         PIVA: [data.PIVA, "string"],
         name: [data.name, "string"],
         logo: [data.logo, "string"],
         password: [data.password, "password"],
+        newPassword: [data.newPassword, "password"]
     }); 
 
-    if(isObjectEmpty(parsedData)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+    // ![ newPw && pw    ||    !newPw && !pw ]
+    if( (!query.password || !query.newPassword) && (query.password || query.newPassword))
+        throw new AppError("Please provide both password and new password", 4005)
 
-    return parsedData;
+
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+
+    return query;
 }
 
 export function validateSearch(data: any){

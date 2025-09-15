@@ -1,5 +1,6 @@
 import mongoose = require('mongoose');
-import { checkKeys } from '../utils/utils';
+import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { AppError } from './AppError';
 
 // Interface
 export interface Passenger{
@@ -9,7 +10,7 @@ export interface Passenger{
     passportNumber?: String;
     extra?: Array<'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG'>;
     seat: String;
-    ticket: mongoose.Schema.Types.ObjectId
+    purchase: mongoose.Schema.Types.ObjectId
 }
 
 // Schema: CF or passportNumber
@@ -21,7 +22,7 @@ const passengerSchema = new mongoose.Schema<Passenger>({
         type: String,
         validate: {
             validator: function(this: Passenger, value: string){
-                return !!value || !!this.passportNumber; // \!! converts to boolean
+                return !!value || !!this.passportNumber; // !! converts to boolean
             }
         }
     },
@@ -29,7 +30,7 @@ const passengerSchema = new mongoose.Schema<Passenger>({
         type: String,
         validate: {
             validator: function(this: Passenger, value: string){
-                return !!value || !!this.passportNumber; // \!! converts to boolean
+                return !!value || !!this.passportNumber; //!! converts to boolean
             }
         }
     },
@@ -43,9 +44,9 @@ const passengerSchema = new mongoose.Schema<Passenger>({
         required: true,
         match: /^[A-Z]\d+$/ // ensures format like "A1", "C12"
     },
-    ticket: { 
+    purchase: { 
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Ticket",
+        ref: "Purchase",
         required: true
     }
 });
@@ -59,7 +60,6 @@ export function getModel(): mongoose.Model<Passenger>{
 }
 
 export function createPassenger(data): mongoose.HydratedDocument<Passenger> {
-    validateInput(data);
     const _passengerModel = getModel();
     const passenger = new _passengerModel(data);
     return passenger;
@@ -67,101 +67,80 @@ export function createPassenger(data): mongoose.HydratedDocument<Passenger> {
 
 // Validate
 
-function validateInput(data: any): boolean{
+export function validateNew(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data)
+    const query = validateObj({
+        name: [data.name, "string"],
+        surname: [data.surname, "string"],
+        seat: [data.seat, "string", /^[A-Z]\d+$/],
+        purchase: [data.purchase, "ID"]
+    })
 
-    if(!data.name || typeof data.name !== 'string') 
-        throw Error("Name required");
-    if(!data.surname || typeof data.surname !== 'string') 
-        throw Error("Surname required");
-    if(
-        (!data.CF || typeof data.CF !== 'string') && 
-        (!data.passportNumber || typeof data.passportNumber !== 'string'))
-        throw Error("CF or Passport Number required");
-    
-        // Extra
-    if (data.extra) {
-        if (!Array.isArray(data.extra)) throw Error("Extra must be an array");
-        const allowedExtras = ["LARGER SEAT", "PRIORITY", "EXTRA BAG"];
-        for (const e of data.extra) {
-            if (!allowedExtras.includes(e)) throw Error(`Invalid extra: ${e}`);
+    const optQuery: any = validatePartialObj({
+        CF: [data.CF, "string"],
+        passportNumber: [data.passportNumber, "string"],
+        extra: [data.extra, "arrayOfStrings"]
+    })
+
+    if(!optQuery.CF && !optQuery.passportNumber)
+        throw new AppError("CF or Passport Number required", 4005);
+
+    if(data.extra){
+        for(const extra of data.extra){
+            if(!["LARGER SEAT", "PRIORITY", "EXTRA BAG"].includes(extra))
+                throw new AppError(`Invalid extra: ${extra}`, 4005);
         }
     }
-    // Seat
-    if (!data.seat || typeof data.seat !== 'string')
-        throw Error("Seat required");
-    if (!/^[A-Z]\d+$/.test(data.seat))
-        throw Error("Seat must be in format like 'A1', 'C12'");
 
-    // Ticket
-    if (!data.ticket || !mongoose.Types.ObjectId.isValid(data.ticket))
-        throw Error("Ticket must be valid");
-
-    // Check if there are not valid keys
-    if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat", "ticket"])) return true;
-    else
-        throw Error("Not valid data");
+    const parsedData = {...query, ...optQuery};
+    if(!isObjSameSize(parsedData, data)) throw new AppError("A new Passenger must include: name, surname, seat, purchase ID. CF or passportNumber and extra", 4005);
+    return parsedData;
 }
 
-export function validate(data: any): boolean{
+export function validatePut(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data)
+    const query = validatePartialObj({
+        name: [data.name, "string"],
+        surname: [data.surname, "string"],
+        CF: [data.CF, "string"],
+        passportNumber: [data.passportNumber, "string"],
+        extra: [data.extra, "arrayOfStrings"],
+        seat: [data.seat, "string", /^[A-Z]\d+$/],
+        purchase: [data.purchase, "ID"]
+    });
 
-    if(
-        (!data.name || typeof data.name !== 'string') &&
-        (!data.surname || typeof data.surname !== 'string') &&
-        (!data.CF || typeof data.CF !== 'string') &&
-        (!data.passportNumber || typeof data.passportNumber !== 'string') &&
-        (!data.extra || !Array.isArray(data.extra)) &&
-        (!data.seat || typeof data.seat !== 'string') 
-    )
-        throw Error("Updating a passenger requires a new name, surname, CF, Passport number, extra or seat")
-
-    // Check if there are not valid keys
-    if (checkKeys(keys, ["name", "surname", "CF", "passportNumber", "extra", "seat"])) return true;
-    else
-        throw Error("Not valid data");
+    if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
+    return query;
 }
 
-export function validateSearch(data: any): boolean{
+export function validateSearch(data: any){
 
-    if(typeof data !== "object" || data === null || Array.isArray(data)) throw Error("Not valid data");
+    if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const keys = Object.keys(data);
-
-    if(keys.length === 0) return true;
-
-    if(
-        (!data.CF || typeof data.CF !== 'string') &&
-        (!data.passportNumber || typeof data.passportNumber !== 'string') &&
-        (!data.name || typeof data.name !== 'string') &&
-        (!data.surname || typeof data.surname !== 'string') &&
-        (!data.seat || typeof data.seat !== 'string') &&
-        (!data.sortBy || typeof data.sortBy !== 'string') &&
-        (!data.order || typeof data.order !== 'string') 
-    )
-        throw Error("Searching a passenger not valid");
+    const query: any = validatePartialObj({
+        CF: [data.CF, "string"],
+        passportNumber: [data.passportNumber, "string"],
+        name: [data.name, "string"],
+        surname: [data.surname, "string"],
+        seat: [data.seat, "string"],
+        sortBy: [data.sortBy, "string"],
+        order: [data.order, "string"],
+    });
 
     if(
-        (data.sortBy && !["name", "surname", "seat", "CF", "passportNumber"].includes(data.sortBy)) || 
-        (data.order && !data.sortBy)
+        (query.sortBy && !["name", "surname", "seat", "CF", "passportNumber"].includes(query.sortBy)) || 
+        (query.order && !query.sortBy)
     )
-        throw Error("Sorting parameters not valid");
+        throw new AppError("Sorting parameters not valid", 4005);
 
-    if(data.order && data.order !== "desc" && data.order !== "asc")
-        throw Error("Order parameter not valid");
+    if(query.order && query.order !== "desc" && query.order !== "asc")
+        throw new AppError("Order parameter not valid", 4005);
 
-    if(data.ticket) data.ticket = Number(data.ticket);
-
-    // Check if there are not valid keys
-    if (checkKeys(keys, ["seat", "sortBy", "order", "name", "surname", "CF", "passportNumber"])) return true;
-    else
-        throw Error("Not valid data");
+    return query;
 }
 
-export default {getModel, createPassenger, validate, validateInput, validateSearch}
+export default {getModel, createPassenger, validatePut, validateNew, validateSearch}

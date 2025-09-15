@@ -1,56 +1,51 @@
-import mongoose from 'mongoose';
 import airlines from '../services/airlines.service'
+import { manageErrors, printObject, validateObj } from '../utils/utils';
+import { validateLogin } from '../utils/auth.utils';
+import { validateNew, validatePut, validateSearch } from '../models/Airline';
+import { AppError } from '../models/AppError';
 
 export async function logIn(req, res, next) {
     try {
-        const result = await airlines.logIn(req.body);
+        const query = await validateLogin(req.body)
+        const result = await airlines.logIn(query);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 
 export async function getAllAirlines(req, res, next) {
     try {
-        const result = await airlines.getAllAirlines(req.user, req.query);
+        const query = validateSearch(req.query)
+        const result = await airlines.getAllAirlines(req.user, query);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 
 export async function getAirline(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] });
         
-        // Check invalid ID
-        if (!mongoose.Types.ObjectId.isValid(id)) throw new Error("Invalid ID format");
-        
-        const result = await airlines.getAirline(req.user, id);
-        
-        // Check if no result
-        if(!Array.isArray(result) || !result.length) throw new Error("Airline not found");
-        
+        const result = await airlines.getAirline(id, req.user);
+                
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 
 export async function createAirline(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const {airline, password} = await airlines.createAirline(ar);
-
-        console.log("\nAirline created:");
-        console.log(`-${ar.PIVA}\n-${ar.name}\n-${ar.mail}:${password}\n`);
-        
-        res.json(airline);
+        parsedData = validateNew(req.body); 
+        const {airline, password} = await airlines.createAirline(parsedData);
+        printObject("Airline created", {...parsedData, password})
+        res.json({...airline, password});
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `Airline already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 
@@ -58,25 +53,31 @@ export async function createAirline(req, res, next){
 export async function deleteAirline(req, res, next){
     try {
         const {id} = req.params;
+        validateObj({ id: [id, "ID"] });
+
         const result = await airlines.deleteAirline(id);
-        res.json(result);
+        if(!result) throw new AppError("Airline not found", 4004);
+
+        res.json({message: "Airline deleted", airline: result});
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 
 export async function updateAirline(req, res, next){
     try {
         const {id} = req.params;
-        const result = await airlines.updateAirline(id, req.body);
-        res.json(result);
+        validateObj({ id: [id, "ID"] })
+
+        const parsedData = validatePut(req.body);
+        
+
+        const result = await airlines.updateAirline(id, parsedData, req.user);
+        if(!result) throw new AppError("Airline not found", 4004);
+
+        res.json({message: "Airline updated", airline: result});
     } catch (err) {
-        console.log(err.keyPattern)
-        if (err.code === 11000){
-            const field = Object.keys(err.keyPattern)[0];
-            err.message = `Airline with ${field}: ${req.body[field]} already exists`;
-        }
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Airline"));
     }
 }
 

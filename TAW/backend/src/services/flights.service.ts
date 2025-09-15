@@ -114,6 +114,9 @@ async function createFlight(data){
 
         const newFlight = Fl.newFlight(data);
         await newFlight.save({session});
+
+        await session.commitTransaction();
+
         return newFlight;
     } catch (error) {
         await session.abortTransaction(); // rollback

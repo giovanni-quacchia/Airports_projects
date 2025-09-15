@@ -107,6 +107,8 @@ function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = f
             return typeof value === "string" //&& pwMatch.test(value)
         case "ticketType":
             return typeof value === "string" && (["ECONOMY", "BUSINESS", "FIRST CLASS"].includes(value))
+        case "arrayOfStrings":
+            return Array.isArray(value) && value.every(v => typeof v === "string");
         default:
             return false;
     }
@@ -139,6 +141,8 @@ export function manageErrors(err, collection: string){
             return {type: "Field missing", msg: err.message};
         case 4004:
             return {type: "Document not found", msg: err.message};
+        case 4003:
+            return {type: "Forbidden", msg: err.message};
         case 4005:
             return {type: "Input error", msg: err.message};
         case 4006:

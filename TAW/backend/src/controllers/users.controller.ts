@@ -68,7 +68,7 @@ export async function updateUser(req, res, next){
         const {id} = req.params;
         validateObj({ id: [id, "ID"] })
 
-        const parsedData = validatePut(req.body)
+        const parsedData = validatePut(req.body);
         
         const result = await users.updateUser(id, parsedData);
         if(!result) throw new AppError("User not found", 4004);

@@ -9,6 +9,9 @@ export interface User{
     roles?: string[];
     salt?: string;
     digest?: string;
+
+    balance?: number;
+
     isAdmin(): boolean;
     setAdmin(): void;
     setPassword(pwd: string): void;
@@ -21,7 +24,8 @@ const userSchema = new mongoose.Schema<User>({
     mail: { type: String, required: true, unique: true },
     roles: { type: [String], required: true, default: [] },
     salt: { type: String, required: true},
-    digest: { type: String, required: true}
+    digest: { type: String, required: true},
+    balance: { type: Number, min: 0, default: 0 }
 })
 
 // Metodi
@@ -70,7 +74,8 @@ export function validatePut(data: any){
     const query: any = validatePartialObj({
         mail: [data.mail, "mail"],
         password: [data.password, "password"],
-        newPassword: [data.newPassword, "password"]
+        newPassword: [data.newPassword, "password"],
+        balance: [data.balance, "positiveNumber"]
     });
 
     // ![ newPw && pw    ||    !newPw && !pw ]
@@ -103,7 +108,7 @@ export function getModel(): mongoose.Model<User> {
 
 export function createUser(data): mongoose.HydratedDocument<User> {
     const _usermodel = getModel();
-    const user = new _usermodel({mail: data.mail});
+    const user = new _usermodel({_id: data._id, mail: data.mail, balance: data.balance || 0});
     return user;
 }
 

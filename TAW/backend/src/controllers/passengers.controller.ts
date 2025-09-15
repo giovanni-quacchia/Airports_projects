@@ -1,50 +1,58 @@
+import { validateNew, validateSearch } from '../models/Passenger';
 import passengers from '../services/passengers.service'
+import { manageErrors, printObject, validateObj } from '../utils/utils';
+
+// TODO: Admin, user who made the purchase, airline of the flight
 
 export async function getAllPassengers(req, res, next) {
     try {
-        const {flightId} = req.params;
-        const result = await passengers.getAllpassengers(req.query, flightId);
+        const {flightId, purchaseId} = req.params;
+        if(flightId) validateObj({id: [flightId, "ID"]})
+        if(purchaseId) validateObj({id: [purchaseId, "ID"]})
+
+        const query = validateSearch(req.query);
+
+        const result = await passengers.getAllpassengers(query, flightId, purchaseId, req.user);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Passenger"));
     }
 }
 
 export async function getPassenger(req, res, next){
     try {
         const {id} = req.params;
-        const result = await passengers.getPassenger(id);
+        validateObj({ id: [id, "ID"] })
+        
+        const result = await passengers.getPassenger(id, req.user);
+
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Passenger"));
     }
 }
 
 export async function createPassenger(req, res, next){
-    const ar = req.body
+    let parsedData: any = {}
     try {
-        const result = await passengers.createPassenger(ar);
-
-        console.log("\npassenger created:");
-        for(const value of Object.values(ar))
-            console.log(`-${value}`);   
-          
+        parsedData = validateNew(req.body);
+        const result = await passengers.createPassenger(parsedData, req.user);
+        printObject("Passenger created", parsedData)
         res.json(result);
     } catch (err) {
-        // duplicate error
-        if (err.code === 11000)
-            err.message = `passenger with code ${ar.code} already exists`;
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Passenger"));
     }
 }
 
 export async function deletePassenger(req, res, next){
     try {
         const {id} = req.params;
-        const result = await passengers.deletePassenger(id);
+        validateObj({ id: [id, "ID"] });
+
+        const result = await passengers.deletePassenger(id, req.user);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Passenger"));
     }
 }
 
@@ -52,7 +60,7 @@ export async function updatePassenger(req, res, next){
     const ar = req.body;
     try {
         const {id} = req.params;
-        const result = await passengers.updatePassenger(id, ar);
+        const result = await passengers.updatePassenger(id, ar, req.user);
         res.json(result);
     } catch (err) {
         res.status(400).send(err.message);

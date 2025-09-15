@@ -108,7 +108,7 @@ export function validateLogin(data: any){
         password: [data.password, "string"],
     })
 
-    // newPassword opt (to update pw on first login)
+    // newPassword opt (to update pw on first login for airlines)
     const optQuery = validatePartialObj({
         newPassword: [data.newPassword, "password"],
     });
