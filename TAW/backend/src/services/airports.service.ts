@@ -16,6 +16,7 @@ async function getAirport(id: string){
 async function createAirport(airport: Partial<Airport>){
     const parsedData = Ar.validateNew(airport)
     const ar = Ar.newAirport(parsedData);
+    await ar.save();
     return ar;
 }
 

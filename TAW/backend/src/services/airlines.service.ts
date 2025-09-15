@@ -1,4 +1,4 @@
-import Ar, {Airline} from '../models/airline';
+import Ar, {Airline} from '../models/Airline';
 import mongoose from 'mongoose';
 import { validateLogin } from '../utils/auth.utils';
 

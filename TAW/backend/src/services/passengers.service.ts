@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
-import Pa from '../models/passenger';
+import Pa from '../models/Passenger';
 import Ticket from './tickets.service';
 
 

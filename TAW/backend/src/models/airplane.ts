@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import Route from './route';
+import Route from './Route';
 import { validateObj, validatePartialObj, isObject, isObjSameSize } from '../utils/utils';
 import { AppError } from './AppError';
 

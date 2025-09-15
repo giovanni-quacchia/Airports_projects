@@ -58,6 +58,16 @@ Per eseguire fuori dal docker
 # replica set con nome rs0, --bind_ip_all rende mongo accessibile anche dall'host esterno
 docker run -d -p 27017:27017 --name mymongo2 -v /path/to/init-scripts:/docker-entrypoint-initdb.d mongo:6 --replSet rs0 --bind_ip_all
 
+# init del db
+docker exec -it mymongo2 mongosh
+
+rs.initiate({
+  _id: "rs0",
+  members: [
+    { _id: 0, host: "localhost:27017" }
+  ]
+})
+
 # Backend
 npm install
 npx nodemon app.ts

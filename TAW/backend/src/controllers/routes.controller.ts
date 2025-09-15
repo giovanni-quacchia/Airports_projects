@@ -1,4 +1,4 @@
-import { validateNew, validatePut } from '../models/route';
+import { validateNew, validatePut } from '../models/Route';
 import routes from '../services/routes.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 

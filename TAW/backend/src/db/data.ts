@@ -1,5 +1,5 @@
-import { Airline } from "../models/airline";
-import { Airplane } from "../models/airplane";
+import { Airline } from "../models/Airline";
+import { Airplane } from "../models/Airplane";
 import { Airport } from "../models/Airport";
 
 export const users: {mail: string, password: string, isAdmin: boolean}[] = [

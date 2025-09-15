@@ -1,32 +1,58 @@
-# File to configure the containers and network
 
-version: "3.8"
-
+name: taw
 services:
-  # Backend container
-  backend:
-    build: .
-    container_name: backend
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - mongo
-    networks:
-      - taw
-
-  mongodb:
+  db:
     image: mongo:6
-    container_name: mongodb
-    volumes:
-      - mongo-data:/data/db
+    container_name: taw_db
+    ports: 
+      - 27017:27017
+    command: ["--replSet", "rs0", "--bind_ip", "0.0.0.0"] # only containers in the same network can access: 0.0.0.0
     networks:
-      - taw
+      - taw-network
+
+  dbInit:
+    image: mongo:6
+    depends_on:
+      - db
+    restart: on-failure
+    command: >
+      bash -c "
+      sleep 10 &&
+      mongosh --host db:27017 --eval \"
+      rs.initiate({
+        _id: 'rs0',
+        members: [
+          { _id: 0, host: 'db:27017' }
+        ]
+      });
+      rs.status();
+      \"
+      "
+    networks:
+      - taw-network
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: taw_backend
+    ports:
+      - 3000:3000  # <hostPort>:<containerPort>
+    depends_on:
+      - db
+    # TODO: modificare i file nel container, modifica anche i file originali
+    volumes:
+      - ./backend:/app          # Mount source code
+      - /app/node_modules       # Keep node_modules inside container
+    environment:
+      - NODE_ENV=development    # log + dettagliato (dev environment)
+    networks:
+      - taw-network
 
 networks:
-  taw:
+  taw-network:
+    driver: bridge
 
-volumes:
-  mongo-data:
+# docker-compose up -d: Primo avvio
+# docker-compose start/stop/restart/down (down elimina tutto)
+# docker logs <serviceName> (-f realtime)

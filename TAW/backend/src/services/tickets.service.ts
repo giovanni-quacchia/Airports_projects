@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import { JOIN, matchAirport } from '../db/queries';
 import Ti, {Ticket} from '../models/Ticket';
 import { AppError } from '../models/AppError';
-import {getModel as getFlightModel} from '../models/flight'
-import {getModel as getPassengerModel} from '../models/passenger'
+import {getModel as getFlightModel} from '../models/Flight'
+import {getModel as getPassengerModel} from '../models/Passenger'
 
 async function getAllTickets(query, flightId = "", airlineId = "") {
     

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
-import {Airplane, getModel, newAirplane, validatePut} from '../models/airplane';
-import Airline from '../models/airline'
+import {Airplane, getModel, newAirplane, validatePut} from '../models/Airplane';
+import Airline from '../models/Airline'
 import { AppError } from '../models/AppError';
 
 async function getAllAirplanes(airlineId = "") {
@@ -36,9 +36,9 @@ async function createAirplane(data){
 
     // Start transaction
     const session = await mongoose.startSession();
-    session.startTransaction();
 
     try {
+        session.startTransaction();
         // Check if airline exists
         const airline = await Airline.getModel().findById(data.airline).session(session);
         if(!airline) throw new AppError("Airline not found", 4005);

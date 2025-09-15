@@ -1,18 +1,19 @@
 const mongoose = require('mongoose');
 
+const dockerServiceName = "db"
 const DBname = "AirplanesDB"
 const replicaSet = "rs0";
-const mongoUri = `mongodb://localhost:27017/${DBname}?replicaSet=${replicaSet}`;
+const mongoUri = `mongodb://${dockerServiceName}:27017/${DBname}?replicaSet=${replicaSet}`;
 
 import { AddAirlines, addAirplanes, addAirports, addFlights, addPassengers, addRoutes, addTickets, AddUsers } from './start';
 
 import {getModel as getAirportsModel} from '../models/Airport';
-import {getModel as getRoutesModel, Route} from '../models/route';
-import {getModel as getAirlinesModel} from '../models/airline';
-import {getModel as getFlightsModel} from '../models/flight';
+import {getModel as getRoutesModel, Route} from '../models/Route';
+import {getModel as getAirlinesModel} from '../models/Airline';
+import {getModel as getFlightsModel} from '../models/Flight';
 import {getModel as getTicketsModel} from '../models/Ticket';
-import {getModel as getAirplanesModel} from '../models/airplane';
-import {getModel as getPassengerModel} from '../models/passenger';
+import {getModel as getAirplanesModel} from '../models/Airplane';
+import {getModel as getPassengerModel} from '../models/Passenger';
 
 
 export async function connectDB(){

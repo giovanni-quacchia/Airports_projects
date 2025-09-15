@@ -1,5 +1,5 @@
 import airplanes from '../services/airplanes.service'
-import { validateNew, validatePut } from '../models/airplane';
+import { validateNew, validatePut } from '../models/Airplane';
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 
 export async function getAllAirplanes(req, res, next) {

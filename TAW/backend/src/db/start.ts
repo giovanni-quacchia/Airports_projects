@@ -1,14 +1,14 @@
 const pc = require('picocolors')
 
 // Models
-import {getModel as getAirlineModel} from '../models/airline';
-import {getModel as getAirplaneModel} from '../models/airplane';
+import {getModel as getAirlineModel} from '../models/Airline';
+import {getModel as getAirplaneModel} from '../models/Airplane';
 import {getModel as getAirportsModel} from '../models/Airport';
-import {getModel as getUserModel} from '../models/user';
-import {getModel as getRouteModel} from '../models/route';
-import {getModel as getFlightModel, newFlight} from '../models/flight'
+import {getModel as getUserModel} from '../models/User';
+import {getModel as getRouteModel} from '../models/Route';
+import {getModel as getFlightModel, newFlight} from '../models/Flight'
 import {getModel as getTicketModel, newTicket} from '../models/Ticket'
-import {getModel as getPassengerModel} from '../models/passenger'
+import {getModel as getPassengerModel} from '../models/Passenger'
 
 // Data
 import { airlines, airplanes, airports, flights, passengers, routes, tickets, users } from "./data";
@@ -21,7 +21,7 @@ import UsersServ from '../services/users.service'
 import RoutesServ from '../services/routes.service'
 import FlightServ from '../services/flights.service'
 import Ticket from '../models/Ticket';
-import Passenger from '../models/passenger'
+import Passenger from '../models/Passenger'
 
 
 export async function AddUsers(){

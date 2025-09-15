@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirport } from '../db/queries';
-import Ro, {Route} from '../models/route';
+import Ro, {Route} from '../models/Route';
 import Airport from '../models/Airport';
 import { AppError } from '../models/AppError';
 
@@ -51,9 +51,10 @@ async function createRoute(data){
 
     // Start transaction
     const session = await mongoose.startSession();
-    session.startTransaction();
 
     try {
+        session.startTransaction();
+
         // Find airports
         const fromAirport = await Airport.getModel().findById(data.from).session(session);
         const toAirport = await Airport.getModel().findById(data.to).session(session);

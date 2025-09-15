@@ -1,6 +1,6 @@
 import { addItineraryFields, getAirportContidions, JOIN, JOINStop, matchAirlines, matchAirport, matchDate } from "../db/queries";
 import { checkKeys } from "../utils/utils";
-import Fl from '../models/flight';
+import Fl from '../models/Flight';
 import { getAllFlights } from "../services/flights.service";
 
 async function getAllItineraries(query){

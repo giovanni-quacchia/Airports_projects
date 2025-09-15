@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirlines, matchAirport, matchDate, SORT } from '../db/queries';
-import Fl, {Flight, validateSearch} from '../models/flight';
+import Fl, {Flight, validateSearch} from '../models/Flight';
 import { CheckStatisticsReq } from '../utils/flight.utils';
-import {getModel as getRouteModel} from'../models/route';
-import {getModel as getAirlineModel} from'../models/airline';
-import {getModel as getAirplaneModel} from'../models/airplane';
+import {getModel as getRouteModel} from'../models/Route';
+import {getModel as getAirlineModel} from'../models/Airline';
+import {getModel as getAirplaneModel} from'../models/Airplane';
 import { AppError } from '../models/AppError';
 
 // Direct Flights
