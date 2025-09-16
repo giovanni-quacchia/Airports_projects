@@ -30,7 +30,7 @@ async function getAllUsers(query) {
 }
 
 async function getUser(id: string, user){
-    const select = user.isAdmin ? "" : "mail";
+    const select = user.isAdmin ? "" : "mail balance";
     const res = await Us.getModel().findById(id).select(select);
     if(!res) throw new AppError("User not found", 4004);
     return res;

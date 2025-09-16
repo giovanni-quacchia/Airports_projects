@@ -9,7 +9,7 @@ async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
     const parsedData: any = Ro.validateSearch(query);
     const { from = /.*/, to = /.*/ } = parsedData;
-    const pipeline = []
+    const pipeline = [];
 
     if(airlineId){
         pipeline.push(
@@ -59,7 +59,7 @@ async function createRoute(data){
         const fromAirport = await Airport.getModel().findById(data.from).session(session);
         const toAirport = await Airport.getModel().findById(data.to).session(session);
 
-        // Check from != to
+        // Check that airports exist
         if(!fromAirport || !toAirport) throw new AppError("One or both airports ID do not exist", 4004);
 
         // Check if route already exists

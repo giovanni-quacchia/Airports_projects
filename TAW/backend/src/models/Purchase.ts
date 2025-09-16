@@ -7,8 +7,8 @@ export interface Purchase{
     price: number,
     date: Date,
     quantity: number,
-    user: string |mongoose.Schema.Types.ObjectId,
-    ticket: string | mongoose.Schema.Types.ObjectId,
+    user: mongoose.Schema.Types.ObjectId,
+    ticket: mongoose.Schema.Types.ObjectId,
 }
 
 // Schema

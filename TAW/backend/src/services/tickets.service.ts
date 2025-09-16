@@ -123,10 +123,6 @@ async function deleteTicket(id: string, user){
         const flight: any = await Ti.getModel().findById(id).session(session);
         if(!user.isAdmin && String(flight.airline) !== user.id) throw new AppError("Access denied: this ticket belongs to another airline", 4005);
 
-        // Check if passenger exists for the ticket
-        const passenger: any = await getPassengerModel().findOne({ticket: new mongoose.Types.ObjectId(id)}).session(session);
-        if(passenger) throw new AppError("Ticket is in use by passengers", 4005);
-
         res = await ticket.deleteOne({session});
         await session.commitTransaction();
         return res;

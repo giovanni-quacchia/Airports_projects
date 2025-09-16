@@ -1,7 +1,6 @@
 import mongoose = require('mongoose');
 import { validateObj, validatePartialObj, isObject, isObjSameSize } from '../utils/utils';
 import { AppError } from './AppError';
-import { start } from 'repl';
 
 // Interface
 export interface Airplane{
@@ -84,14 +83,20 @@ export function validatePut(data: any){
 
     if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    const parsedData = validatePartialObj({
+    const parsedData: any = validatePartialObj({
         code: [data.code, "number"],
         model: [data.model, "string"],
         rows: [data.rows, "number"],
         letters: [data.letters, "number"],
         airline: [data.airline, "ID"],
-        route: [data.route, "ID"]
+        route: [data.route, "ID"],
+        startDate: [data.startDate, "date"],
+        endDate: [data.endDate, "date"]
     });
+
+    if(parsedData.route && (!parsedData.startDate || !parsedData.endDate)) throw new AppError("Route must include startDate and endDate", 4005);
+
+    if(parsedData.route && parsedData.startDate > parsedData.endDate) throw new AppError("Start date cannot be after end date", 4005);
 
     if(!isObjSameSize(parsedData, data)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
 
