@@ -13,7 +13,7 @@ router.get("/", auth.authenticateToken, auth.checkAdmin, purchase.getAllPurchase
 // Get :id purchase: only admin
 router.get("/:id",auth.authenticateToken, auth.checkAdmin, purchase.getPurchase);
 
-// Create a new purchase: user
+// Create a new purchase: admin or user
 router.post("/", auth.authenticateToken, purchase.createPurchase);
 
 // Delete purchase: admin / user

@@ -1,4 +1,4 @@
-import { validateNew, validateSearch } from '../models/Passenger';
+import { validateNew, validatePut, validateSearch } from '../models/Passenger';
 import passengers from '../services/passengers.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 
@@ -57,13 +57,16 @@ export async function deletePassenger(req, res, next){
 }
 
 export async function updatePassenger(req, res, next){
-    const ar = req.body;
     try {
         const {id} = req.params;
-        const result = await passengers.updatePassenger(id, ar, req.user);
+        validateObj({ id: [id, "ID"] })
+
+        const parsedData = validatePut(req.body);
+
+        const result = await passengers.updatePassenger(id, parsedData, req.user);
         res.json(result);
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send(manageErrors(err, "Passenger"));
     }
 }
 

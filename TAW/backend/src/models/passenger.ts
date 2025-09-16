@@ -59,7 +59,7 @@ export function getModel(): mongoose.Model<Passenger>{
     return passengerModel;
 }
 
-export function createPassenger(data): mongoose.HydratedDocument<Passenger> {
+export function newPassenger(data): mongoose.HydratedDocument<Passenger> {
     const _passengerModel = getModel();
     const passenger = new _passengerModel(data);
     return passenger;
@@ -74,7 +74,7 @@ export function validateNew(data: any){
     const query = validateObj({
         name: [data.name, "string"],
         surname: [data.surname, "string"],
-        seat: [data.seat, "string", /^[A-Z]\d+$/],
+        seat: [data.seat, "string", /^[A-Z]([1-9]\d*)$/],
         purchase: [data.purchase, "ID"]
     })
 
@@ -110,7 +110,6 @@ export function validatePut(data: any){
         passportNumber: [data.passportNumber, "string"],
         extra: [data.extra, "arrayOfStrings"],
         seat: [data.seat, "string", /^[A-Z]\d+$/],
-        purchase: [data.purchase, "ID"]
     });
 
     if(isObjectEmpty(query)) throw new AppError("Update not valid, please provide at least a new parameter", 4005);
@@ -143,4 +142,4 @@ export function validateSearch(data: any){
     return query;
 }
 
-export default {getModel, createPassenger, validatePut, validateNew, validateSearch}
+export default {getModel, newPassenger, validatePut, validateNew, validateSearch}

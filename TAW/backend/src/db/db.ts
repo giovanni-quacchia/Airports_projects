@@ -21,7 +21,7 @@ export async function connectDB(){
     .then(() => {
         console.log("Connected to MongoDB");
     })
-    // Create admin
+    // TODO: call only when DB is empty
     .then(async () => {
         AddUsers()
         AddAirlines()

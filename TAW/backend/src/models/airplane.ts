@@ -1,7 +1,7 @@
 import mongoose = require('mongoose');
-import Route from './Route';
 import { validateObj, validatePartialObj, isObject, isObjSameSize } from '../utils/utils';
 import { AppError } from './AppError';
+import { start } from 'repl';
 
 // Interface
 export interface Airplane{
@@ -9,8 +9,12 @@ export interface Airplane{
     model: string,
     airline: mongoose.Schema.Types.ObjectId,
     rows: number,
-    letters: number
-    route?: mongoose.Schema.Types.ObjectId, // TODO: periodo
+    letters: number,
+    route?: mongoose.Schema.Types.ObjectId,
+
+    // periodo
+    startDate?: Date,
+    endDate?: Date
 }
 
 // Schema
@@ -29,6 +33,9 @@ const AirplaneSchema = new mongoose.Schema<Airplane>({
     rows: {type: Number, required: true},
     letters: {type: Number, required: true},
     route: {type: mongoose.Schema.ObjectId, ref: 'Route'},
+
+    startDate: {type: Date},
+    endDate: {type: Date}
 });
 
 // Model
@@ -60,13 +67,15 @@ export function validateNew(data: any){
     });
 
     if(data.route){
-        const route = validatePartialObj({
-            route: [data.route, "ID"]
+        const routeData = validateObj({
+            route: [data.route, "ID"],
+            startDate: [data.startDate, "date"],
+            endDate: [data.endDate, "date"]
         })
-        query = {...query, ...route};
+        query = {...query, ...routeData};
     }
 
-    if(!isObjSameSize(query, data)) throw new AppError("A new airplane must include: code, model, rows, letter, airline and optional route", 4005)
+    if(!isObjSameSize(query, data)) throw new AppError("A new airplane must include: code, model, rows, letter, airline and optional route, startDate and endDate", 4005)
 
     return query;
 }

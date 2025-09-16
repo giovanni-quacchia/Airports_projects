@@ -28,11 +28,12 @@ async function getAllPurchases(query, userId, user) {
 
 async function getPurchase(id: string){
     const purchase = await getPurchaseModel().findById(id)
+        .populate({path: "ticket", populate: "flight" })
     if(!purchase) throw new AppError("Purchase not found", 4004);
     return purchase;
 }
 
-async function createPurchase(data, user){
+async function createPurchase(data){
 
     // Start transaction
     const session = await mongoose.startSession();
@@ -40,23 +41,19 @@ async function createPurchase(data, user){
     try {
         session.startTransaction();
 
-        // Check user
-        if(!user.isAdmin && user.id !== data.user) throw new AppError("Access denied: you can only create purchases for yourself", 4005);
-        if(user.isAirline) throw new AppError("Access denied: airlines cannot create purchases", 4005);
-
-        // Check user balance
+        // Check user balance and ticket qnt
         const usr = await getUserModel().findById(data.user).session(session);
         if(!usr) throw new AppError("User does not exist", 4005);
 
-        const totalPrice = data.quantity * data.price;
+        const ticket = await getTicketModel().findById(data.ticket).session(session);
+        if(!ticket) throw new AppError("Ticket does not exist", 4005);
+
+        const totalPrice = data.quantity * ticket.price;
+
         if(usr.balance < totalPrice) throw new AppError("Insufficient balance", 4005);
 
         usr.balance -= totalPrice;
         await usr.save({session});
-
-        // Check ticket quantity
-        const ticket = await getTicketModel().findById(data.ticket).session(session);
-        if(!ticket) throw new AppError("Ticket does not exist", 4005);
 
         if(data.quantity > ticket.quantity) throw new AppError("Not enough tickets available", 4005);
 
@@ -165,5 +162,4 @@ export default {
     createPurchase,
     deletePurchase,
     updatePurchase
-
 }

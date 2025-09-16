@@ -5,11 +5,11 @@ const auth = require('../utils/auth.utils')
 
 // Get All passengers: ? [name, surname, CF, passportNumber, sortBy, order]
 // sortBy: name, surname, seat, CF, passportNumber
+// only admin
+router.get("/", auth.authenticateToken, auth.checkAdmin, passenger.getAllPassengers);
 
-router.get("/", auth.authenticateToken, passenger.getAllPassengers);
-
-// Get :id passenger
-router.get("/:id", auth.authenticateToken, passenger.getPassenger);
+// Get :id passenger: only admin
+router.get("/:id", auth.authenticateToken, auth.checkAdmin, passenger.getPassenger);
 
 // Create a new passenger
 router.post("/", auth.authenticateToken, passenger.createPassenger);

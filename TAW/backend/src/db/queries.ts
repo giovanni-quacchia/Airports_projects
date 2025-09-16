@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export function SELECT(projection: string){
     const projectStage = []
     const project = {};
@@ -247,4 +249,10 @@ export function GROUPBY(groupKey: {}, fields: Object){
 export function SORT(sortBy, order: "asc" | "desc"){
     const sortOrder = order === "asc" ? 1 : -1;
     return { $sort: { [sortBy]: sortOrder as 1 | -1 } }; // type assertion: tells the compiler to consider the object as another type)
+}
+
+export function matchId(field: string, id: string){
+    return {
+        $match: { [field]: new mongoose.Types.ObjectId(id)}
+    }
 }

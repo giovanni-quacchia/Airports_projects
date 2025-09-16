@@ -1,8 +1,13 @@
-import mongoose from 'mongoose';
-import { JOIN } from '../db/queries';
-import Pa from '../models/Passenger';
-import Ticket from './tickets.service';
+import { JOIN, matchId } from '../db/queries';
+import Pa, { newPassenger } from '../models/Passenger';
 import { AppError } from '../models/AppError';
+import {getModel as getPassengerModel} from '../models/Passenger';
+import {getModel as getFlightModel} from '../models/Flight';
+import {getModel as getPurchaseModel} from '../models/Purchase';
+import {getModel as getAirplaneModel} from '../models/Airplane';
+import purchasesService from './purchases.service';
+import mongoose from 'mongoose';
+import { checkSeat } from '../utils/utils';
 
 
 async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
@@ -31,75 +36,189 @@ async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
     if(query.CF) pipeline.push( { $match: {CF: CF}} )
     if(query.passportNumber) pipeline.push( { $match: {passportNumber: passportNumber}} )
 
+    // Only admin or specific airline can retrieve data of specific flight or purchase
     if(flightId){
 
         // Only admin and specific airline of the flight
-        if(!user.isAdmin && user.id !== flightId) throw new AppError("You are not allowed to perform this operation", 4003);
+        const airlineId = (await getFlightModel().findById(flightId).select("airline"))?.airline;
+        if(!airlineId) throw new AppError("Flight not found", 4004);
 
-        pipeline.push({
-            $match: {
-                "purchase.ticket.flight": new mongoose.Types.ObjectId(flightId),
-            }
-        })
+        if(!user.isAdmin && String(airlineId) !== String(user.id)) throw new AppError("You are not allowed to perform this operation", 4003);
+
+        pipeline.push(matchId("purchase.ticket.flight._id", flightId));
+
     } else if(purchaseId){
-        pipeline.push({
-            $match: {
-                "purchase._id": new mongoose.Types.ObjectId(purchaseId),
-                $or: [
-                    { "purchase.user" : user.isAdmin ? { $exists: true } : new mongoose.Types.ObjectId(user.id) },
-                    { "purchase.ticket.flight.airline": user.isAdmin ? { $exists: true } : new mongoose.Types.ObjectId(user.id) }
-                ]
-            }
-        })
+
+        // Only admin, specific airline of the flight or user owner of the purchase
+        const purchase: any = (await purchasesService.getPurchase(purchaseId));
+
+        const userId = String(purchase.user);
+        const airlineId = String(purchase?.ticket?.flight?.airline);
+
+        if(!airlineId) throw new AppError("Purchase ticket not found", 4004);
+        if(!userId) throw new AppError("Purchase user not found", 4004);
+
+        if(!user.isAdmin && airlineId !== user.id && userId !== user.id) throw new AppError("You are not allowed to perform this operation", 4003);
+
+        pipeline.push(matchId("purchase._id", purchaseId));
     }
 
     pipeline.push(
         { $sort: { [sortBy]: sortOrder } }
     )
 
-    const result = await Pa.getModel().aggregate(pipeline);
-
-    // TODO: se airline o utente non autorizzato ricevono un array vuoto, come distingure da 
-    // il caso in cui non ci sono passeggeri?
-
+    const result = await getPassengerModel().aggregate(pipeline);
     return result;
 }
 
-// TODO: da finire da qui
+
 async function getPassenger(id: string, user){
-    return Pa.getModel().findById(id);
+    const res = await getPassengerModel().findById(id);
+    if(!res) throw new AppError("Passenger not found", 4004);
+    return res;
 }
 
-// Check ticket.qnt and update it and create new passenger
-export async function createPassenger(data, user){
+async function createPassenger(data, user){
 
-    const {ticket: ticketId} = data
-    let res;
+    // Start transaction
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
 
-    // check ticket.qnt
-    const ticket: any = await Ticket.getTicket(ticketId);
-    if(ticket.quantity <= 0) throw Error("Tickets not available");
+        // Get purchase
+        const purchase: any = await await getPurchaseModel().findById(data.purchase).populate({path: "ticket", populate: "flight"}).session(session);
+        if(!purchase) throw new AppError("Purchase not found", 4004);
 
-    // decrease ticket.qnt
-    ticket.quantity -= 1;
+        // Only admin or user owner of the purchase
+        if(!user.isAdmin && String(purchase.user) !== user.id) throw new AppError("You are not allowed to perform this operation", 4005);
 
-    await ticket.save();
+        // Check num of passengers already created < tickets purchased
+        const passengersQnt = await getPassengerModel().countDocuments({purchase: new mongoose.Types.ObjectId(data.purchase)}).session(session);
+        if(passengersQnt >= purchase.quantity) throw new AppError("Ticket quantity exceeded", 4005);
 
-    // check seat
-    // const p: any[] = await getAllpassengers({seat: data.seat}, String(ticket.flight._id));
-    // if(p.length !== 0) throw Error("Seat already taken")
+        // Check that ticket and flight still exist
+        if(!purchase.ticket) throw new AppError("Ticket not found", 4004);
+        if(!purchase.ticket.flight) throw new AppError("Flight not found", 4004);
+        
+        // Check airplane seats
+        const airplaneId = purchase.ticket.flight.airplane;
+        const airplane = await getAirplaneModel().findById(airplaneId).session(session);
+        if(!airplane) throw new AppError("Airplane not found", 4004);
 
-    // create new passenger
-    res = Pa.createPassenger(data);
-    return res.save();
+        // Check if seat exists
+        if(!checkSeat(data.seat, airplane.letters, airplane.rows)) throw new AppError("Invalid seat", 4005);
+
+        // Check if seat is already taken
+        const flightId = purchase.ticket.flight._id;
+        const isSeatTaken = await getAllpassengers({seat: data.seat}, flightId, "", {isAdmin: true})
+        if(isSeatTaken.length > 0) throw new AppError("Seat already taken", 4005);
+
+        // Create passenger
+        const passenger = newPassenger(data);
+        await passenger.save({session});
+        await session.commitTransaction();
+
+        return passenger
+
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
 }
 
+// Only admin, specific airline or user owner of the purchase
 async function deletePassenger(id: string, user){
-    return Pa.getModel().findByIdAndDelete(id);
+    
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
+        
+        // Find userId and airlineId
+        const res: any = await getPassengerModel().findById(id)
+            .populate({
+                path: "purchase",
+                populate: {
+                    path: "ticket",
+                    populate: {path: "flight"}
+                }
+            })
+            .session(session);
+        if(!res) throw new AppError("Passenger not found", 4004);
+
+        const userId = String(res.purchase?.user);
+        const airlineId = String(res.purchase?.ticket?.flight?.airline)
+
+        if(!user.isAdmin && airlineId !== user.id && userId !== user.id) throw new AppError("You are not allowed to perform this operation", 4003);
+
+        await res.deleteOne({session});
+        await session.commitTransaction();
+        return res;
+
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
 }
 
+// Only admin, specific airline or user owner of the purchase
 async function updatePassenger(id: string, data: any, user){
-    return Pa.getModel().findByIdAndUpdate(id, data, { new: true, runValidators: true });
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
+        
+        // Find userId and airlineId
+        const res: any = await getPassengerModel().findById(id)
+            .populate({
+                path: "purchase",
+                populate: {
+                    path: "ticket",
+                    populate: {
+                        path: "flight",
+                        populate: "airplane"
+                    }
+                }
+            })
+            .session(session);
+        if(!res) throw new AppError("Passenger not found", 4004);
+
+        const userId = String(res.purchase?.user);
+        const airlineId = String(res.purchase?.ticket?.flight?.airline)
+        
+        if(!userId) throw new AppError("User who made the purchase not found", 4004);
+        if(!airlineId) throw new AppError("Airline not found", 4004);
+
+        if(!user.isAdmin && airlineId !== user.id && userId !== user.id) throw new AppError("You are not allowed to perform this operation", 4003);
+
+
+        if(data.seat){
+            const airplane = res.purchase?.ticket?.flight?.airplane;
+            if(!airplane) throw new AppError("Airplane not found", 4004);
+
+            // Check if new seat exists
+            if(!checkSeat(data.seat, airplane.letters, airplane.rows)) throw new AppError("This seat does not exist", 4005);
+
+            // Check if seat is already taken
+            const flightId = res.purchase?.ticket?.flight?._id;
+            const isSeatTaken = await getAllpassengers({seat: data.seat}, flightId, "", {isAdmin: true})
+            if(isSeatTaken.length > 0) throw new AppError("Seat already taken", 4005);
+        }
+
+        const updated = await getPassengerModel().findByIdAndUpdate(id, data, {new: true, session})
+        await session.commitTransaction();
+        return updated;
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        throw error;
+    } finally {
+        session.endSession();
+    }
 }
 
 export default {

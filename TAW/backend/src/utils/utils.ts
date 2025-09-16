@@ -154,3 +154,14 @@ export function manageErrors(err, collection: string){
             return "Internal server error";
     }
 }
+
+// seat rispetta gia il regex /^[A-Z]([1-9]\d*)$/ (lettera + numero da 1 a n)
+export function checkSeat(seat: string, numLetters, numRows): boolean{
+    
+    const letter = seat[0];
+    const number = Number(seat.slice(1));
+    
+    const lastChar = String.fromCharCode(65 + numLetters - 1);
+    
+    return letter <= lastChar && number <= numRows;
+}

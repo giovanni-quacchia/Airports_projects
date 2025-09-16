@@ -1,6 +1,7 @@
 import purchases from '../services/purchases.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
-import { validateNew, validatePut, validateSearch } from '../models/Flight';
+import { validateNew, validatePut, validateSearch } from '../models/Purchase';
+import { AppError } from '../models/AppError';
 
 export async function getAllPurchases(req, res, next) {
     try {
@@ -33,7 +34,12 @@ export async function createPurchase(req, res, next){
     let parsedData: any = {}
     try {
         parsedData = validateNew(req.body);
-        const result = await purchases.createPurchase(parsedData, req);
+
+        // only admin or specific user
+        if(!req.user?.isAdmin && req.user?.id !== parsedData.user) throw new AppError("Access denied: you can only create purchases for yourself", 4005);
+        if(req.user?.isAirline) throw new AppError("Access denied: airlines cannot create purchases", 4005);
+
+        const result = await purchases.createPurchase(parsedData);
         printObject("Purchase created", parsedData)
         res.json(result);
     } catch (err) {
