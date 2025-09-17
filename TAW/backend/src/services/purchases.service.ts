@@ -13,7 +13,6 @@ async function getAllPurchases(query, userId, user) {
 
     const pipeline: any[] = []
 
-    // TODO: da sistemare
     if(userId && (user.isAdmin || user.id === userId)){
         pipeline.push({
             $match: {user: new mongoose.Types.ObjectId(userId)}

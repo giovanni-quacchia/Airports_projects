@@ -3,12 +3,12 @@ import {
 } from "./chunk-SP7KSIQ3.js";
 import "./chunk-KT7LZAOE.js";
 import {
+  HttpClient
+} from "./chunk-VTKNDKAV.js";
+import {
   MatCommonModule
 } from "./chunk-5AIJY5YX.js";
 import "./chunk-MOTK6HLA.js";
-import {
-  HttpClient
-} from "./chunk-VTKNDKAV.js";
 import "./chunk-4RQOW62Q.js";
 import "./chunk-KNAQNOXE.js";
 import "./chunk-QWMHP7XR.js";

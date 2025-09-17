@@ -1,12 +1,11 @@
-import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
   MatRipple,
   MatRippleModule,
   _StructuralStylesLoader
-} from "./chunk-M4WTUIX7.js";
+} from "./chunk-PW5BRG2A.js";
 import {
   _animationsDisabled
-} from "./chunk-JT3RPUYQ.js";
+} from "./chunk-S7VZVQ2V.js";
 import {
   ENTER,
   MatCommonModule,
@@ -14,10 +13,10 @@ import {
   _IdGenerator,
   _VisuallyHiddenLoader,
   hasModifierKey
-} from "./chunk-Q4S53H3H.js";
+} from "./chunk-5AIJY5YX.js";
 import {
   _CdkPrivateStyleLoader
-} from "./chunk-UR6GOGSZ.js";
+} from "./chunk-4RQOW62Q.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -28,12 +27,12 @@ import {
   Input,
   NgModule,
   Output,
+  Subject,
   ViewChild,
   ViewEncapsulation,
   booleanAttribute,
   inject,
   isSignal,
-  require_cjs,
   setClassMetadata,
   signal,
   ɵɵProvidersFeature,
@@ -61,10 +60,7 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate1,
   ɵɵviewQuery
-} from "./chunk-TXH25U4Z.js";
-import {
-  __toESM
-} from "./chunk-6DU2HRTW.js";
+} from "./chunk-ZOWYJC2Z.js";
 
 // node_modules/@angular/material/fesm2022/pseudo-checkbox.mjs
 var MatPseudoCheckbox = class _MatPseudoCheckbox {
@@ -139,32 +135,7 @@ var MatPseudoCheckbox = class _MatPseudoCheckbox {
   });
 })();
 
-// node_modules/@angular/material/fesm2022/pseudo-checkbox-module.mjs
-var MatPseudoCheckboxModule = class _MatPseudoCheckboxModule {
-  static ɵfac = function MatPseudoCheckboxModule_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatPseudoCheckboxModule)();
-  };
-  static ɵmod = ɵɵdefineNgModule({
-    type: _MatPseudoCheckboxModule,
-    imports: [MatCommonModule, MatPseudoCheckbox],
-    exports: [MatPseudoCheckbox]
-  });
-  static ɵinj = ɵɵdefineInjector({
-    imports: [MatCommonModule]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatPseudoCheckboxModule, [{
-    type: NgModule,
-    args: [{
-      imports: [MatCommonModule, MatPseudoCheckbox],
-      exports: [MatPseudoCheckbox]
-    }]
-  }], null, null);
-})();
-
 // node_modules/@angular/material/fesm2022/option.mjs
-var import_rxjs = __toESM(require_cjs(), 1);
 var _c0 = ["*", [["mat-option"], ["ng-container"]]];
 var _c1 = ["*", "mat-option, ng-container"];
 var _c2 = ["text"];
@@ -354,7 +325,7 @@ var MatOption = class _MatOption {
   /** Element containing the option's text. */
   _text;
   /** Emits when the state of the option changes and any parents have to be notified. */
-  _stateChanges = new import_rxjs.Subject();
+  _stateChanges = new Subject();
   constructor() {
     const styleLoader = inject(_CdkPrivateStyleLoader);
     styleLoader.load(_StructuralStylesLoader);
@@ -665,6 +636,30 @@ function _getOptionScrollPosition(optionOffset, optionHeight, currentScrollPosit
   return currentScrollPosition;
 }
 
+// node_modules/@angular/material/fesm2022/pseudo-checkbox-module.mjs
+var MatPseudoCheckboxModule = class _MatPseudoCheckboxModule {
+  static ɵfac = function MatPseudoCheckboxModule_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatPseudoCheckboxModule)();
+  };
+  static ɵmod = ɵɵdefineNgModule({
+    type: _MatPseudoCheckboxModule,
+    imports: [MatCommonModule, MatPseudoCheckbox],
+    exports: [MatPseudoCheckbox]
+  });
+  static ɵinj = ɵɵdefineInjector({
+    imports: [MatCommonModule]
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatPseudoCheckboxModule, [{
+    type: NgModule,
+    args: [{
+      imports: [MatCommonModule, MatPseudoCheckbox],
+      exports: [MatPseudoCheckbox]
+    }]
+  }], null, null);
+})();
+
 // node_modules/@angular/material/fesm2022/option-module.mjs
 var MatOptionModule = class _MatOptionModule {
   static ɵfac = function MatOptionModule_Factory(__ngFactoryType__) {
@@ -691,7 +686,6 @@ var MatOptionModule = class _MatOptionModule {
 
 export {
   MatPseudoCheckbox,
-  MatPseudoCheckboxModule,
   MAT_OPTION_PARENT_COMPONENT,
   MAT_OPTGROUP,
   MatOptgroup,
@@ -699,6 +693,7 @@ export {
   MatOption,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition,
+  MatPseudoCheckboxModule,
   MatOptionModule
 };
-//# sourceMappingURL=chunk-AJTJKDFL.js.map
+//# sourceMappingURL=chunk-3WTCAWVY.js.map

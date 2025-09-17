@@ -1,8 +1,10 @@
-import { Airline } from "../models/airline";
-import { Airplane } from "../models/airplane";
-import { Airport } from "../models/airport";
+const usersId = {
+  admin: "650f0a4f3b7e41b94cfe4d09",
+  user: "650f0a4f3b7e41b94cfe4d10",
+  user2: "650f0a4f3b7e41b94cfe4d11"
+}
 
-export const users: {mail: string, password: string, isAdmin: boolean}[] = [
+export const users = [
   {
     _id: usersId.admin,
     mail: "admin@gmail.com",

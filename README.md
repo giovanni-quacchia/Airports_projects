@@ -4,6 +4,21 @@
 
 ## Progetto TAW
 
+### Comandi
+
+```bash
+# Per configurare inizialmente tutti i containers
+/TAW > docker compose up -d
+
+# Poi per startare/stoppare/restartare (down rimuove i containers)
+/TAW > docker compose start/stop/restart/down 
+
+# Per vedere i log dei vari containers
+docker logs -f <taw_backend / taw_frontend>
+
+```
+
+
 ### TODO
 
 - Sistemare i validate delle interfacce

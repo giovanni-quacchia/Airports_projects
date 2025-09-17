@@ -9,4 +9,4 @@ RUN npm install --include=dev
 
 COPY . /app
 
-CMD ["npx", "nodemon", "app.ts"]
+CMD ["npx", "nodemon", "--legacy-watch", "app.ts"]

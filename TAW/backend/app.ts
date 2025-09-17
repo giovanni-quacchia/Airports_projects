@@ -7,7 +7,7 @@ import {connectDB} from './src/db/db';
 import morgan from 'morgan';
 
 const app = express();
-const PORT = Number(process.env.PORT) || 8080;;
+const PORT = Number(process.env.PORT) || 3000;;
 
 // Routers
 const AirlinesRouter = require('./src/routes/airlines.routes');
@@ -27,6 +27,7 @@ const auth = require('./src/utils/auth.utils')
 // Middleware
 app.use(cors({
   origin: ['http://localhost:4200'],
+  // origin: '*',
   credentials: true
 }));
 app.use(express.json());
@@ -34,17 +35,18 @@ app.use(express.urlencoded({ extended: false })); // per interpretare i dati inv
 app.use(morgan('dev'));
 
 // Routes
-app.use("./api/airlines", AirlinesRouter);
-app.use("./api/airplanes", AirplanesRouter);
-app.use("./api/airports", AirportsRouter);
-app.use("./api/users", UsersRouter);
-app.use("./api/routes", RoutesRouter);
-app.use("./api/flights", FlightsRouter);
-app.use("./api/itineraries", ItinerariesRouter);
-app.use("./api/tickets", TicketSRouter);
-app.use("./api/passengers", PassengersRouter);
+app.use("/api/airlines", AirlinesRouter);
+app.use("/api/airplanes", AirplanesRouter);
+app.use("/api/airports", AirportsRouter);
+app.use("/api/users", UsersRouter);
+app.use("/api/routes", RoutesRouter);
+app.use("/api/flights", FlightsRouter);
+app.use("/api/itineraries", ItinerariesRouter);
+app.use("/api/tickets", TicketSRouter);
+app.use("/api/passengers", PassengersRouter);
+app.use("/api/purchases", PurchasesRouter);
 
-app.get('/api/health', (_req,res)=>res.json({ ok:true }));
+app.get('/api/health', (_req,res)=> res.json({ ok:true }));
 
 // Global Error Handler
 app.use((err: any, _req: any, res: any, _next: any) => {
@@ -57,6 +59,6 @@ connectDB().then(() => {
   auth.generateSecret();
   app.listen(PORT, function(){
       console.log(pc.green("[Server starts]\n"));
-      console.log('Listening on port 8080');
+      console.log(`Listening on port ${PORT}`);
   });
 })

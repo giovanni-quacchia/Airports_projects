@@ -48,6 +48,22 @@ services:
       - NODE_ENV=development    # log + dettagliato (dev environment)
     networks:
       - taw-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taw_frontend
+    ports:
+      - 4200:4200
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app         # Mount source code
+      - /app/node_modules       # Keep node_modules inside container
+    environment:
+      - NODE_ENV=development    # log + dettagliato (dev environment)
+    networks:
+      - taw-network
 
 networks:
   taw-network:
