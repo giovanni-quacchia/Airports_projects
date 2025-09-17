@@ -28,7 +28,7 @@ const AirportSchema = new mongoose.Schema<Airport>({
 
 let airportModel: mongoose.Model<Airport>;
 export function getModel(): mongoose.Model<Airport> {
-    if(!airportModel) airportModel = mongoose.model<Airport>('Airport', AirportSchema);
+    if(!airportModel) airportModel = mongoose.model<Airport>('airport', AirportSchema);
     return airportModel;
 }
 

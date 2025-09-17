@@ -19,3 +19,4 @@ export interface RegisterDto {
   name?: string;
   role?: UserRole;
 }
+

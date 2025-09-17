@@ -1,66 +1,44 @@
-import { Injectable, signal, effect } from '@angular/core';
-import { User, Credentials, RegisterDto } from './models';
-
-const LS_USERS = 'taw_users';
-const LS_SESSION = 'taw_session';
+// src/app/core/auth.service.ts
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Credentials, RegisterDto, User } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _currentUser = signal<User | null>(null);
-  currentUser = this._currentUser;
-  isLoggedIn = () => !!this._currentUser();
-  role = () => this._currentUser()?.role;
+  private base = environment.apiBase;
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  bootstrap() {
-    const users = this.loadUsers();
-    const uid = localStorage.getItem(LS_SESSION);
-    const me = users.find(u => u.id === uid) ?? null;
-    this._currentUser.set(me);
+  constructor(private http: HttpClient) {}
+
+  login(body: Credentials) {
+    return this.http.post<{ token: string; user: User }>(`${this.base}/airlines/sessions`, body);
   }
 
-  async register(dto: RegisterDto): Promise<User> {
-    const users = this.loadUsers();
-    if (users.some(u => u.email.toLowerCase() === dto.email.toLowerCase())) {
-      throw new Error('Email già registrata');
-    }
-    const u: User = {
-      id: crypto.randomUUID(),
-      email: dto.email,
-      name: dto.name,
-      role: dto.role ?? 'passenger',
-      passwordHash: await hash(dto.password),
-    };
-    users.push(u);
-    localStorage.setItem(LS_USERS, JSON.stringify(users));
-    localStorage.setItem(LS_SESSION, u.id);
-    this._currentUser.set(u);
-    return u;
+  register(body: RegisterDto) {
+    return this.http.post<{ token?: string; user?: User }>(`${this.base}/users`, body);
   }
 
-  async login({ email, password }: Credentials): Promise<User> {
-    const users = this.loadUsers();
-    const u = users.find(x => x.email.toLowerCase() === email.toLowerCase());
-    if (!u) throw new Error('Credenziali non valide');
-    const ok = u.passwordHash === await hash(password);
-    if (!ok) throw new Error('Credenziali non valide');
-    localStorage.setItem(LS_SESSION, u.id);
-    this._currentUser.set(u);
-    return u;
-  }
+  storeToken(t: string) { if (this.isBrowser) localStorage.setItem('taw_token', t); }
+  storeUser(u: User)     { if (this.isBrowser) localStorage.setItem('taw_user', JSON.stringify(u)); }
 
   logout() {
-    localStorage.removeItem(LS_SESSION);
-    this._currentUser.set(null);
+    if (!this.isBrowser) return;
+    localStorage.removeItem('taw_token');
+    localStorage.removeItem('taw_user');
   }
 
-  private loadUsers(): User[] {
-    try { return JSON.parse(localStorage.getItem(LS_USERS) || '[]'); }
-    catch { return []; }
+  /** Usato nel template: ok anche in SSR (ritorna null lato server) */
+  currentUser(): User | null {
+    if (!this.isBrowser) return null;
+    const raw = localStorage.getItem('taw_user');
+    if (!raw) return null;
+    try { return JSON.parse(raw) as User; } catch { return null; }
   }
-}
 
-async function hash(txt: string): Promise<string> {
-  const enc = new TextEncoder().encode(txt);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  token(): string | null {
+    if (!this.isBrowser) return null;
+    return localStorage.getItem('taw_token');
+  }
 }

@@ -1,10 +1,8 @@
-const usersId = {
-  admin: "64f0c7f4f0c7f4f0c7f4f0c7",
-  user: "64f0c7f4f0c7f4f0c7f4f0c8",
-  user2: "64f0c7f4f0c7f4f0c7f4f0c9"
-}
+import { Airline } from "../models/airline";
+import { Airplane } from "../models/airplane";
+import { Airport } from "../models/airport";
 
-export const users = [
+export const users: {mail: string, password: string, isAdmin: boolean}[] = [
   {
     _id: usersId.admin,
     mail: "admin@gmail.com",

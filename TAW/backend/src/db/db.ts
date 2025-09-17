@@ -7,9 +7,10 @@ const mongoUri = `mongodb://${dockerServiceName}:27017/${DBname}?replicaSet=${re
 
 import { AddAirlines, addData, AddUsers } from './start';
 
-import {getModel as getAirportsModel} from '../models/Airport';
-import {getModel as getRoutesModel} from '../models/Route';
-import {getModel as getFlightsModel} from '../models/Flight';
+import {getModel as getAirportsModel} from '../models/airport';
+import {getModel as getRoutesModel, Route} from '../models/route';
+import {getModel as getAirlinesModel} from '../models/airline';
+import {getModel as getFlightsModel} from '../models/flight';
 import {getModel as getTicketsModel} from '../models/Ticket';
 import {getModel as getAirplanesModel} from '../models/Airplane';
 import {getModel as getPassengerModel} from '../models/Passenger';

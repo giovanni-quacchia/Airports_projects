@@ -68,19 +68,22 @@ export class LoginComponent {
   loading = false;
   errorMsg = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService) {}
 
-  async onSubmit(){
-    if (this.loading) return;
-    this.loading = true;
+  onSubmit() {
     this.errorMsg = '';
-    try {
-      await this.auth.login({ email: this.form.email, password: this.form.password });
-      this.router.navigateByUrl('/search');
-    } catch (e:any) {
-      this.errorMsg = e?.message ?? 'Errore di autenticazione';
-    } finally {
-      this.loading = false;
-    }
+    this.loading = true;
+    this.auth.login(this.form).subscribe({
+      next: res => {
+        this.auth.storeToken(res.token);
+        if (res.user) this.auth.storeUser(res.user);
+        this.loading = false;
+        // TODO: naviga dove ti serve
+      },
+      error: err => {
+        this.loading = false;
+        this.errorMsg = err?.error?.message || 'Login fail';
+      }
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
-import type { FlightSearchParams } from './searchbar.component';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { FlightSearchParams, FlightSearchResponse, FlightResult, AirportDTO } from '../core/flight.models';
 
 @Component({
   selector: 'taw-results-list',

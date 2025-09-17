@@ -73,8 +73,6 @@ npm install
 npx nodemon app.ts
 ```
 
-
-
 ADMIN INFO
 /airlines (CRUD) ✅
 /airplanes
@@ -86,23 +84,23 @@ Query per numPasseggeri + totalRevenue
 
 - Result senza group by
 
-    [
-        {
-            id: f1,
-            ticket: {id: t1, flight: f1, price: 2000},
-            passenger: {ticket: t1}
-        },
-        {
-            id: f1,
-            ticket: {id: t2, flight: f1, price: 600},
-            passenger: {ticket: t2}
-        },
-        {
-            id: f2,
-            ticket: {id: t3, flight: f2, price: 300},
-            passenger: {ticket: t3}
-        },
-    ]
+  [
+  {
+  id: f1,
+  ticket: {id: t1, flight: f1, price: 2000},
+  passenger: {ticket: t1}
+  },
+  {
+  id: f1,
+  ticket: {id: t2, flight: f1, price: 600},
+  passenger: {ticket: t2}
+  },
+  {
+  id: f2,
+  ticket: {id: t3, flight: f2, price: 300},
+  passenger: {ticket: t3}
+  },
+  ]
 
 #### Transactions
 

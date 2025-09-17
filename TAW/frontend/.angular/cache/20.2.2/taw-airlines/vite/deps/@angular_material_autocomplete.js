@@ -5,17 +5,10 @@ import {
   createFlexibleConnectedPositionStrategy,
   createOverlayRef,
   createRepositionScrollStrategy
-} from "./chunk-MBJMRM6E.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-PX754M32.js";
+} from "./chunk-CNQDF4UI.js";
 import {
   MAT_FORM_FIELD
-} from "./chunk-J3RMXLOF.js";
-import {
-  CdkScrollableModule,
-  ViewportRuler
-} from "./chunk-TN2MRBXI.js";
+} from "./chunk-UKSOY55H.js";
 import {
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
@@ -25,12 +18,16 @@ import {
   MatOptionSelectionChange,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
-} from "./chunk-XT5TMV3M.js";
-import "./chunk-ZTLU4A6Z.js";
+} from "./chunk-ACWCDHDG.js";
+import {
+  CdkScrollableModule,
+  ViewportRuler
+} from "./chunk-RBUSBUU2.js";
+import "./chunk-2PO4TT3D.js";
 import {
   Breakpoints,
   _animationsDisabled
-} from "./chunk-SZH4MYQQ.js";
+} from "./chunk-FMWC6A3M.js";
 import {
   ActiveDescendantKeyManager,
   BreakpointObserver,
@@ -47,16 +44,19 @@ import {
   coerceArray,
   hasModifierKey,
   removeAriaReferencedId
-} from "./chunk-I5UFBU6V.js";
+} from "./chunk-5AIJY5YX.js";
 import "./chunk-7UJZXIJQ.js";
 import {
   Directionality
-} from "./chunk-FXPP6P5J.js";
-import "./chunk-6BM5PUEK.js";
+} from "./chunk-MOTK6HLA.js";
+import "./chunk-4RQOW62Q.js";
 import {
   Platform
-} from "./chunk-BGIVARBV.js";
-import "./chunk-6VLV5A33.js";
+} from "./chunk-KNAQNOXE.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-NIKY2WP7.js";
+import "./chunk-QWMHP7XR.js";
 import "./chunk-OUSM42MY.js";
 import {
   ChangeDetectionStrategy,
@@ -72,17 +72,30 @@ import {
   Input,
   NgModule,
   NgZone,
+  Observable,
   Output,
   Renderer2,
+  Subject,
+  Subscription,
   TemplateRef,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
   afterNextRender,
   booleanAttribute,
+  defer,
+  delay,
+  filter,
   forwardRef,
   inject,
+  map,
+  merge,
+  of,
   setClassMetadata,
+  startWith,
+  switchMap,
+  take,
+  tap,
   ɵɵNgOnChangesFeature,
   ɵɵProvidersFeature,
   ɵɵattribute,
@@ -104,22 +117,7 @@ import {
   ɵɵprojectionDef,
   ɵɵqueryRefresh,
   ɵɵviewQuery
-} from "./chunk-HCR3BDYR.js";
-import {
-  Observable,
-  Subject,
-  Subscription,
-  defer,
-  delay,
-  filter,
-  map,
-  merge,
-  of,
-  startWith,
-  switchMap,
-  take,
-  tap
-} from "./chunk-RSS3ODKE.js";
+} from "./chunk-ZOWYJC2Z.js";
 import "./chunk-GOMI4DH3.js";
 
 // node_modules/@angular/material/fesm2022/autocomplete.mjs

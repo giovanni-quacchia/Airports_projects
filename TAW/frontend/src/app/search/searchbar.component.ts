@@ -14,6 +14,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MAT_DATE_LOCALE, MAT_DATE_FORMATS, MatDateFormats } from '@angular/material/core';
 
+import { FlightSearchService } from './flight-search.service';
+import { FlightSearchResponse, FlightResult, AirportDTO } from '../core/flight.models';
+
+
+
 export const IT_DDMMYYYY: MatDateFormats = {
   parse:   { dateInput: 'DD/MM/YYYY' },
   display: {
@@ -239,6 +244,8 @@ export class SearchbarComponent {
   @Input() initial?: Partial<FlightSearchParams>;
   @Output() search = new EventEmitter<FlightSearchParams>();
 
+  constructor(private api: FlightSearchService) {} // <-- injection
+
   model: FlightSearchParams = {
     from: this.initial?.from ?? '',
     to: this.initial?.to ?? '',
@@ -248,46 +255,30 @@ export class SearchbarComponent {
     cabin: (this.initial?.cabin ?? 'economy') as any
   };
 
-  // --- MOCK aeroporti (puoi spostarlo in un service quando vuoi)
-  airports = [
-    { code: 'MXP', city: 'Milano' },
-    { code: 'LIN', city: 'Milano Linate' },
-    { code: 'BGY', city: 'Bergamo' },
-    { code: 'FCO', city: 'Roma Fiumicino' },
-    { code: 'CIA', city: 'Roma Ciampino' },
-    { code: 'BCN', city: 'Barcellona' },
-    { code: 'MAD', city: 'Madrid' },
-    { code: 'CDG', city: 'Parigi' },
-    { code: 'ORY', city: 'Parigi Orly' },
-  ];
-  fromFiltered = this.airports.slice();
-  toFiltered = this.airports.slice();
+  fromFiltered: AirportDTO[] = [];
+  toFiltered: AirportDTO[] = [];
 
-  filterFrom(term: string){ this.fromFiltered = this.filter(term); }
-  filterTo(term: string){ this.toFiltered = this.filter(term); }
-  private filter(term: string){
-    const t = (term||'').toLowerCase();
-    return this.airports.filter(a =>
-      a.code.toLowerCase().includes(t) || a.city.toLowerCase().includes(t)
-    );
+  filterFrom(term: string) {
+    this.api.airports(term).subscribe(a => this.fromFiltered = a);
   }
-  selectFrom(val: string){ this.model.from = val; }
-  selectTo(val: string){ this.model.to = val; }
-  formatAirport(a: {code:string;city:string}){ return `${a.city} (${a.code})`; }
+  filterTo(term: string) {
+    this.api.airports(term).subscribe(a => this.toFiltered = a);
+  }
+
+  formatAirport(a: AirportDTO) { return `${a.city} (${a.code})`; }
+  selectFrom(val: string) { this.model.from = val; }
+  selectTo(val: string) { this.model.to = val; }
 
   swap(){ const f = this.model.from; this.model.from = this.model.to; this.model.to = f; }
 
   formComplete(f: any){
-    // validazione extra: tutti i campi obbligatori e pax >= 1
     return f?.valid && !!this.model.returnDate && Number(this.model.pax) >= 1;
   }
 
-  // proprietà helper per i datepicker
   departDateObj: Date | null = null;
   returnDateObj: Date | null = null;
 
   ngOnInit() {
-    // se arrivano stringhe iniziali, sincronizza
     if (this.model.departDate) this.departDateObj = new Date(this.model.departDate);
     if (this.model.returnDate) this.returnDateObj = new Date(this.model.returnDate);
   }

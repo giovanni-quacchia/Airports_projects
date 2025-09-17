@@ -1,60 +1,22 @@
+// src/app/search/flight-search.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import type { FlightSearchParams } from './searchbar.component';
-
-// ADDED
-import { HttpClient } from '@angular/common/http';
-
-
-export interface FlightResult {
-  carrier: string;
-  cabin: string;
-  price: number;
-  durationMin: number;
-  direct: boolean;
-  departTime: string;   // "07:15"
-  arriveTime: string;   // "09:05"
-  origin: { city: string; code: string; };
-  destination: { city: string; code: string; };
-}
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';
+import { FlightSearchParams, FlightSearchResponse, AirportDTO } from '../core/flight.models';
 
 @Injectable({ providedIn: 'root' })
 export class FlightSearchService {
-  search(q: FlightSearchParams): Observable<FlightResult[]> {
-    // MOCK: costruisco origin/destination dai campi utente
-    const origin = parsePlace(q.from);        // es. "Milano (MXP)"
-    const destination = parsePlace(q.to);     // es. "Barcellona (BCN)"
+  private base = environment.apiBase;
+  constructor(private http: HttpClient) {}
 
-    const base: FlightResult = {
-      carrier: 'Alpine Air',
-      cabin: q.cabin,
-      price: 82,
-      durationMin: 110,
-      direct: true,
-      departTime: '07:15',
-      arriveTime: '09:05',
-      origin,
-      destination,
-    };
-
-    const results = [
-      base,
-      { ...base, carrier: 'BluJet', price: 89, departTime: '10:40', arriveTime: '12:30' },
-      { ...base, carrier: 'SkyWings', price: 96, departTime: '18:15', arriveTime: '20:05' },
-    ];
-
-    // (opzionale) se hai returnDate, potresti aggiungere una proprietà returnAvailable: true
-    return of(results).pipe(delay(200));
+  airports(q: string) {
+    const params = new HttpParams().set('q', q || '');
+    return this.http.get<AirportDTO[]>(`${this.base}/airports`, { params });
   }
-}
 
-function parsePlace(input: string): { city: string; code: string } {
-  // supporta "Città (CODE)" oppure solo "CODE"
-  const m = input.match(/^(.*)\(([^)]+)\)\s*$/);
-  if (m) {
-    return { city: m[1].trim(), code: m[2].trim().toUpperCase() };
+  search(body: FlightSearchParams, page = 0, size = 20): Observable<FlightSearchResponse> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.post<FlightSearchResponse>(`${this.base}/flights/search`, body, { params });
   }
-  // fallback: se l’utente scrive solo "MXP"
-  const codeOnly = input.trim().toUpperCase();
-  return { city: input.replace(/\(.*/, '').trim() || codeOnly, code: codeOnly };
 }
