@@ -1,44 +1,61 @@
-// src/app/core/auth.service.ts
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+// core/auth.service.ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Credentials, RegisterDto, User } from './models';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID } from '@angular/core';
+
+export interface LoginResponse { token: string; user: any; }
+export interface RegisterResponse { id: string; user?: any; token?: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private base = environment.apiBase;
-  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly base = `${environment.apiBase}/users`;
+  private readonly TOKEN_KEY = 'taw_token';
+  private readonly USER_KEY = 'taw_user';
+
+  // SSR-safe flag
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   constructor(private http: HttpClient) {}
 
-  login(body: Credentials) {
-    return this.http.post<{ token: string; user: User }>(`${this.base}/users/sessions`, body);
+  // ---------- API ----------
+  login(mail: string, password: string) {
+    const params = new HttpParams().set('mail', mail ?? '').set('password', password ?? '');
+     const headers = new HttpHeaders()
+    .set('Content-Type', 'application/x-www-form-urlencoded');
+    return this.http.post<LoginResponse>(`${this.base}/sessions`, params.toString(), {headers});
   }
 
-  register(body: RegisterDto) {
-    return this.http.post<{ token?: string; user?: User }>(`${this.base}/users`, body);
+  register(email: string, password: string, name?: string) {
+    const body = new HttpParams().set('mail', email ?? '').set('password', password ?? '');
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/x-www-form-urlencoded');
+    return this.http.post<LoginResponse>(`${this.base}`, body.toString(), {headers});
   }
 
-  storeToken(t: string) { if (this.isBrowser) localStorage.setItem('taw_token', t); }
-  storeUser(u: User)     { if (this.isBrowser) localStorage.setItem('taw_user', JSON.stringify(u)); }
+  // ---------- Storage (safe in SSR) ----------
+  setSession(token: string, user: any) {
+    if (!this.isBrowser) return; // in SSR non fare nulla
+    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+  }
 
-  logout() {
+  clearSession() {
     if (!this.isBrowser) return;
-    localStorage.removeItem('taw_token');
-    localStorage.removeItem('taw_user');
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
   }
 
-  /** Usato nel template: ok anche in SSR (ritorna null lato server) */
-  currentUser(): User | null {
+  get token(): string | null {
     if (!this.isBrowser) return null;
-    const raw = localStorage.getItem('taw_user');
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  get currentUser(): any | null {
+    if (!this.isBrowser) return null;
+    const raw = localStorage.getItem(this.USER_KEY);
     if (!raw) return null;
-    try { return JSON.parse(raw) as User; } catch { return null; }
-  }
-
-  token(): string | null {
-    if (!this.isBrowser) return null;
-    return localStorage.getItem('taw_token');
+    try { return JSON.parse(raw); } catch { return null; }
   }
 }

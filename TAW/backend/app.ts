@@ -32,7 +32,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false })); // per interpretare i dati inviati tramite form HTML
+app.use(express.urlencoded({ extended: true })); // per interpretare i dati inviati tramite form HTML
 app.use(morgan('dev'));
 
 // Routes

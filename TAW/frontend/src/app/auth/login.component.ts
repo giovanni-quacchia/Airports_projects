@@ -11,6 +11,7 @@ import { environment } from '../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -71,28 +72,24 @@ export class LoginComponent {
   loading = false;
   errorMsg = '';
 
-  constructor(private auth: AuthService, private http: HttpClient) {}
+  constructor(private auth: AuthService, private http: HttpClient, private router: Router ) {}
   base = environment.apiBase;
 
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
   if (this.loading) return;
   this.loading = true;
   this.errorMsg = '';
 
-  const url = `${this.base}/users/sessions`;
-  const params = new HttpParams()
-    .set('mail', this.form.mail ?? '')
-    .set('password', this.form.password ?? '');
-
-  this.http.post(url, {}, { params })
+  this.auth.login(this.form.mail, this.form.password)
     .pipe(finalize(() => this.loading = false))
     .subscribe({
       next: (res) => {
-        // TODO: salva token / naviga
+        this.auth.setSession(res.token, res.user);
+        this.router.navigate(['/search']);
       },
       error: (err) => {
-        this.errorMsg = err?.error?.message ?? err?.message ?? 'Errore di accesso';
+        this.errorMsg = err?.error?.msg;
       }
     });
-}
+  }
 }

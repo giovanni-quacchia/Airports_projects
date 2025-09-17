@@ -6,9 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { finalize, switchMap } from 'rxjs/operators';
 import { AuthService } from '../core/auth.service';
-import { environment } from '../../environments/environment';
-import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
@@ -49,7 +48,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
         </button>
 
         <p *ngIf="errorMsg" class="error">{{ errorMsg }}</p>
-
         <p class="muted">Hai già un account? <a routerLink="/login">Accedi</a></p>
       </form>
     </div>
@@ -74,21 +72,28 @@ export class RegisterComponent {
   hide = true;
   loading = false;
   errorMsg = '';
-  base = environment.apiBase;
-  constructor(private auth: AuthService, private router: Router, private http: HttpClient) {}
 
-  async onSubmit(){
+  constructor(private auth: AuthService, private router: Router) {}
+
+  onSubmit(): void {
     if (this.loading) return;
     this.loading = true;
     this.errorMsg = '';
-    
-    try {
-      const params = new HttpParams().set('mail', this.form.email || '').set('password', this.form.password || '');
-      return this.http.post(`${this.base}/users/`, {params});
-    } catch (e:any) {
-      this.errorMsg = e?.message ?? 'Errore di registrazione';
-    } finally {
-      this.loading = false;
+
+    this.auth.register(this.form.email, this.form.password, this.form.name)
+      // opzionale: auto-login subito dopo la registrazione
+      .pipe(
+        switchMap(() => this.auth.login(this.form.email, this.form.password)),
+        finalize(() => this.loading = false)
+      )
+      .subscribe({
+        next: (loginRes) => {
+          this.auth.setSession(loginRes.token, loginRes.user);
+          this.router.navigate(['/search']);
+        },
+        error: (err) => {
+          this.errorMsg = err?.error?.msg;
+        }
+      });
     }
-  }
 }
