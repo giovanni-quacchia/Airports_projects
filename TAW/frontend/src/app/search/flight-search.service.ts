@@ -12,11 +12,11 @@ export class FlightSearchService {
 
   airports(q: string) {
     const params = new HttpParams().set('q', q || '');
-    return this.http.get<AirportDTO[]>(`${this.base}/airports`, { params });
+    return this.http.get<AirportDTO[]>(`${this.base}/airports`);
   }
 
-  search(body: FlightSearchParams, page = 0, size = 20): Observable<FlightSearchResponse> {
-    const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.post<FlightSearchResponse>(`${this.base}/flights/search`, body, { params });
+  search(body: FlightSearchParams, page = 0, size = 20){
+    const params = new HttpParams().set('from', body.from).set('to', body.to);
+    return this.http.get<AirportDTO[]>(`${this.base}/itineraries`, { params });
   }
 }

@@ -1,11 +1,12 @@
+import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
   MatRipple,
   MatRippleModule,
   _StructuralStylesLoader
-} from "./chunk-PW5BRG2A.js";
+} from "./chunk-NRVJ3Y5V.js";
 import {
   _animationsDisabled
-} from "./chunk-S7VZVQ2V.js";
+} from "./chunk-6ETIBPP6.js";
 import {
   ENTER,
   MatCommonModule,
@@ -13,10 +14,10 @@ import {
   _IdGenerator,
   _VisuallyHiddenLoader,
   hasModifierKey
-} from "./chunk-5AIJY5YX.js";
+} from "./chunk-Q4S53H3H.js";
 import {
   _CdkPrivateStyleLoader
-} from "./chunk-4RQOW62Q.js";
+} from "./chunk-UR6GOGSZ.js";
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -27,12 +28,12 @@ import {
   Input,
   NgModule,
   Output,
-  Subject,
   ViewChild,
   ViewEncapsulation,
   booleanAttribute,
   inject,
   isSignal,
+  require_cjs,
   setClassMetadata,
   signal,
   ɵɵProvidersFeature,
@@ -60,7 +61,10 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate1,
   ɵɵviewQuery
-} from "./chunk-ZOWYJC2Z.js";
+} from "./chunk-TXH25U4Z.js";
+import {
+  __toESM
+} from "./chunk-6DU2HRTW.js";
 
 // node_modules/@angular/material/fesm2022/pseudo-checkbox.mjs
 var MatPseudoCheckbox = class _MatPseudoCheckbox {
@@ -136,6 +140,7 @@ var MatPseudoCheckbox = class _MatPseudoCheckbox {
 })();
 
 // node_modules/@angular/material/fesm2022/option.mjs
+var import_rxjs = __toESM(require_cjs(), 1);
 var _c0 = ["*", [["mat-option"], ["ng-container"]]];
 var _c1 = ["*", "mat-option, ng-container"];
 var _c2 = ["text"];
@@ -325,7 +330,7 @@ var MatOption = class _MatOption {
   /** Element containing the option's text. */
   _text;
   /** Emits when the state of the option changes and any parents have to be notified. */
-  _stateChanges = new Subject();
+  _stateChanges = new import_rxjs.Subject();
   constructor() {
     const styleLoader = inject(_CdkPrivateStyleLoader);
     styleLoader.load(_StructuralStylesLoader);
@@ -696,4 +701,4 @@ export {
   MatPseudoCheckboxModule,
   MatOptionModule
 };
-//# sourceMappingURL=chunk-3WTCAWVY.js.map
+//# sourceMappingURL=chunk-5RUFAJOL.js.map

@@ -13,7 +13,7 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(body: Credentials) {
-    return this.http.post<{ token: string; user: User }>(`${this.base}/airlines/sessions`, body);
+    return this.http.post<{ token: string; user: User }>(`${this.base}/users/sessions`, body);
   }
 
   register(body: RegisterDto) {

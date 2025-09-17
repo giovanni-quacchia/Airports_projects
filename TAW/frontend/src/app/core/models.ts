@@ -2,19 +2,19 @@ export type UserRole = 'passenger' | 'airline' | 'admin';
 
 export interface User {
   id: string;
-  email: string;
+  mail: string;
   name?: string;
   role: UserRole;
   passwordHash: string;
 }
 
 export interface Credentials {
-  email: string;
+  mail: string;
   password: string;
 }
 
 export interface RegisterDto {
-  email: string;
+  mail: string;
   password: string;
   name?: string;
   role?: UserRole;

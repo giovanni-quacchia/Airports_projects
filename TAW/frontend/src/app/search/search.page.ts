@@ -27,10 +27,8 @@ export class SearchPage {
     this.error = '';
     this.lastQuery = q;
     this.flightService.search(q, 0, 20).subscribe({
-      next: (res: FlightSearchResponse) => {
-        this.results = res.items;
-        this.total = res.total;
-        this.loading = false;
+      next: (res: any) => {
+        this.results = res;
       },
       error: e => {
         this.error = e?.error?.message || 'Errore';

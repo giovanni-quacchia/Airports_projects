@@ -7,6 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../core/auth.service';
+import { environment } from '../../environments/environment';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -26,7 +29,7 @@ import { AuthService } from '../core/auth.service';
       <form (ngSubmit)="onSubmit()" #f="ngForm" class="form">
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
-          <input matInput [(ngModel)]="form.email" name="email" type="email" required>
+          <input matInput [(ngModel)]="form.mail" name="mail" type="mail" required>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -63,27 +66,33 @@ import { AuthService } from '../core/auth.service';
   `]
 })
 export class LoginComponent {
-  form = { email: '', password: '' };
+  form = { mail: '', password: '' };
   hide = true;
   loading = false;
   errorMsg = '';
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private http: HttpClient) {}
+  base = environment.apiBase;
 
-  onSubmit() {
-    this.errorMsg = '';
-    this.loading = true;
-    this.auth.login(this.form).subscribe({
-      next: res => {
-        this.auth.storeToken(res.token);
-        if (res.user) this.auth.storeUser(res.user);
-        this.loading = false;
-        // TODO: naviga dove ti serve
+  async onSubmit(): Promise<void> {
+  if (this.loading) return;
+  this.loading = true;
+  this.errorMsg = '';
+
+  const url = `${this.base}/users/sessions`;
+  const params = new HttpParams()
+    .set('mail', this.form.mail ?? '')
+    .set('password', this.form.password ?? '');
+
+  this.http.post(url, {}, { params })
+    .pipe(finalize(() => this.loading = false))
+    .subscribe({
+      next: (res) => {
+        // TODO: salva token / naviga
       },
-      error: err => {
-        this.loading = false;
-        this.errorMsg = err?.error?.message || 'Login fail';
+      error: (err) => {
+        this.errorMsg = err?.error?.message ?? err?.message ?? 'Errore di accesso';
       }
     });
-  }
+}
 }

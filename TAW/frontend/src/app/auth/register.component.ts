@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../core/auth.service';
+import { environment } from '../../environments/environment';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
@@ -72,21 +74,17 @@ export class RegisterComponent {
   hide = true;
   loading = false;
   errorMsg = '';
-
-  constructor(private auth: AuthService, private router: Router) {}
+  base = environment.apiBase;
+  constructor(private auth: AuthService, private router: Router, private http: HttpClient) {}
 
   async onSubmit(){
     if (this.loading) return;
     this.loading = true;
     this.errorMsg = '';
+    
     try {
-      await this.auth.register({
-        name: this.form.name || undefined,
-        email: this.form.email,
-        password: this.form.password,
-        role: 'passenger',
-      });
-      this.router.navigateByUrl('/search');
+      const params = new HttpParams().set('mail', this.form.email || '').set('password', this.form.password || '');
+      return this.http.post(`${this.base}/users/`, {params});
     } catch (e:any) {
       this.errorMsg = e?.message ?? 'Errore di registrazione';
     } finally {
