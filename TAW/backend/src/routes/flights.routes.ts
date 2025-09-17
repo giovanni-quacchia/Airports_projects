@@ -5,7 +5,8 @@ import ticket from '../controllers/tickets.controller'
 import passenger from '../controllers/passengers.controller'
 const auth = require('../utils/auth.utils')
 
-// Get All flights: ? [from, to, fromDate, toDate, airline]
+// Get All flights: ? [from, to, fromDate, toDate, airline, airplane, code, sortBy, order, statistics]
+// sortBy: departure, arrival, duration
 // Date: year-month-day
 
 // Get all flights
@@ -20,7 +21,7 @@ router.post("/", auth.authenticateToken, auth.checkAirline, flight.createFlight)
 // Delete flight: specific airline or admin
 router.delete("/:id", auth.authenticateToken, auth.checkAirline, flight.deleteFlight);
 
-// Update flight: specific flight or airline
+// Update flight: admin or specific airline
 router.put("/:id", auth.authenticateToken, auth.checkAirline, flight.updateFlight);
 
 // Get tickets of a :id flight

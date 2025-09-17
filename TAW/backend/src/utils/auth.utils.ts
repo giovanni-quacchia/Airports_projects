@@ -74,6 +74,16 @@ function checkAirline(req, res, next) {
   next();
 }
 
+// Allow admin or user
+function checkUser(req, res, next) {
+  
+  if (req.user?.isAirline) {
+    return res.sendStatus(403);
+  }
+
+  next();
+}
+
 // Managing airline: only admin or specific airline
 function checkAirlineId(req, res, next){
 
@@ -125,5 +135,6 @@ module.exports = {
   checkAirlineId,
   optionalCheckToken,
   validateLogin,
-  checkUserId
+  checkUserId,
+  checkUser
 };

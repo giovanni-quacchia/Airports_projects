@@ -37,7 +37,6 @@ export async function createPurchase(req, res, next){
 
         // only admin or specific user
         if(!req.user?.isAdmin && req.user?.id !== parsedData.user) throw new AppError("Access denied: you can only create purchases for yourself", 4005);
-        if(req.user?.isAirline) throw new AppError("Access denied: airlines cannot create purchases", 4005);
 
         const result = await purchases.createPurchase(parsedData);
         printObject("Purchase created", parsedData)

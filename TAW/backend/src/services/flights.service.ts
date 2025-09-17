@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirlines, matchAirport, matchDate, SORT } from '../db/queries';
-import Fl, {Flight, validateSearch} from '../models/Flight';
+import Fl from '../models/Flight';
 import { CheckStatisticsReq } from '../utils/flight.utils';
 import {getModel as getRouteModel} from'../models/Route';
 import {getModel as getAirlineModel} from'../models/Airline';

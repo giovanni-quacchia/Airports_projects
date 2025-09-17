@@ -42,7 +42,7 @@ const passengerSchema = new mongoose.Schema<Passenger>({
     seat: {
         type: String,
         required: true,
-        match: /^[A-Z]\d+$/ // ensures format like "A1", "C12"
+        match: /^[A-Z]([1-9]\d*)$/ // ensures format like "A1", "C12"
     },
     purchase: { 
         type: mongoose.Schema.Types.ObjectId,

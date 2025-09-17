@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import flights from '../services/flights.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 import { validateNew, validatePut, validateSearch } from '../models/Flight';

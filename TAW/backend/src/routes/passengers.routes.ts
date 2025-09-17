@@ -3,7 +3,7 @@ const router = express.Router();
 import passenger from '../controllers/passengers.controller'
 const auth = require('../utils/auth.utils')
 
-// Get All passengers: ? [name, surname, CF, passportNumber, sortBy, order]
+// Get All passengers: ? [name, surname, CF, passportNumber, sortBy, order, seat]
 // sortBy: name, surname, seat, CF, passportNumber
 // only admin
 router.get("/", auth.authenticateToken, auth.checkAdmin, passenger.getAllPassengers);

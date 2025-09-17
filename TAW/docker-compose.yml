@@ -40,7 +40,7 @@ services:
       - 3000:3000  # <hostPort>:<containerPort>
     depends_on:
       - db
-    # TODO: modificare i file nel container, modifica anche i file originali
+    # modificare i file nel container, modifica anche i file originali
     volumes:
       - ./backend:/app          # Mount source code
       - /app/node_modules       # Keep node_modules inside container

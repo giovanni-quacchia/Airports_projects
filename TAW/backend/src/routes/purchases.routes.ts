@@ -4,7 +4,7 @@ import purchase from '../controllers/purchases.controller'
 import passengers from '../controllers/passengers.controller'
 const auth = require('../utils/auth.utils')
 
-// Get All purchases: ? [user, ticket, sortBy, order]
+// Get All purchases: ? [sortBy, order]
 // sortBy: price, quantity, date
 // only admin
 
@@ -14,10 +14,10 @@ router.get("/", auth.authenticateToken, auth.checkAdmin, purchase.getAllPurchase
 router.get("/:id",auth.authenticateToken, auth.checkAdmin, purchase.getPurchase);
 
 // Create a new purchase: admin or user
-router.post("/", auth.authenticateToken, purchase.createPurchase);
+router.post("/", auth.authenticateToken, auth.checkUser, purchase.createPurchase);
 
 // Delete purchase: admin / user
-router.delete("/:id", auth.authenticateToken, purchase.deletePurchase);
+router.delete("/:id", auth.authenticateToken, auth.checkUser, purchase.deletePurchase);
 
 // Update purchase: only admin
 router.put("/:id", auth.authenticateToken, auth.checkAdmin, purchase.updatePurchase);
