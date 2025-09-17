@@ -264,7 +264,8 @@ export class SearchbarComponent {
     const exact = list.find(a => a.code?.toUpperCase() === code);
     const pick = exact || list[0];
     const name = pick.name || pick.city || '';
-    return name ? `${name} (${pick.code})` : (pick.code || '');
+    const citta = pick.city || '';
+    return name ? `${citta} - ${name} (${pick.code})` : (pick.code || '');
   }
 
   /* --- Date --- */

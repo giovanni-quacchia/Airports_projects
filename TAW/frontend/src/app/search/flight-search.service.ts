@@ -12,11 +12,11 @@ export class FlightSearchService {
 
   airports(q: string) {
     const params = new HttpParams().set('q', q || '');
-    return this.http.get<AirportDTO[]>(`${this.base}/airports`);
+    return this.http.get<AirportDTO[]>(`${this.base}/airports`, {params});
   }
 
   search(body: FlightSearchParams, page = 0, size = 20){
-    const params = new HttpParams().set('from', body.from).set('to', body.to);
+    const params = new HttpParams().set('from', body.from).set('to', body.to).set('fromDate',body.departDate).set('toDate',body.returnDate);
     return this.http.get<AirportDTO[]>(`${this.base}/itineraries`, { params });
   }
 }
