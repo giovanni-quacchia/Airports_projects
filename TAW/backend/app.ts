@@ -7,7 +7,7 @@ import {connectDB} from './src/db/db';
 import morgan from 'morgan';
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Routers
 const AirlinesRouter = require('./src/routes/airlines.routes');

@@ -33,6 +33,14 @@ async function getAllTickets(query, flightId = "", airlineId = "") {
         ...JOIN("flights", "flight"),
     );
 
+    console.log({ 
+            $match: {
+                "type": typeMatch,
+                "price":{ $gte: minPrice, $lte: maxPrice},
+                "quantity":{$gte: minQuantity, $lte: maxQuantity},
+            }
+    },);
+
     if(airlineId){
         pipeline.push({
             $match: {"flight.airline": new mongoose.Types.ObjectId(airlineId)}

@@ -41,7 +41,7 @@ export const airlines = [
     code: "FR",
     PIVA: "IE123456789",
     name: "Ryanair",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Ryanair_logo_new.svg",
+    logo: "https://cdn.worldvectorlogo.com/logos/ryanair-1.svg",
     mail: "contact@ryanair.com"
   },
   {

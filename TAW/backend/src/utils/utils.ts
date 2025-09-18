@@ -55,9 +55,20 @@ export function validatePartialObj(data: {[key: string]: [value: unknown, type: 
     return res;
 }
 
-function castValue(value, type: string){
-    return (type === "number" ? Number(value) : type === "boolean" ? value === "true" || value === true : type === "date" ? new Date(value) : value)
+function castValue(value: any, type: string) {
+    switch(type) {
+        case "number": return Number(value);
+        case "positiveInteger": return Number(value);
+        case "positiveNumber": return Number(value);
+        case "boolean":
+            return value === "true" || value === true;
+        case "date":
+            return new Date(value);
+        default:
+            return value;
+    }
 }
+
 
 function isValidType(value, type: string, regEx?: RegExp, allowNull: boolean = false){
     
