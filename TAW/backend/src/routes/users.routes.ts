@@ -1,6 +1,7 @@
 import express from "express";
 const router = express.Router();
 const users = require("../controllers/users.controller");
+const purchases = require("../controllers/purchases.controller")
 const auth = require('../utils/auth.utils')
 
 // Sign up
@@ -14,6 +15,9 @@ router.get("/", auth.authenticateToken, auth.checkAdmin, users.getAllUsers);
 
 // Get :id user: only admin or specific user
 router.get("/:id", auth.authenticateToken, auth.checkUserId, users.getUser);
+
+// Get purchases of a user 
+router.get("/:userId/purchases", auth.authenticateToken, auth.checkUserId, purchases.getAllPurchases)
 
 // Delete user: only admin or user itself
 router.delete("/:id", auth.authenticateToken, auth.checkUserId, users.deleteUser);

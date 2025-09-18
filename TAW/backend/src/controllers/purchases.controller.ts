@@ -7,7 +7,7 @@ export async function getAllPurchases(req, res, next) {
     try {
         const { userId } = req.params
         if(userId) validateObj({id: [userId, "ID"]})
-
+            console.log(userId)
         const query: any = validateSearch(req.query);
         const result = await purchases.getAllPurchases(query, userId, req.user);
 

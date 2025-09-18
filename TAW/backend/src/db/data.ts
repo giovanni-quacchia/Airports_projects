@@ -378,16 +378,16 @@ const purchasesId = {
 
 export const purchases = [
   { _id: purchasesId[1], price: 1200, date: new Date('2024-08-01T10:00:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[2] },
-  { _id: purchasesId[2], price: 400, date: new Date('2024-08-02T09:00:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[4] },
+  { _id: purchasesId[2], price: 400, date: new Date('2024-08-02T09:00:00Z'), quantity: 1, user: usersId.user2, ticket: ticketsId[4] },
   { _id: purchasesId[3], price: 4400, date: new Date('2024-08-03T15:00:00Z'), quantity: 2, user: usersId.user, ticket: ticketsId[6] },
   { _id: purchasesId[4], price: 500, date: new Date('2024-08-04T11:00:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[1] },
   { _id: purchasesId[5], price: 2500, date: new Date('2024-08-05T14:30:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[3] },
-  { _id: purchasesId[6], price: 1000, date: new Date('2024-08-06T12:45:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[5] },
-  { _id: purchasesId[7], price: 550, date: new Date('2024-08-07T08:15:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[7] },
-  { _id: purchasesId[8], price: 1300, date: new Date('2024-08-08T16:00:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[8] },
+  { _id: purchasesId[6], price: 1000, date: new Date('2024-08-06T12:45:00Z'), quantity: 1, user: usersId.user2, ticket: ticketsId[5] },
+  { _id: purchasesId[7], price: 550, date: new Date('2024-08-07T08:15:00Z'), quantity: 1, user: usersId.user2, ticket: ticketsId[7] },
+  { _id: purchasesId[8], price: 1300, date: new Date('2024-08-08T16:00:00Z'), quantity: 1, user: usersId.user2, ticket: ticketsId[8] },
   { _id: purchasesId[9], price: 450, date: new Date('2024-08-09T10:20:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[9] },
   { _id: purchasesId[10], price: 2000, date: new Date('2024-08-10T13:50:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[10] },
-  { _id: purchasesId[11], price: 600, date: new Date('2024-08-11T09:40:00Z'), quantity: 1, user: usersId.user, ticket: ticketsId[11] }
+  { _id: purchasesId[11], price: 600, date: new Date('2024-08-11T09:40:00Z'), quantity: 1, user: usersId.user2, ticket: ticketsId[11] }
 ];
 
 const passengersId = {
