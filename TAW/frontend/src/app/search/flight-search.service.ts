@@ -19,4 +19,9 @@ export class FlightSearchService {
     const params = new HttpParams().set('from', body.from).set('to', body.to).set('fromDate',body.departDate).set('toDate',body.returnDate);
     return this.http.get<AirportDTO[]>(`${this.base}/itineraries`, { params });
   }
+  searchTickets(body: FlightSearchParams, page = 0, size = 20){
+    const params = new HttpParams().set('type', body.cabin).set('quantity',body.pax)
+    return this.http.get<AirportDTO[]>(`${this.base}/flights/${body._id}/tickets`, { params });
+  }
+
 }

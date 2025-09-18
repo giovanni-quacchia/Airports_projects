@@ -1,6 +1,7 @@
 export type Cabin = 'economy' | 'premium' | 'business' | 'first';
 
 export interface FlightSearchParams {
+  _id: string
   from: string;
   to: string;
   departDate: string;

@@ -1,7 +1,10 @@
 import { Component, Input, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { FlightSearchParams } from '../core/flight.models';
+import { RouterLink } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { FlightSearchParams, FlightSearchResponse, AirportDTO } from '../core/flight.models';
+import { environment } from '../../environments/environment';
 
 @Pipe({ name: 'duration', standalone: true })
 export class DurationPipe implements PipeTransform {
@@ -15,7 +18,7 @@ export class DurationPipe implements PipeTransform {
 @Component({
   selector: 'taw-results-list',
   standalone: true,
-  imports: [CommonModule, DatePipe, MatIconModule, DurationPipe],
+  imports: [CommonModule, DatePipe, MatIconModule, DurationPipe, RouterLink],
   template: `
   <!-- FILTRI (niente "Andata e ritorno") -->
   <div class="filters" *ngIf="query">
@@ -109,8 +112,13 @@ export class DurationPipe implements PipeTransform {
         <span *ngIf="totalPrice(r) as tp">Totale: <strong>€ {{ tp | number:'1.0-0' }}</strong></span>
       </div>
       <div class="actions">
-        <button class="cta ghost">Salva</button>&nbsp;
-        <button class="cta primary">Seleziona</button>
+
+        <button
+          class="cta primary"
+          [routerLink]="['/purchase']"
+          [state]="{ flight: r }">
+          Acquista
+        </button>
       </div>
     </footer>
   </article>
@@ -187,6 +195,8 @@ export class ResultsListComponent {
   @Input() results: any[] = [];
   @Input() query: FlightSearchParams | null = null;
   private readonly FALLBACK_LOGO = 'https://cdn.worldvectorlogo.com/logos/ryanair-1.svg';
+  private base = environment.apiBase;
+  constructor(private http: HttpClient) {}
 
   segmentsOf(r: any): any[] {
     const segs = [r];
