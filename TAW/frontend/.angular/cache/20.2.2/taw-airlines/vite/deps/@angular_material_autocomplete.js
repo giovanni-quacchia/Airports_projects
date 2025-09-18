@@ -1,4 +1,22 @@
 import {
+  OverlayConfig,
+  OverlayModule,
+  TemplatePortal,
+  createFlexibleConnectedPositionStrategy,
+  createOverlayRef,
+  createRepositionScrollStrategy
+} from "./chunk-ZL4CEHOD.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-FJSZLSQ5.js";
+import {
+  MAT_FORM_FIELD
+} from "./chunk-GQK2MAUT.js";
+import {
+  CdkScrollableModule,
+  ViewportRuler
+} from "./chunk-4R6ZHOI3.js";
+import {
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
   MatOptgroup,
@@ -7,30 +25,12 @@ import {
   MatOptionSelectionChange,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
-} from "./chunk-JWS3G2PX.js";
-import {
-  OverlayConfig,
-  OverlayModule,
-  TemplatePortal,
-  createFlexibleConnectedPositionStrategy,
-  createOverlayRef,
-  createRepositionScrollStrategy
-} from "./chunk-OL7SLQBZ.js";
-import {
-  MAT_FORM_FIELD
-} from "./chunk-YOS7R53T.js";
-import {
-  CdkScrollableModule,
-  ViewportRuler
-} from "./chunk-FGY3YIZ4.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-SZNOYP2X.js";
-import "./chunk-DLA5YVW4.js";
+} from "./chunk-SZMDBH43.js";
+import "./chunk-CQR4ARBS.js";
 import {
   Breakpoints,
   _animationsDisabled
-} from "./chunk-ZBSMABII.js";
+} from "./chunk-IVZKTUUO.js";
 import {
   ActiveDescendantKeyManager,
   BreakpointObserver,
@@ -47,16 +47,16 @@ import {
   coerceArray,
   hasModifierKey,
   removeAriaReferencedId
-} from "./chunk-W63TGOE7.js";
-import "./chunk-Z6LK4XPH.js";
+} from "./chunk-MZBCL4TT.js";
+import "./chunk-3YGSUNV2.js";
 import "./chunk-7UJZXIJQ.js";
 import {
   Directionality
-} from "./chunk-2HXOJW3N.js";
+} from "./chunk-GAK65PD2.js";
 import {
   Platform
-} from "./chunk-73544ZXS.js";
-import "./chunk-HYQUSZ6M.js";
+} from "./chunk-3YOYQZCG.js";
+import "./chunk-H4LQPAO2.js";
 import "./chunk-OUSM42MY.js";
 import {
   ChangeDetectionStrategy,
@@ -80,10 +80,8 @@ import {
   ViewEncapsulation,
   afterNextRender,
   booleanAttribute,
-  defer,
   forwardRef,
   inject,
-  merge,
   setClassMetadata,
   ɵɵNgOnChangesFeature,
   ɵɵProvidersFeature,
@@ -106,7 +104,12 @@ import {
   ɵɵprojectionDef,
   ɵɵqueryRefresh,
   ɵɵviewQuery
-} from "./chunk-OXLHNPZI.js";
+} from "./chunk-FVA7C6JK.js";
+import "./chunk-JRFR6BLO.js";
+import {
+  defer,
+  merge
+} from "./chunk-HWYXSU2G.js";
 import {
   Observable,
   Subject,
@@ -119,7 +122,7 @@ import {
   switchMap,
   take,
   tap
-} from "./chunk-4PAWV54Y.js";
+} from "./chunk-MARUHEWW.js";
 import "./chunk-GOMI4DH3.js";
 
 // node_modules/@angular/material/fesm2022/autocomplete.mjs

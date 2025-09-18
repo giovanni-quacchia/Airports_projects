@@ -12,10 +12,10 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatDateFormats } from '@angular/material/core';
-
 import { FlightSearchService } from './flight-search.service';
-import { AirportDTO } from '../core/flight.models';
+import { AirportDTO, FlightSearchParams, toCabin } from '../core/flight.models';
 
+// --- Date formats (ita) ---
 export const IT_DDMMYYYY: MatDateFormats = {
   parse:   { dateInput: 'DD/MM/YYYY' },
   display: {
@@ -26,15 +26,8 @@ export const IT_DDMMYYYY: MatDateFormats = {
   },
 };
 
-export type Cabin = 'economy' | 'premium' | 'business' | 'first';
-export interface FlightSearchParams {
-  from: string;
-  to: string;
-  departDate: string;
-  returnDate: string;   // richiesto
-  pax: number;
-  cabin: Cabin;
-}
+// Il form emette i campi di ricerca SENZA _id
+type FlightSearchFormParams = Omit<FlightSearchParams, '_id'>;
 
 @Component({
   selector: 'taw-searchbar',
@@ -141,10 +134,9 @@ export interface FlightSearchParams {
       <mat-form-field appearance="outline" class="field">
         <mat-label>Classe</mat-label>
         <mat-select [(ngModel)]="model.cabin" name="cabin" required>
-          <mat-option value="economy">Economy</mat-option>
-          <mat-option value="premium">Premium Economy</mat-option>
-          <mat-option value="business">Business</mat-option>
-          <mat-option value="first">First</mat-option>
+          <mat-option value="ECONOMY">Economy</mat-option>
+          <mat-option value="BUSINESS">Business</mat-option>
+          <mat-option value="FIRST">First</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -172,23 +164,13 @@ export interface FlightSearchParams {
 .field.small{ max-width:170px; }
 .swap-col{ display:flex; align-items:center; justify-content:center; }
 .swap-col button{ box-shadow:0 6px 14px rgba(0,0,0,.12); }
-
-/* Hints con nome completo + codice */
 .hint{ margin-top:6px; font-size:.85rem; color:#6b7280; }
-
-/* CTA come pill blu */
 .cta-row{ justify-content:center; }
 .cta.primary{ border-radius:999px; font-size:1.05rem; padding:14px 40px; }
-
-/* rifiniture Material */
 :host ::ng-deep .mat-mdc-form-field-infix{ padding:14px 16px !important; }
 :host ::ng-deep .mat-mdc-text-field-wrapper{ border-radius:14px !important; }
 :host ::ng-deep .mat-mdc-select-trigger{ display:flex; align-items:center; min-height:24px; }
-
-/* overlay sopra a tutto */
 :host ::ng-deep .cdk-overlay-container, :host ::ng-deep .cdk-overlay-pane{ z-index:10000 !important; }
-
-/* pannelli chiari e leggibili */
 :host ::ng-deep .mat-mdc-autocomplete-panel,
 :host ::ng-deep .mat-mdc-select-panel {
   background:#fff !important; color:#0f172a !important;
@@ -207,18 +189,18 @@ export interface FlightSearchParams {
   `]
 })
 export class SearchbarComponent {
-  @Input() initial?: Partial<FlightSearchParams>;
+  @Input() initial?: Partial<FlightSearchFormParams>;
   @Output() search = new EventEmitter<FlightSearchParams>();
 
   constructor(private api: FlightSearchService) {}
 
-  model: FlightSearchParams = {
+  model: FlightSearchFormParams = {
     from: this.initial?.from ?? '',
     to: this.initial?.to ?? '',
     departDate: this.initial?.departDate ?? '',
     returnDate: this.initial?.returnDate ?? '',
     pax: this.initial?.pax ?? 1,
-    cabin: (this.initial?.cabin ?? 'economy') as any
+    cabin: (this.initial?.cabin ?? 'ECONOMY') as any
   };
 
   departDateObj: Date | null = null;
@@ -231,24 +213,23 @@ export class SearchbarComponent {
   toHint = '';
 
   ngOnInit() {
-    if (this.model.departDate) this.departDateObj = new Date(this.model.departDate);
-    if (this.model.returnDate) this.returnDateObj = new Date(this.model.returnDate);
-    // inizializza hint se i campi partono con codice
+    if (this.model.departDate) this.departDateObj = new Date(this.model.departDate as any);
+    if (this.model.returnDate) this.returnDateObj = new Date(this.model.returnDate as any);
     if (this.model.from) this.filterFrom(this.model.from);
     if (this.model.to) this.filterTo(this.model.to);
   }
 
-  /* --- Autocomplete + Hint (solo visivo) --- */
+  /* --- Autocomplete + Hint --- */
   filterFrom(term: string) {
     const q = (term || '').trim();
-    this.api.airports(q).subscribe(list => {
+    this.api.airports(q).subscribe((list: AirportDTO[]) => {
       this.fromFiltered = list;
       this.fromHint = this.bestLabel(q, list);
     });
   }
   filterTo(term: string) {
     const q = (term || '').trim();
-    this.api.airports(q).subscribe(list => {
+    this.api.airports(q).subscribe((list: AirportDTO[]) => {
       this.toFiltered = list;
       this.toHint = this.bestLabel(q, list);
     });
@@ -272,21 +253,33 @@ export class SearchbarComponent {
   onDateChange(which: 'depart' | 'return', value: Date | null){
     if (which === 'depart') {
       this.departDateObj = value;
-      this.model.departDate = value ? toISODate(value) : '';
+      this.model.departDate = value ? toISODate(value) : '' as any;
     } else {
       this.returnDateObj = value;
-      this.model.returnDate = value ? toISODate(value) : '';
+      this.model.returnDate = value ? toISODate(value) : '' as any;
     }
   }
 
   swap(){
-    const f = this.model.from; this.model.from = this.model.to; this.model.to = f;
-    this.filterFrom(this.model.from); this.filterTo(this.model.to);
+    const f = this.model.from; this.model.from = this.model.to as any; this.model.to = f as any;
+    this.filterFrom(this.model.from as any); this.filterTo(this.model.to as any);
   }
 
   formComplete(f: any){ return f?.valid && !!this.model.returnDate && Number(this.model.pax) >= 1; }
 
-  emitSearch(){ this.search.emit({ ...this.model }); }
+  emitSearch() {
+    // adatta questi campi ai nomi reali del tuo form
+    const v = this.model ?? {};
+    const q: FlightSearchParams = {
+      from: v.from,
+      to: v.to,
+      departDate: v.departDate,
+      returnDate: v.returnDate,
+      pax: Number(v.pax ?? 1),
+      cabin: toCabin(v.cabin),
+    };
+    this.search.emit(q);
+  }
 }
 
 /* util */

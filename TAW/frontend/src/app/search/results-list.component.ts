@@ -2,8 +2,8 @@ import { Component, Input, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { FlightSearchParams, FlightSearchResponse, AirportDTO } from '../core/flight.models';
+import { HttpClient} from '@angular/common/http';
+import { FlightSearchParams, FlightResult, TicketDTO} from '../core/flight.models';
 import { environment } from '../../environments/environment';
 
 @Pipe({ name: 'duration', standalone: true })
@@ -14,7 +14,7 @@ export class DurationPipe implements PipeTransform {
     return `${h}h ${m}m`;
   }
 }
-
+ 
 @Component({
   selector: 'taw-results-list',
   standalone: true,
@@ -93,8 +93,44 @@ export class DurationPipe implements PipeTransform {
             </div>
           </div>
 
-          <!-- prezzo segmento (in basso a destra di ogni scalo/segmento) -->
-          <div class="seg-price" *ngIf="priceOf(s) as p">€ {{ p | number:'1.0-0' }}</div>
+          <!-- TICKET DEL SEGMENTO (usa matchedTicketsBySegment) -->
+          <div class="seg-tickets" [ngSwitch]="i">
+            <!-- main -->
+            <ng-container *ngSwitchCase="0">
+              <ng-container *ngIf="hasTickets(r,'main')">
+                  <span class="badge">{{ tickets(r,'main').length }} opzioni</span>
+                  <ng-container *ngFor="let t of (tickets(r,'main') | slice:0:1)">
+                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                  <small class="seg-qty">· {{ t.quantity }} posti</small>
+                  <small class="seg-class">· {{ t.type }}</small>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+
+            <!-- stop1 -->
+            <ng-container *ngSwitchCase="1">
+              <ng-container *ngIf="hasTickets(r,'stop2')">
+                  <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
+                  <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
+                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                  <small class="seg-qty">· {{ t.quantity }} posti</small>
+                  <small class="seg-class">· {{ t.type }}</small>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+
+            <!-- stop2 -->
+            <ng-container *ngSwitchCase="2">
+              <ng-container *ngIf="hasTickets(r,'stop1')">
+                  <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
+                  <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
+                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                  <small class="seg-qty">· {{ t.quantity }} posti</small>
+                  <small class="seg-class">· {{ t.type }}</small>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+          </div>
         </div>
 
         <!-- SCALO -->
@@ -106,6 +142,7 @@ export class DurationPipe implements PipeTransform {
       </ng-container>
     </section>
 
+
     <!-- FOOTER: totale a sinistra, bottoni a destra (stile come "Cerca voli") -->
     <footer class="foot">
       <div class="total">
@@ -116,7 +153,7 @@ export class DurationPipe implements PipeTransform {
         <button
           class="cta primary"
           [routerLink]="['/purchase']"
-          [state]="{ flight: r }">
+          [state]="{ flight: buildPurchaseFlight(r) }">
           Acquista
         </button>
       </div>
@@ -192,7 +229,7 @@ export class DurationPipe implements PipeTransform {
   `]
 })
 export class ResultsListComponent {
-  @Input() results: any[] = [];
+  @Input() results: FlightResult[] = [];
   @Input() query: FlightSearchParams | null = null;
   private readonly FALLBACK_LOGO = 'https://cdn.worldvectorlogo.com/logos/ryanair-1.svg';
   private base = environment.apiBase;
@@ -235,5 +272,56 @@ export class ResultsListComponent {
     } else {
       img.style.display = 'none'; // nascondi del tutto in caso estremo
     }
+  }
+  tickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO[] {
+    return (r?.matchedTicketsBySegment?.[key] ?? []) as TicketDTO[];
+  }
+  hasTickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): boolean {
+    return this.tickets(r, key).length > 0;
+  }
+  buildPurchaseFlight(r: FlightResult): FlightResult {
+    // ricavo i segmenti come fai in template
+    const segs: any[] = [];
+    segs.push(r);
+    if (r.stop1) segs.push(r.stop1);
+    if (r.stop2) segs.push(r.stop2);
+
+    const first = segs[0] ?? r;
+    const last  = segs[segs.length - 1] ?? r;
+
+    // route: from del primo, to dell’ultimo
+    const route = r.route ?? {
+      from: first?.route?.from,
+      to:   last?.route?.to,
+    };
+
+    // orari
+    const departure = r.departure ?? first?.departure ?? null;
+    const arrival   = r.finalArrival ?? r.arrival ?? last?.arrival ?? null;
+
+    // durata totale
+    let totDuration = typeof r.totDuration === 'number' ? r.totDuration : undefined;
+    if (totDuration == null) {
+      const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
+      if (sum > 0) {
+        totDuration = sum;
+      } else if (departure && arrival) {
+        totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime()) / 60000);
+      } else {
+        totDuration = 0;
+      }
+    }
+
+    // porta con te i ticket già filtrati (se presenti)
+    const matchedTicketsBySegment = r.matchedTicketsBySegment ?? r.ticketsBySegment ?? {};
+
+    return {
+      ...r,
+      route,
+      departure,
+      arrival,
+      totDuration,
+      matchedTicketsBySegment
+    } as FlightResult;
   }
 }
