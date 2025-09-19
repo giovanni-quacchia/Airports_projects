@@ -47,19 +47,18 @@ export async function getAllFlights(query, airlineId = "", user: any = {}){
     );
 
     // STATISTICS
-    // TODO: sistemare il ricavato tot, da calcolare sui purchases
     if (CheckStatisticsReq(user, airlineId, statistics)){
         pipeline.push(
             ...JOIN("tickets", "_id", "flight price", "flight", "ticket"),
-            ...JOIN("passengers", "ticket._id", "ticket", "ticket", "passenger"),
+            ...JOIN("purchases", "ticket._id", "price quantity", "ticket", "purchase"),
         
             ...GROUPBY("$_id",{ 
-                numPassengers: {$sum: 1},
-                totRevenue: { $sum: "$ticket.price" }
+                numPassengers: {$sum: "$purchase.quantity"},
+                totRevenue: { $sum: "$purchase.price" }
             }
             ),
             // Group by flight._id but it keeps one tuple ticket,passenger, the $first it finds
-            { $project: { "ticket": 0, "passenger": 0 } },
+            { $project: { "ticket": 0, "purchase": 0 } },
         );
     }
 
@@ -71,18 +70,18 @@ export async function getAllFlights(query, airlineId = "", user: any = {}){
 
 async function getFlight(id: string){
     const flight = await Fl.getModel().findById(id)
-        // .populate({
-        //     path: "route",
-        //     populate: [
-        //     { path: "from" },
-        //     { path: "to" }
-        //     ]
-        // })
-        // .populate({
-        //     path: "airline",
-        //     select: "code PIVA name logo"
-        // })
-        // .populate("airplane");
+        .populate({
+            path: "route",
+            populate: [
+            { path: "from" },
+            { path: "to" }
+            ]
+        })
+        .populate({
+            path: "airline",
+            select: "code PIVA name logo"
+        })
+        .populate("airplane");
     if(!flight) throw new AppError("Flight not found", 4004);
     return flight;
 }

@@ -69,6 +69,6 @@ networks:
   taw-network:
     driver: bridge
 
-# docker-compose up -d: Primo avvio
+# docker-compose up -d: Primo avvio (--build ricostruisce le immagini)
 # docker-compose start/stop/restart/down (down elimina tutto)
 # docker logs <serviceName> (-f realtime)

@@ -30,7 +30,7 @@ export class SearchPage {
     return (v ?? '').toString().trim().toUpperCase();
   }
 
-  // <-- QUESTO È QUELLO CHE TI MANCA
+
   onSearch(ev: any) {
     const q: FlightSearchParams = {
       _id: ev._id, // ignorato se non c'è
@@ -40,6 +40,7 @@ export class SearchPage {
       returnDate: ev.returnDate,
       pax: Number(ev.pax ?? 1),
       cabin: toCabin(ev.cabin),
+      onlyDirect: ev.onlyDirect
     };
 
     this.lastQuery = q;
@@ -98,7 +99,7 @@ export class SearchPage {
             return presentSegs.every(k => (itin.ticketsBySegment?.[k] ?? []).some(matchesTicket));
           })
           .map(itin => {
-            console.log('[segments]', itin);
+            // console.log('[segments]', itin);
             const matched: Record<SegmentKey, TicketDTO[] | undefined> = {
               main: (itin.ticketsBySegment?.main ?? []).filter(matchesTicket),
               stop1: itin.stop1 ? (itin.ticketsBySegment?.stop1 ?? []).filter(matchesTicket) : undefined,

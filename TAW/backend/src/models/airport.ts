@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import { checkKeys, isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
+import { isObject, isObjectEmpty, isObjSameSize, validateObj, validatePartialObj } from '../utils/utils';
 import { AppError } from './AppError';
 
 // Interface
@@ -28,7 +28,7 @@ const AirportSchema = new mongoose.Schema<Airport>({
 
 let airportModel: mongoose.Model<Airport>;
 export function getModel(): mongoose.Model<Airport> {
-    if(!airportModel) airportModel = mongoose.model<Airport>('airport', AirportSchema);
+    if(!airportModel) airportModel = mongoose.model<Airport>('Airport', AirportSchema);
     return airportModel;
 }
 

@@ -26,6 +26,11 @@ export class DurationPipe implements PipeTransform {
     <span class="badge">Classe: {{query.cabin}}</span>
   </div>
 
+  <!-- Error: no results -->
+  <div *ngIf="query && results?.length === 0" class="card no-results-card">
+    No results found.
+  </div>
+
   <article class="card" *ngFor="let r of results">
     <header class="head">
       <div class="carrier">
@@ -109,9 +114,9 @@ export class DurationPipe implements PipeTransform {
 
             <!-- stop1 -->
             <ng-container *ngSwitchCase="1">
-              <ng-container *ngIf="hasTickets(r,'stop2')">
-                  <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
-                  <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
+              <ng-container *ngIf="hasTickets(r,'stop1')">
+                  <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
+                  <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
                   <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
                   <small class="seg-qty">· {{ t.quantity }} posti</small>
                   <small class="seg-class">· {{ t.type }}</small>
@@ -121,9 +126,9 @@ export class DurationPipe implements PipeTransform {
 
             <!-- stop2 -->
             <ng-container *ngSwitchCase="2">
-              <ng-container *ngIf="hasTickets(r,'stop1')">
-                  <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
-                  <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
+              <ng-container *ngIf="hasTickets(r,'stop2')">
+                  <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
+                  <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
                   <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
                   <small class="seg-qty">· {{ t.quantity }} posti</small>
                   <small class="seg-class">· {{ t.type }}</small>
@@ -161,6 +166,16 @@ export class DurationPipe implements PipeTransform {
   </article>
   `,
   styles: [`
+    // Error card
+    .no-results-card {
+      margin: 0 0 16px 0;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.06);
+      padding: 16px;
+      text-align: center;
+    }
+
     /* badges top */
     .filters{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 16px }
     .badge{ padding:6px 10px; border-radius:999px; background:#eef6ff; font-size:.85rem }
@@ -231,7 +246,7 @@ export class DurationPipe implements PipeTransform {
 export class ResultsListComponent {
   @Input() results: FlightResult[] = [];
   @Input() query: FlightSearchParams | null = null;
-  private readonly FALLBACK_LOGO = 'https://cdn.worldvectorlogo.com/logos/ryanair-1.svg';
+  private readonly FALLBACK_LOGO = '';
   private base = environment.apiBase;
   constructor(private http: HttpClient) {}
 

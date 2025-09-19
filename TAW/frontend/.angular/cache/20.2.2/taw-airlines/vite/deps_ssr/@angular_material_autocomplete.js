@@ -6,7 +6,17 @@ import {
   createFlexibleConnectedPositionStrategy,
   createOverlayRef,
   createRepositionScrollStrategy
-} from "./chunk-CCHM5ANH.js";
+} from "./chunk-XPU64MYL.js";
+import {
+  MAT_FORM_FIELD
+} from "./chunk-J5ODQUGL.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-LYYE5XBH.js";
+import {
+  CdkScrollableModule,
+  ViewportRuler
+} from "./chunk-RSWN3SYK.js";
 import {
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
@@ -16,22 +26,13 @@ import {
   MatOptionSelectionChange,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
-} from "./chunk-V7QGREOF.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-PZK4CTWR.js";
-import {
-  MAT_FORM_FIELD
-} from "./chunk-OFZNAZVM.js";
-import {
-  CdkScrollableModule,
-  ViewportRuler
-} from "./chunk-HWTLOP7H.js";
-import "./chunk-D5LTPSXJ.js";
+} from "./chunk-4G7F5CKS.js";
+import "./chunk-NGKX24QL.js";
+import "./chunk-NGCZX5PK.js";
 import {
   Breakpoints,
   _animationsDisabled
-} from "./chunk-MGEIW45Q.js";
+} from "./chunk-IXNN5J3R.js";
 import {
   ActiveDescendantKeyManager,
   BreakpointObserver,
@@ -48,16 +49,16 @@ import {
   coerceArray,
   hasModifierKey,
   removeAriaReferencedId
-} from "./chunk-CBL2EXK6.js";
+} from "./chunk-NMEGOGNL.js";
+import "./chunk-OXV2PMJT.js";
 import "./chunk-FQL6O3MQ.js";
 import {
   Directionality
-} from "./chunk-T4PXRGKK.js";
-import "./chunk-XGGHD6XU.js";
+} from "./chunk-AWV2YZU3.js";
 import {
   Platform
-} from "./chunk-XQALIUH5.js";
-import "./chunk-MHGVWNK6.js";
+} from "./chunk-QD4KLM5E.js";
+import "./chunk-5BKT4Q2V.js";
 import "./chunk-U4VNP6SC.js";
 import {
   ChangeDetectionStrategy,
@@ -105,13 +106,13 @@ import {
   ɵɵprojectionDef,
   ɵɵqueryRefresh,
   ɵɵviewQuery
-} from "./chunk-VR4PPWEQ.js";
-import {
-  require_cjs
-} from "./chunk-C27DBZK2.js";
+} from "./chunk-L3IPE4VT.js";
 import {
   require_operators
 } from "./chunk-2UVUUPPC.js";
+import {
+  require_cjs
+} from "./chunk-C27DBZK2.js";
 import "./chunk-K54IFBYX.js";
 import {
   __toESM

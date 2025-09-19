@@ -53,7 +53,7 @@ export function JOINStop(collection: string, FK: string, PK: string, newAttr: st
                     // f2.from != to (cosi non considera il volo ber -- pec, perche sono gia a berlino con il primo volo)
                     unMatchAirport("route.from", dest),
 
-                    ...JOIN("users", "airline", "code PIVA name logo"),
+                    ...JOIN("airlines", "airline", "code PIVA name logo"),
                     ...JOIN("airplanes", "airplane"),
                 ],
                 as: newAttr
@@ -123,13 +123,13 @@ export function matchAirlines(locations: string[], regEx){
     }
 }
 
-export function matchDate(attribute: string, fromDate: string, toDate: string){
-    console.log(toDate)
+export function matchDate(attribute: string, fromDate: string, toDate: Date){
     return {
         $match: {
             [attribute]: {
                 $gte: fromDate ? new Date(fromDate) : new Date('1970-01-01'),
-                $lte: toDate ? new Date(toDate) : new Date('2100-12-31'),
+                // toDate: 2025-09-14T00:00:00.000Z -->2025-09-14T23:59:59.999Z
+                $lte: toDate ? new Date(toDate.getTime() + (24*60*60*1000 - 1)) : new Date('2100-12-31'),
             },
         }
     }
