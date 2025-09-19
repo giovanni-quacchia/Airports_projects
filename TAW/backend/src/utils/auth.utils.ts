@@ -99,7 +99,6 @@ function checkAirlineId(req, res, next){
 function checkUserId(req, res, next){
 
   if(req.user?.isAdmin) return next();
-
   if(req.user?.id !== req.params?.id) return res.sendStatus(403);
 
   return next();

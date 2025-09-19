@@ -124,6 +124,7 @@ export function matchAirlines(locations: string[], regEx){
 }
 
 export function matchDate(attribute: string, fromDate: string, toDate: string){
+    console.log(toDate)
     return {
         $match: {
             [attribute]: {

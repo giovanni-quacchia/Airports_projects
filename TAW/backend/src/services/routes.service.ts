@@ -8,8 +8,10 @@ import { AppError } from '../models/AppError';
 async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
     const parsedData: any = Ro.validateSearch(query);
-    const { from = /.*/, to = /.*/ } = parsedData;
+    const { from = /.*/, to = /.*/, sortBy = "numPassengers", order = "desc" } = parsedData;
     const pipeline = [];
+    const sortOrder = order === "asc" ? 1 : -1;
+
 
     if(airlineId){
         pipeline.push(
@@ -21,14 +23,27 @@ async function getAllRoutes(query, airlineId = "", user: any = {}) {
             },
             ...JOIN("tickets", "flight._id", "", "flight", "flight.ticket"),
             ...JOIN("passengers", "flight.ticket._id", "", "ticket", "flight.passenger"),
-                    
-            ...GROUPBY("$_id",{ // group by route._id
-                numPassengers: {$sum: 1},
-            }
+        )
+        // Only specific airline can view statistics of its flights
+        if(user.isAdmin || user.id === airlineId){
+            pipeline.push(
+            ...GROUPBY("$_id", // group by route._id
+                {  numPassengers: {$sum: 1}, }
             ),
+            { $sort: { [sortBy]: sortOrder } }
+        ); 
+        } else {
+            pipeline.push(
+                ...GROUPBY("$_id", // group by route._id
+                    {}
+                ),
+            )
+        }
+        pipeline.push(
             // Group by flight._id but it keeps one tuple ticket,passenger, the $first it finds
             { $project: { "flight": 0 } },
-        )
+        ); 
+        
     }
 
     pipeline.push(

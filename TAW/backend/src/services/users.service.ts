@@ -59,7 +59,7 @@ async function deleteUser(id: string){
     return await Us.getModel().findByIdAndDelete(id);
 }
 
-async function updateUser(id: string, query: any){
+async function updateUser(id: string, query: any, usr){
 
     const user = await Us.getModel().findById(id);
     if(!user) throw new AppError("User not found", 4004);
@@ -75,6 +75,9 @@ async function updateUser(id: string, query: any){
         delete query.password;
         delete query.newPassword;
     }
+
+    // Update balance
+    if(query.balance && !usr.isAdmin) throw new AppError("Only admin can change balance", 4005);
 
     // Update other fields
     Object.assign(user, query);

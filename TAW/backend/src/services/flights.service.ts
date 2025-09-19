@@ -47,6 +47,7 @@ export async function getAllFlights(query, airlineId = "", user: any = {}){
     );
 
     // STATISTICS
+    // TODO: sistemare il ricavato tot, da calcolare sui purchases
     if (CheckStatisticsReq(user, airlineId, statistics)){
         pipeline.push(
             ...JOIN("tickets", "_id", "flight price", "flight", "ticket"),
@@ -70,18 +71,18 @@ export async function getAllFlights(query, airlineId = "", user: any = {}){
 
 async function getFlight(id: string){
     const flight = await Fl.getModel().findById(id)
-        .populate({
-            path: "route",
-            populate: [
-            { path: "from" },
-            { path: "to" }
-            ]
-        })
-        .populate({
-            path: "airline",
-            select: "code PIVA name logo"
-        })
-        .populate("airplane");
+        // .populate({
+        //     path: "route",
+        //     populate: [
+        //     { path: "from" },
+        //     { path: "to" }
+        //     ]
+        // })
+        // .populate({
+        //     path: "airline",
+        //     select: "code PIVA name logo"
+        // })
+        // .populate("airplane");
     if(!flight) throw new AppError("Flight not found", 4004);
     return flight;
 }

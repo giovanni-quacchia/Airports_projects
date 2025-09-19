@@ -53,10 +53,23 @@ export function validateSearch(data: any){
 
     if(!isObject(data)) throw new AppError("Object expected", 4005);
 
-    return validatePartialObj({
+    const query: any = validatePartialObj({
         from: [data.from, "string"],
-        to: [data.to, "string"]
+        to: [data.to, "string"],
+        sortBy: [data.sortBy, "string"],
+        order: [data.order, "string"]
     });
+
+    if(
+        (query.sortBy && !["numPassengers"].includes(query.sortBy)) || 
+        (query.order && !query.sortBy)
+    )
+        throw new AppError("Sorting parameters not valid", 4005);
+
+    if(query.order && query.order !== "desc" && query.order !== "asc")
+        throw new AppError("Order parameter not valid", 4005);
+
+    return query;
 }
 
 // Model
