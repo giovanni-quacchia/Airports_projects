@@ -80,7 +80,6 @@ interface FlightResult extends FlightBase {
         <p>Nessun volo selezionato. Torna alla <a routerLink="/search">ricerca</a>.</p>
       </ng-template>
     </div>
-    <taw-debug-panel [flight]="flight"></taw-debug-panel>
   `,
   styles: [`
     .container{max-width:960px;margin:24px auto;padding:0 16px}
