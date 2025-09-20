@@ -37,10 +37,10 @@ export class FlightSearchService {
 
   // tickets per volo
   searchTickets(body: FlightSearchParams) {
-  console.log('[tickets] params →', body);
-  const params = new HttpParams()
-    .set('type', String(body.cabin ?? ''))
-    .set('minQuantity', String(body.pax ?? 1));
-  return this.http.get<TicketDTO[]>(`${this.base}/flights/${body._id}/tickets`, { params });
-}
+    console.log('[tickets] params →', body);
+    const params = new HttpParams()
+      .set('type', String(body.cabin ?? ''))
+      .set('minQuantity', String(body.pax ?? 1));
+    return this.http.get<TicketDTO[]>(`${this.base}/flights/${body._id}/tickets`, { params });
+  }
 }

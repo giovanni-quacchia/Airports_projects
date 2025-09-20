@@ -1,5 +1,8 @@
 import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
+  MatFormFieldModule
+} from "./chunk-KU4T4HSX.js";
+import {
   MAT_INPUT_VALUE_ACCESSOR
 } from "./chunk-JN7VQ2YK.js";
 import {
@@ -7,12 +10,9 @@ import {
   _ErrorStateTracker
 } from "./chunk-XH7SHDNT.js";
 import {
-  MatFormFieldModule
-} from "./chunk-LDDRF5MX.js";
-import {
   AutofillMonitor,
   TextFieldModule
-} from "./chunk-IGGXDTQK.js";
+} from "./chunk-V2UR6DBT.js";
 import {
   MAT_FORM_FIELD,
   MatError,
@@ -22,21 +22,21 @@ import {
   MatLabel,
   MatPrefix,
   MatSuffix
-} from "./chunk-BOFGE5OL.js";
+} from "./chunk-J5ODQUGL.js";
 import {
   coerceBooleanProperty,
   getSupportedInputTypes
-} from "./chunk-4P72WLD5.js";
+} from "./chunk-IXNN5J3R.js";
 import {
   MatCommonModule,
   _IdGenerator
-} from "./chunk-BPH4GQEF.js";
+} from "./chunk-NMEGOGNL.js";
+import "./chunk-OXV2PMJT.js";
 import "./chunk-FQL6O3MQ.js";
 import "./chunk-AWV2YZU3.js";
-import "./chunk-OXV2PMJT.js";
 import {
   Platform
-} from "./chunk-XOY5G444.js";
+} from "./chunk-QD4KLM5E.js";
 import {
   FormGroupDirective,
   NgControl,
