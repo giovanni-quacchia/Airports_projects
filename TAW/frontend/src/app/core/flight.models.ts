@@ -27,7 +27,7 @@ export interface FlightBase {
   arrival?: string;
   departure?: string;
   duration?: number;
-  airline?: AirlineDTO; // <-- AGGIUNTO
+  airline?: AirlineDTO;
   route?: {
     from?: AirportDTO;
     to?: AirportDTO;

@@ -32,7 +32,6 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.base}/sessions`, params.toString(), { headers })
       .pipe(
         tap(res => {
-          // Qui aggiungo la mail che conosco (perché l’ho usata nel login)
           this.setSession(res.token, { email, role });
         })
       );

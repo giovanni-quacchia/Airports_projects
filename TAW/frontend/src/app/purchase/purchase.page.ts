@@ -5,7 +5,6 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { DebugPanelComponent } from '../core/debug-panel.component';
 
 type SegmentKey = 'main' | 'stop1' | 'stop2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -26,7 +25,7 @@ interface FlightResult extends FlightBase {
 @Component({
   standalone: true,
   selector: 'taw-purchase-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, DebugPanelComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="container">
       <a routerLink="/search" class="back">← Torna ai risultati</a>
