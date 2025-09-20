@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,6 +39,7 @@ type FlightSearchFormParams = Omit<FlightSearchParams, '_id'>;
     MatButtonModule, MatSelectModule,
     MatAutocompleteModule, MatOptionModule,
     MatDatepickerModule, MatNativeDateModule,
+    MatCheckboxModule
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'it-IT' },
@@ -128,7 +130,13 @@ type FlightSearchFormParams = Omit<FlightSearchParams, '_id'>;
     <div class="row">
       <mat-form-field appearance="outline" class="field small">
         <mat-label>Passeggeri</mat-label>
-        <input matInput type="number" min="1" required [(ngModel)]="model.pax" name="pax">
+        <input
+          matInput
+          type="number"
+          min="1"
+          required
+          [(ngModel)]="model.pax"
+          name="pax">
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="field">
@@ -136,10 +144,19 @@ type FlightSearchFormParams = Omit<FlightSearchParams, '_id'>;
         <mat-select [(ngModel)]="model.cabin" name="cabin" required>
           <mat-option value="ECONOMY">Economy</mat-option>
           <mat-option value="BUSINESS">Business</mat-option>
-          <mat-option value="FIRST">First</mat-option>
+          <mat-option value="FIRST CLASS">First Class</mat-option>
         </mat-select>
       </mat-form-field>
+
+      <!-- Onlydirect -->
+      <mat-checkbox
+        class="field"
+        [(ngModel)]="model.onlyDirect"
+        name="onlyDirect">
+        Solo voli diretti
+      </mat-checkbox>
     </div>
+
 
     <!-- ROW 4: CTA -->
     <div class="row cta-row">
@@ -200,7 +217,8 @@ export class SearchbarComponent {
     departDate: this.initial?.departDate ?? '',
     returnDate: this.initial?.returnDate ?? '',
     pax: this.initial?.pax ?? 1,
-    cabin: (this.initial?.cabin ?? 'ECONOMY') as any
+    cabin: (this.initial?.cabin ?? 'ECONOMY') as any,
+    onlyDirect: false
   };
 
   departDateObj: Date | null = null;
@@ -277,6 +295,7 @@ export class SearchbarComponent {
       returnDate: v.returnDate,
       pax: Number(v.pax ?? 1),
       cabin: toCabin(v.cabin),
+      onlyDirect: v.onlyDirect
     };
     this.search.emit(q);
   }

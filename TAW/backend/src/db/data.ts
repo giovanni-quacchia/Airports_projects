@@ -349,15 +349,15 @@ const ticketsId = {
 
 export const tickets = [
   { _id: ticketsId[1], code: 1, type: 'ECONOMY', price: 500, quantity: 50, flight: flightsId.EK101, departure: new Date('2025-09-10T08:30:00Z') },
-  { _id: ticketsId[2], code: 2, type: 'BUSINESS', price: 1200, quantity: 20, flight: flightsId.EK101, departure: new Date('2025-09-10T08:30:00Z') },
-  { _id: ticketsId[3], code: 3, type: 'FIRST CLASS', price: 2500, quantity: 10, flight: flightsId.AF202, departure: new Date('2025-09-12T13:45:00Z') },
+  { _id: ticketsId[2], code: 2, type: 'ECONOMY', price: 1200, quantity: 20, flight: flightsId.EK101, departure: new Date('2025-09-10T08:30:00Z') },
+  { _id: ticketsId[3], code: 3, type: 'ECONOMY', price: 2500, quantity: 10, flight: flightsId.AF202, departure: new Date('2025-09-12T13:45:00Z') },
   { _id: ticketsId[4], code: 4, type: 'ECONOMY', price: 400, quantity: 60, flight: flightsId.AZ303, departure: new Date('2025-09-14T07:00:00Z') },
-  { _id: ticketsId[5], code: 5, type: 'BUSINESS', price: 1000, quantity: 25, flight: flightsId.LH404, departure: new Date('2025-09-16T22:00:00Z') },
-  { _id: ticketsId[6], code: 6, type: 'FIRST CLASS', price: 2200, quantity: 8, flight: flightsId.FR505_1, departure: new Date('2025-09-16T09:30:00Z') },
+  { _id: ticketsId[5], code: 5, type: 'ECONOMY', price: 1000, quantity: 25, flight: flightsId.LH404, departure: new Date('2025-09-16T22:00:00Z') },
+  { _id: ticketsId[6], code: 6, type: 'ECONOMY', price: 2200, quantity: 8, flight: flightsId.FR505_1, departure: new Date('2025-09-16T09:30:00Z') },
   { _id: ticketsId[7], code: 7, type: 'ECONOMY', price: 550, quantity: 55, flight: flightsId.BA606, departure: new Date('2025-09-18T11:15:00Z') },
-  { _id: ticketsId[8], code: 8, type: 'BUSINESS', price: 1300, quantity: 18, flight: flightsId.EK707, departure: new Date('2025-09-19T20:45:00Z') },
+  { _id: ticketsId[8], code: 8, type: 'ECONOMY', price: 1300, quantity: 18, flight: flightsId.EK707, departure: new Date('2025-09-19T20:45:00Z') },
   { _id: ticketsId[9], code: 9, type: 'ECONOMY', price: 450, quantity: 45, flight: flightsId.AF808, departure: new Date('2025-09-20T06:00:00Z') },
-  { _id: ticketsId[10], code: 10, type: 'FIRST CLASS', price: 2000, quantity: 12, flight: flightsId.FR909, departure: new Date('2025-09-22T14:30:00Z') },
+  { _id: ticketsId[10], code: 10, type: 'ECONOMY', price: 2000, quantity: 12, flight: flightsId.FR909, departure: new Date('2025-09-22T14:30:00Z') },
   { _id: ticketsId[11], code: 11, type: 'ECONOMY', price: 600, quantity: 8, flight: flightsId.FR505_2, departure: new Date('2025-10-16T09:30:00Z') },
 ];
 

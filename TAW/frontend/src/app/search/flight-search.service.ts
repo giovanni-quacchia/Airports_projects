@@ -25,13 +25,13 @@ export class FlightSearchService {
       to: body.to,
       fromDate: body.departDate,
       toDate: body.returnDate,
+      onlyDirect: body.onlyDirect === true ? 'true' : 'false',
       page,
       size,
     };
     Object.entries(entries).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') params = params.set(k, String(v));
     });
-
     return this.http.get<FlightResult[]>(`${this.base}/itineraries`, { params });
   }
 

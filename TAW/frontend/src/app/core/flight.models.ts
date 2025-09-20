@@ -50,6 +50,7 @@ export interface FlightSearchParams {
   returnDate?: string;
   pax: number;
   cabin: Cabin;
+  onlyDirect?: boolean
 }
 
 // compatibilità ticket
