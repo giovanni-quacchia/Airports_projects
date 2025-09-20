@@ -36,6 +36,20 @@ export class AuthService {
         })
       );
   }
+  loginCompagnia(email: string, password: string) {
+    const params = new HttpParams()
+      .set('mail', email ?? '')
+      .set('password', password ?? '');
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/x-www-form-urlencoded');
+    return this.http.post<LoginResponse>(`${this.base}/airlines/sessions`, params.toString(), { headers })
+      .pipe(
+        tap(res => {
+          // Qui aggiungo la mail che conosco (perché l’ho usata nel login)
+          this.setSession(res.token, this.decodeToken(res.token) || { email, isAdmin: email === 'admin@gmail.com' });
+        })
+      );
+  }
 
   decodeToken(token: string): any | null {
     try {

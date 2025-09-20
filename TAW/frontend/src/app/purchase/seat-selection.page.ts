@@ -5,6 +5,9 @@ import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 
+type SegmentKey = 'main' | 'stop1' | 'stop2';
+type SeatsBySegment = Partial<Record<SegmentKey, (string | null)[]>>;
+
 @Component({
   standalone: true,
   selector: 'taw-seat-selection-page',
@@ -18,40 +21,47 @@ import { environment } from '../../environments/environment';
       </div>
 
       <ng-container *ngIf="passengers.length; else missing">
+        <!-- Tabs segmenti -->
+        <div class="tabs">
+          <button *ngFor="let s of segments; let idx = index"
+                  class="tab"
+                  [class.active]="currentSegment === s.key"
+                  (click)="switchSegment(s.key)">
+            Volo {{ idx + 1 }} — {{ s.code }}
+          </button>
+        </div>
+
+        <!-- Lista passeggeri con posto per segmento corrente -->
         <div class="passenger-list">
           <button *ngFor="let p of passengers; let i = index"
                   type="button"
                   class="pill"
                   [class.active]="i === currentPassengerIndex"
                   (click)="selectPassenger(i)">
-            {{ (p.firstName || '').trim() || 'Passeggero ' + (i+1) }}
-            {{ (p.lastName || '').trim() }}
-            → {{ selectedSeats[i] || '—' }}
+            {{ (p.firstName || 'Passeggero ' + (i+1)) }} {{ (p.lastName || '') }}
+            → {{ (selectedSeatsBySegment[currentSegment]?.[i]) || '—' }}
           </button>
         </div>
 
+        <!-- Griglia aereo per segmento corrente -->
         <div class="plane">
           <div *ngFor="let row of rows" class="row">
-            <!-- blocco sinistro -->
             <div class="seat-group">
               <button *ngFor="let seat of leftSeats"
                       class="seat"
-                      [class.occupied]="isTakenByAnother(row+seat)"
-                      [class.selected]="selectedSeats[currentPassengerIndex] === (row+seat)"
-                      (click)="assignSeat(row+seat)">
+                      [class.occupied]="isTakenByAnother(currentSegment, row+seat)"
+                      [class.selected]="selectedSeatsBySegment[currentSegment]?.[currentPassengerIndex] === (row+seat)"
+                      (click)="assignSeat(currentSegment, row+seat)">
                 {{row}}{{seat}}
               </button>
             </div>
-
             <div class="aisle"></div>
-
-            <!-- blocco destro -->
             <div class="seat-group">
               <button *ngFor="let seat of rightSeats"
                       class="seat"
-                      [class.occupied]="isTakenByAnother(row+seat)"
-                      [class.selected]="selectedSeats[currentPassengerIndex] === (row+seat)"
-                      (click)="assignSeat(row+seat)">
+                      [class.occupied]="isTakenByAnother(currentSegment, row+seat)"
+                      [class.selected]="selectedSeatsBySegment[currentSegment]?.[currentPassengerIndex] === (row+seat)"
+                      (click)="assignSeat(currentSegment, row+seat)">
                 {{row}}{{seat}}
               </button>
             </div>
@@ -73,6 +83,11 @@ import { environment } from '../../environments/environment';
     .btn{background:#0ea5e9;color:#fff;border:none;border-radius:999px;padding:8px 14px;cursor:pointer}
     .btn:disabled{opacity:.5;cursor:not-allowed}
     .btn--ghost{background:transparent;border:1px solid #cbd5e1;color:#0f172a}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+    .tab{border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer}
+    .tab.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+
     .passenger-list{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}
     .pill{border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:6px 10px;cursor:pointer}
     .pill.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
@@ -96,12 +111,15 @@ export class SeatSelectionPage implements OnInit {
 
   flight: any = null;
   passengers: any[] = [];
+
+  segments: Array<{ key: SegmentKey, flightId: string, code: string }> = [];
+  currentSegment: SegmentKey = 'main';
   currentPassengerIndex = 0;
 
-  // dal backend (già prenotati in altri ordini)
-  occupiedSeats: string[] = [];
-  // selezioni correnti: indice passeggero -> "12A" | null
-  selectedSeats: (string | null)[] = [];
+  // occupazioni per segmento
+  occupiedBySegment: Partial<Record<SegmentKey, string[]>> = {};
+  // selezioni correnti per segmento: idx passeggero -> "12A" | null
+  selectedSeatsBySegment: SeatsBySegment = {};
 
   rows = Array.from({ length: 20 }, (_, i) => i + 1);
   leftSeats = ['A','B','C'];
@@ -114,21 +132,38 @@ export class SeatSelectionPage implements OnInit {
     this.flight = state?.flight ?? this.parse(localStorage.getItem('lastFlight'));
     this.passengers = state?.passengers ?? this.parse(localStorage.getItem('lastPassengers')) ?? [];
 
-    // inizializza selezioni dalla cache oppure reset
-    const savedSel = this.parse(localStorage.getItem('lastSelectedSeats')) as (string | null)[] | null;
-    if (Array.isArray(savedSel) && savedSel.length === this.passengers.length) {
-      this.selectedSeats = savedSel;
-    } else {
-      this.selectedSeats = Array.from({ length: this.passengers.length }, () => null);
+    // mappa segmenti
+    if (this.flight?._id) {
+      this.segments.push({ key: 'main', flightId: this.flight._id, code: this.flight.code });
+    }
+    if (this.flight?.stop1?._id) {
+      this.segments.push({ key: 'stop1', flightId: this.flight.stop1._id, code: this.flight.stop1.code });
+    }
+    if (this.flight?.stop2?._id) {
+      this.segments.push({ key: 'stop2', flightId: this.flight.stop2._id, code: this.flight.stop2.code });
     }
 
-    if (this.flight?._id) {
-      const api = (environment as any).api || (environment as any).apiBase || '/api';
-      this.http.get<string[]>(`${api}/seats/${this.flight._id}`).subscribe({
-        next: (res) => this.occupiedSeats = Array.isArray(res) ? res : [],
+    // ripristina selezioni per segmento
+    const savedMap = this.parse(localStorage.getItem('lastSelectedSeatsBySegment')) as SeatsBySegment | null;
+    for (const s of this.segments) {
+      const savedArr = savedMap?.[s.key];
+      this.selectedSeatsBySegment[s.key] =
+        Array.isArray(savedArr) && savedArr.length === this.passengers.length
+          ? savedArr
+          : Array.from({ length: this.passengers.length }, () => null);
+    }
+
+    // carica occupazioni backend per ogni segmento
+    const api = (environment as any).api || (environment as any).apiBase || '/api';
+    this.segments.forEach(s => {
+      this.http.get<string[]>(`${api}/seats/${s.flightId}`).subscribe({
+        next: (res) => this.occupiedBySegment[s.key] = Array.isArray(res) ? res : [],
         error: () => {} // silenzioso
       });
-    }
+    });
+
+    // default segmento corrente
+    if (this.segments.length) this.currentSegment = this.segments[0].key;
   }
 
   private parse<T = any>(raw: string | null): T | null {
@@ -136,53 +171,66 @@ export class SeatSelectionPage implements OnInit {
     try { return JSON.parse(raw) as T; } catch { return null; }
   }
 
-  // un posto è "taken" se è occupato dal backend o già scelto da un ALTRO passeggero
-  isTakenByAnother(code: string): boolean {
-    if (this.occupiedSeats.includes(code)) return true;
-    return this.selectedSeats.some((c, idx) => idx !== this.currentPassengerIndex && c === code);
+  switchSegment(key: SegmentKey) {
+    this.currentSegment = key;
+    // opzionale: passa automaticamente al prossimo passeggero senza posto in questo segmento
+    const arr = this.selectedSeatsBySegment[key] || [];
+    const nextIdx = arr.findIndex(c => !c);
+    if (nextIdx !== -1) this.currentPassengerIndex = nextIdx;
+  }
+
+  isTakenByAnother(seg: SegmentKey, code: string): boolean {
+    const occ = this.occupiedBySegment[seg] ?? [];
+    if (occ.includes(code)) return true;
+    const arr = this.selectedSeatsBySegment[seg] ?? [];
+    return arr.some((c, idx) => idx !== this.currentPassengerIndex && c === code);
   }
 
   selectPassenger(i: number) {
     this.currentPassengerIndex = i;
   }
 
-  assignSeat(code: string) {
+  assignSeat(seg: SegmentKey, code: string) {
     if (!this.passengers.length) return;
+    if (this.isTakenByAnother(seg, code)) return;
 
-    // se il posto è occupato da un altro passeggero o dal backend, blocca
-    if (this.isTakenByAnother(code)) return;
-
-    // assegna a quello corrente (sovrascrive l'eventuale scelta precedente di quel passeggero)
-    this.selectedSeats[this.currentPassengerIndex] = code;
+    const arr = this.selectedSeatsBySegment[seg] ?? [];
+    arr[this.currentPassengerIndex] = code;
+    this.selectedSeatsBySegment[seg] = arr;
     this.persist();
 
-    // passa automaticamente al prossimo passeggero senza posto
-    const nextIdx = this.selectedSeats.findIndex((c, idx) => !c && idx > this.currentPassengerIndex);
-    if (nextIdx !== -1) {
-      this.currentPassengerIndex = nextIdx;
-    } else if (!this.allPassengersSeated()) {
-      const firstEmpty = this.selectedSeats.findIndex(c => !c);
+    // next passeggero senza posto per questo segmento
+    const nextIdx = arr.findIndex((c, idx) => !c && idx > this.currentPassengerIndex);
+    if (nextIdx !== -1) this.currentPassengerIndex = nextIdx;
+    else if (!this.allPassengersSeated()) {
+      const firstEmpty = arr.findIndex(c => !c);
       if (firstEmpty !== -1) this.currentPassengerIndex = firstEmpty;
     }
   }
 
   allPassengersSeated(): boolean {
-    return this.passengers.length > 0 && this.selectedSeats.every(Boolean);
+    if (!this.passengers.length) return false;
+    // tutti i segmenti devono avere un posto per ogni passeggero
+    return this.segments.every(s =>
+      (this.selectedSeatsBySegment[s.key] ?? []).every(Boolean)
+    );
   }
 
-  // TODO: torna i dati sul posto ai passeggeri
   confirmSeats() {
     this.persist();
     const api = (environment as any).api || (environment as any).apiBase || '/api';
-    const payload = {
-      flightId: this.flight?._id,
-      seats: this.selectedSeats,
+
+    // Invio per segmento (se ti serve realmente salvarli subito)
+    // In alternativa, sposta questo salvataggio al pagamento.
+    const requests = this.segments.map(s => ({
+      flightId: s.flightId,
+      seats: this.selectedSeatsBySegment[s.key],
       passengers: this.passengers
-    };
-    this.http.post(`${api}/seats`, payload).subscribe({
-      next: () => this.router.navigate(['/purchase'], { state: { flight: this.flight } }),
-      error: () => alert('Errore nella conferma dei posti')
-    });
+    })).map(payload => this.http.post(`${api}/seats`, payload));
+
+    // esegui in serie o parallelamente; qui parallel:
+    Promise.all(requests.map(r => r.toPromise()))
+      .finally(() => this.router.navigate(['/purchase'], { state: { flight: this.flight } }));
   }
 
   goBack() {
@@ -194,6 +242,6 @@ export class SeatSelectionPage implements OnInit {
     if (!this.isBrowser) return;
     localStorage.setItem('lastFlight', JSON.stringify(this.flight ?? null));
     localStorage.setItem('lastPassengers', JSON.stringify(this.passengers ?? []));
-    localStorage.setItem('lastSelectedSeats', JSON.stringify(this.selectedSeats ?? []));
+    localStorage.setItem('lastSelectedSeatsBySegment', JSON.stringify(this.selectedSeatsBySegment ?? {}));
   }
 }

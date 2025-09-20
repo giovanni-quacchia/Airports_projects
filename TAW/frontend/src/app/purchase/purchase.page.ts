@@ -1,12 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
-
+import { forkJoin, Observable } from 'rxjs';
 
 type SegmentKey = 'main' | 'stop1' | 'stop2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -16,7 +16,8 @@ interface FlightBase {
   route?: { from?: AirportDTO; to?: AirportDTO };
   airline?: { name?: string; code?: string; logo?: string };
 }
-interface TicketDTO { type?: string; quantity?: number; price?: number; }
+type SeatsBySegment = Partial<Record<SegmentKey, (string | null)[]>>;
+interface TicketDTO { id?: string; _id?: string; type?: string; quantity?: number; price?: number; }
 interface FlightResult extends FlightBase {
   stop1?: FlightBase; stop2?: FlightBase;
   totDuration?: number; finalArrival?: string | Date;
@@ -42,29 +43,62 @@ interface FlightResult extends FlightBase {
             Arrivo:   {{ arriveTime | date:'short' }}<br>
             Durata:   {{ totalDuration }} min
           </p>
-          <p class="price">Prezzo: {{ priceDisplay }}</p>
+          <p class="price">Prezzo stimato: {{ priceDisplay }}</p>
         </section>
 
         <form [formGroup]="form" (ngSubmit)="onPay()">
           <h3>Dati passeggeri</h3>
-          <div formArrayName="passengers">
-            <div *ngFor="let p of passengers.controls; let i = index" [formGroupName]="i" class="grid">
-              <label>Nome <input formControlName="firstName" required /></label>
-              <label>Cognome <input formControlName="lastName" required /></label>
-              <label>CF<input formControlName="cf" /></label>
-              <label>Passaporto<input formControlName="passport" /></label>
-              <!-- TODO: Extra -->
-               <!-- 'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG' -->
-              <button type="button" (click)="removePassenger(i)" *ngIf="passengers.length > 1">−</button>
+          <div formArrayName="passengers" class="stack">
+            <div *ngFor="let grp of passengers.controls; let i = index" [formGroupName]="i" class="card passenger">
+              <div class="row">
+                <label>Nome <input formControlName="firstName" required /></label>
+                <label>Cognome <input formControlName="lastName" required /></label>
+                <label>Email <input formControlName="email" required type="email" /></label>
+                <button type="button" class="icon-btn danger"
+                        (click)="removePassenger(i)"
+                        *ngIf="passengers.length > 1"
+                        aria-label="Rimuovi passeggero">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6 7h12l-1 13H7L6 7Zm11-3h-3.5l-1-1h-3L8 4H5v2h14V4Z"/></svg>
+                  Rimuovi
+                </button>
+              </div>
+
+              <!-- EXTRA: chip toggle -->
+              <div class="extras">
+                <div class="extras__label">Extra</div>
+                <div class="chips">
+                  <button type="button"
+                          class="chip"
+                          [class.chip--active]="hasExtra(i, 'LARGER SEAT')"
+                          (click)="toggleExtra(i, 'LARGER SEAT')">LARGER SEAT</button>
+                  <button type="button"
+                          class="chip"
+                          [class.chip--active]="hasExtra(i, 'PRIORITY')"
+                          (click)="toggleExtra(i, 'PRIORITY')">PRIORITY</button>
+                  <button type="button"
+                          class="chip"
+                          [class.chip--active]="hasExtra(i, 'EXTRA BAG')"
+                          (click)="toggleExtra(i, 'EXTRA BAG')">EXTRA BAG</button>
+                </div>
+              </div>
+
+              <!-- POSTI scelti (per ogni volo) -->
+              <div class="seats-summary" *ngIf="seatSummaryFor(i).length">
+                <div class="muted">Posti assegnati:</div>
+                <ul>
+                  <li *ngFor="let s of seatSummaryFor(i)">{{ s }}</li>
+                </ul>
+              </div>
             </div>
           </div>
+
           <button type="button" class="btn btn--outline" (click)="addPassenger()">+ Aggiungi passeggero</button>
 
           <div class="actions">
-            <button type="button" class="btn btn--secondary" (click)="goToSeatSelection()" [disabled]="passengers.length === 0">
+            <button type="button" class="btn btn--secondary"
+                    (click)="goToSeatSelection()" [disabled]="passengers.length === 0">
               Seleziona posti
             </button>
-            <!-- TODO: POST a /purchases per ogni ticket acquistato, poi POST /passengers per ogni passeggero creato per ogni biglietto -->
             <button class="btn" type="submit" [disabled]="form.invalid || loading">
               {{ loading ? 'Elaborazione…' : 'Paga e conferma' }}
             </button>
@@ -82,19 +116,30 @@ interface FlightResult extends FlightBase {
   `,
   styles: [`
     .container{max-width:960px;margin:24px auto;padding:0 16px}
-    .card{border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin-bottom:16px;background:#fff}
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:8px}
+    .card{border:1px solid #e2e8f0;border-radius:16px;padding:16px;background:#fff}
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:end}
     label{display:flex;flex-direction:column;font-weight:600}
     input{border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin-top:6px}
-    .price{font-size:18px;font-weight:700}
+    .price{font-size:18px;font-weight:700;margin:12px 0}
     .btn{margin-top:16px;background:#0ea5e9;color:#fff;border:none;border-radius:999px;padding:10px 16px;cursor:pointer}
-    .btn--outline{background:#fff;color:#0b7285;border:1px solid #0b7285;margin-left:12px}
+    .btn--outline{background:#fff;color:#0b7285;border:1px solid #0b7285;margin-left:0}
     .btn--secondary{background:#64748b;color:#fff;margin-right:12px}
     .actions{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
     .error{color:#b42318;margin-top:12px}
     .success{color:#027a48;margin-top:12px}
     .back{display:inline-block;margin-bottom:16px;text-decoration:none}
-    @media (max-width: 800px){ .grid{grid-template-columns:1fr} }
+    .icon-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer}
+    .icon-btn.danger{color:#b42318;border-color:#f1a7a4}
+    .extras{margin-top:8px}
+    .extras__label{font-weight:600;margin-bottom:6px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{border:1px solid #cbd5e1;border-radius:999px;background:#fff;padding:6px 10px;cursor:pointer}
+    .chip--active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+    .seats-summary{margin-top:8px}
+    .muted{color:#64748b}
+    .passenger{position:relative}
+    @media (max-width: 900px){ .row{grid-template-columns:1fr} }
   `]
 })
 export class PurchasePage implements OnInit {
@@ -104,6 +149,8 @@ export class PurchasePage implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private auth = inject(AuthService);
   isBrowser = isPlatformBrowser(this.platformId);
+
+  readonly EXTRA_OPTIONS = ['LARGER SEAT','PRIORITY','EXTRA BAG'] as const;
 
   flight: FlightResult | null = null;
   loading = false;
@@ -117,11 +164,12 @@ export class PurchasePage implements OnInit {
     cvc:       ['', [Validators.required, Validators.minLength(3)]],
   });
 
+  /** mappa segmenti per etichetta posti (Volo 1/2/3 + codice) */
+  segmentsMeta: Array<{ key: SegmentKey, code: string }> = [];
+
   ngOnInit() {
-    
-    // check token
-    if(this.auth.token == null){
-      console.log("ok")
+    // auth check
+    if (!this.auth?.token) {
       this.router.navigate(['/login']);
       return;
     }
@@ -130,59 +178,86 @@ export class PurchasePage implements OnInit {
     const s1 = (nav?.extras?.state as any)?.flight;
     const s2 = this.isBrowser ? (window as any)?.history?.state?.flight : null;
     const raw = (s1 ?? s2) || null;
-    this.flight = raw ? this.normalizeForPurchase(raw) : JSON.parse(localStorage.getItem('lastFlight') || 'null');
+    this.flight = raw ? this.normalizeForPurchase(raw) : this.parse(localStorage.getItem('lastFlight'));
+
+    // segmenti per seat summary
+    if (this.flight) {
+      this.segmentsMeta = [{ key: 'main', code: this.flight.code }];
+      if (this.flight.stop1) this.segmentsMeta.push({ key: 'stop1', code: this.flight.stop1.code });
+      if (this.flight.stop2) this.segmentsMeta.push({ key: 'stop2', code: this.flight.stop2.code });
+    }
+
+    // ripristina passeggeri (inclusi extra)
+    const savedPassengers = this.parse(localStorage.getItem('lastPassengers'));
+    if (Array.isArray(savedPassengers) && savedPassengers.length > 0) {
+      const arr = this.fb.array(savedPassengers.map((p: any) => this.createPassengerForm(p)));
+      this.form.setControl('passengers', arr);
+    }
+
+    // persistenza automatica ad ogni modifica dei passeggeri
+    this.passengers.valueChanges.subscribe(() => this.persistPassengers());
   }
 
   // ---- form helpers
-  createPassengerForm() {
+  createPassengerForm(v?: any) {
     return this.fb.group({
-      firstName: ['', Validators.required],
-      lastName:  ['', Validators.required],
-      email:     ['', [Validators.required, Validators.email]],
+      firstName: [v?.firstName ?? '', Validators.required],
+      lastName:  [v?.lastName ?? '', Validators.required],
+      email:     [v?.email ?? '', [Validators.required, Validators.email]],
+      extras:    [Array.isArray(v?.extras) ? v.extras : []] // string[]
     });
   }
-  get passengers(): FormArray {
-    return this.form.get('passengers') as FormArray;
+  get passengers(): FormArray { return this.form.get('passengers') as FormArray; }
+  ctrlAt(i: number, name: string): AbstractControl | null { return (this.passengers.at(i) as any)?.get?.(name) ?? null; }
+
+  addPassenger() {
+    this.passengers.push(this.createPassengerForm());
+    this.persistPassengers();
   }
-  addPassenger() { this.passengers.push(this.createPassengerForm()); }
-  removePassenger(i: number) { this.passengers.removeAt(i); }
-
-  // ---- normalizza: route/orari/durata
-  private normalizeForPurchase(f: any): FlightResult {
-    const segs: FlightBase[] = [];
-    if (f) {
-      segs.push(f);
-      if (f.stop1) segs.push(f.stop1);
-      if (f.stop2) segs.push(f.stop2);
-    }
-    const first = segs[0] ?? f;
-    const last  = segs[segs.length - 1] ?? f;
-
-    const route = f?.route ?? { from: first?.route?.from, to: last?.route?.to };
-    const departure = f?.departure ?? first?.departure ?? null;
-    const arrival   = f?.finalArrival ?? f?.arrival ?? last?.arrival ?? null;
-
-    let totDuration: number;
-    if (typeof f?.totDuration === 'number') {
-      totDuration = f.totDuration;
-    } else {
-      const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
-      if (sum > 0) totDuration = sum;
-      else if (departure && arrival) totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime())/60000);
-      else totDuration = 0;
-    }
-
-    return {
-      ...f,
-      route,
-      departure,
-      arrival,
-      totDuration,
-      matchedTicketsBySegment: f?.matchedTicketsBySegment ?? f?.ticketsBySegment ?? {}
-    } as FlightResult;
+  removePassenger(i: number) {
+    const p = this.passengers.at(i)?.value;
+    const label = `${p?.firstName ?? 'Passeggero'} ${p?.lastName ?? ''}`.trim();
+    if (!confirm(`Rimuovere ${label || 'questo passeggero'}?`)) return;
+    this.passengers.removeAt(i);
+    this.persistPassengers();
   }
 
-  // ---- getters per il template
+  // ----- EXTRAS helpers (chip toggle)
+  hasExtra(i: number, extra: string): boolean {
+    const arr: string[] = this.ctrlAt(i, 'extras')?.value || [];
+    return Array.isArray(arr) && arr.includes(extra);
+  }
+  toggleExtra(i: number, extra: (typeof this.EXTRA_OPTIONS)[number]) {
+    const c = this.ctrlAt(i, 'extras');
+    const arr: string[] = Array.isArray(c?.value) ? [...c!.value] : [];
+    const idx = arr.indexOf(extra);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(extra);
+    c?.setValue(arr);
+    c?.markAsDirty();
+    this.persistPassengers();
+  }
+
+  private persistPassengers() {
+    localStorage.setItem('lastPassengers', JSON.stringify(this.passengers.value ?? []));
+  }
+  private parse<T = any>(raw: string | null): T | null { try { return raw ? JSON.parse(raw) as T : null; } catch { return null; } }
+
+  // ---- seat summary helpers (legge da localStorage scritto in seat-selection)
+  seatSummaryFor(index: number): string[] {
+    const map = (this.parse<SeatsBySegment>(
+      localStorage.getItem('lastSelectedSeatsBySegment')
+    ) ?? {}) as SeatsBySegment;
+
+    const out: string[] = [];
+    this.segmentsMeta.forEach((s, idx) => {
+      const arr = map[s.key] ?? [];
+      const seat = arr[index] ?? null;
+      out.push(`Volo ${idx + 1} (${s.code}): ${seat ?? '—'}`);
+    });
+    return out;
+  }
+
+  // ---- normalize e getters
   private segments(): FlightBase[] {
     if (!this.flight) return [];
     const arr: FlightBase[] = [this.flight];
@@ -195,10 +270,24 @@ export class PurchasePage implements OnInit {
 
   get airlineName(): string { return this.flight?.airline?.name || this.flight?.airline?.code || 'Compagnia'; }
   get flightCode(): string { return this.flight?.code || this.firstSeg()?.code || ''; }
-  get originCode(): string { return this.flight?.route?.from?.code || this.firstSeg()?.route?.from?.code || ''; }
-  get destinationCode(): string {
-    return this.flight?.route?.to?.code || this.lastSeg()?.route?.to?.code || '';
+
+  // ⬇️ Origine/destinazione robusti (arrivo dall'ULTIMO segmento)
+  get originCode(): string {
+    const first = this.firstSeg();
+    return first?.route?.from?.code
+        || this.flight?.route?.from?.code
+        || (this.flight as any)?.from
+        || '';
   }
+  get destinationCode(): string {
+    const last = this.lastSeg();
+    return last?.route?.to?.code
+        || this.flight?.route?.to?.code
+        || (this.flight as any)?.to
+        || (this.flight as any)?.destination?.code
+        || '';
+  }
+
   get departTime(): string | Date | null { return this.firstSeg()?.departure || this.flight?.departure || null; }
   get arriveTime(): string | Date | null { return this.lastSeg()?.arrival || this.flight?.finalArrival || this.flight?.arrival || null; }
 
@@ -213,26 +302,56 @@ export class PurchasePage implements OnInit {
     return 0;
   }
 
+  private normalizeForPurchase(f: any): FlightResult {
+    const segs: FlightBase[] = [];
+    if (f) {
+      segs.push(f);
+      if (f.stop1) segs.push(f.stop1);
+      if (f.stop2) segs.push(f.stop2);
+    }
+    const first = segs[0] ?? f;
+    const last  = segs[segs.length - 1] ?? f;
+
+    // forza sempre la TO finale a quella dell’ultimo segmento
+    const route = {
+      from: first?.route?.from ?? f?.route?.from ?? null,
+      to:   last?.route?.to   ?? f?.route?.to   ?? null,
+    };
+
+    const departure = f?.departure ?? first?.departure ?? null;
+    const arrival   = f?.finalArrival ?? f?.arrival ?? last?.arrival ?? null;
+
+    let totDuration: number;
+    if (typeof f?.totDuration === 'number') totDuration = f.totDuration;
+    else {
+      const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
+      if (sum > 0) totDuration = sum;
+      else if (departure && arrival) totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime())/60000);
+      else totDuration = 0;
+    }
+
+    return {
+      ...f,
+      route, departure, arrival, totDuration,
+      matchedTicketsBySegment: f?.matchedTicketsBySegment ?? f?.ticketsBySegment ?? {}
+    } as FlightResult;
+  }
+
   private ticketsFor(key: SegmentKey): TicketDTO[] {
     const src = this.flight?.matchedTicketsBySegment ?? this.flight?.ticketsBySegment ?? {};
     return (src?.[key] ?? []) as TicketDTO[];
   }
-  private minPrice(key: SegmentKey): number | null {
+  private minTicket(key: SegmentKey): TicketDTO | null {
     const arr = this.ticketsFor(key);
     if (!arr.length) return null;
-    let min = Number.POSITIVE_INFINITY;
-    for (const t of arr) {
-      const p = Number(t?.price ?? NaN);
-      if (!isNaN(p) && p < min) min = p;
-    }
-    return isFinite(min) ? min : null;
+    return [...arr].sort((a, b) => (a?.price ?? 0) - (b?.price ?? 0))[0] || null;
   }
   get computedPrice(): number | null {
     if (!this.flight) return null;
     const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
     let total = 0;
     for (const k of keys) {
-      const m = this.minPrice(k);
+      const m = this.minTicket(k)?.price;
       if (m == null) return null;
       total += m;
     }
@@ -245,49 +364,55 @@ export class PurchasePage implements OnInit {
       : '—';
   }
 
-  // ---- booking API
+  // ---- acquisto: 1 POST /purchases per segmento
   onPay() {
     if (this.form.invalid || !this.flight) return;
     this.loading = true; this.error = ''; this.success = false;
 
-    const sel = {
-      main:  this.ticketsFor('main').sort((a,b)=> (a.price||0)-(b.price||0))[0] || null,
-      stop1: this.flight.stop1 ? (this.ticketsFor('stop1').sort((a,b)=> (a.price||0)-(b.price||0))[0] || null) : null,
-      stop2: this.flight.stop2 ? (this.ticketsFor('stop2').sort((a,b)=> (a.price||0)-(b.price||0))[0] || null) : null,
-    };
-
     const api = (environment as any).api || (environment as any).apiBase || '/api';
-    const payload = {
-      flightId: this.flight._id,
-      itinerary: this.flight,
-      selectedTickets: sel,
-      totalPrice: this.computedPrice,
-      passengers: this.form.value.passengers,
-      payment: {
-        cardNumber: this.form.value.cardNumber,
-        exp: this.form.value.exp,
-        cvc: this.form.value.cvc
-      }
-    };
+    const userId = this.extractUserId();
 
-    this.http.post(`${api}/bookings`, payload).subscribe({
+    const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+
+    const payloads: Array<{ userId: any; ticketId: string; quantity: number }> = [];
+    keys.forEach(k => {
+      const t = this.minTicket(k);
+      const ticketId = (t?.id || t?._id) as string | undefined;
+      if (ticketId) {
+        payloads.push({ userId, ticketId, quantity: this.passengers.length });
+      }
+    });
+
+    if (!payloads.length) {
+      this.loading = false;
+      this.error = 'Nessun biglietto disponibile per l’itinerario.';
+      return;
+    }
+
+    const requests: Observable<any>[] = payloads.map(p => this.http.post(`${api}/purchases`, p));
+    forkJoin(requests).subscribe({
       next: () => { this.success = true; this.loading = false; },
       error: (e) => { this.error = (e?.error?.message) || 'Pagamento non riuscito'; this.loading = false; }
     });
   }
 
   goToSeatSelection() {
-    if (this.flight && this.form.value.passengers) {
+    if (this.flight && this.passengers.value) {
       localStorage.setItem('lastFlight', JSON.stringify(this.flight));
-      localStorage.setItem('lastPassengers', JSON.stringify(this.form.value.passengers));
+      this.persistPassengers();
     }
-
     this.router.navigate(['/seat-selection'], {
-      state: { 
-        flight: this.flight,
-        passengers: this.form.value.passengers
-      }
+      state: { flight: this.flight, passengers: this.passengers.value }
     });
   }
 
+  private extractUserId(): any {
+    const a = this.auth as any;
+    // ordine: currentUser.id -> localStorage('currentUser').id -> a.userId -> a.user.id
+    return a?.currentUser?.id
+        ?? this.parse<{ id?: any }>(localStorage.getItem('currentUser'))?.id
+        ?? a?.userId
+        ?? a?.user?.id
+        ?? null;
+  }
 }
