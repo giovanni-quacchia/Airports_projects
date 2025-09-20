@@ -28,7 +28,7 @@ interface FlightResult extends FlightBase {
 @Component({
   standalone: true,
   selector: 'taw-purchase-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, DebugPanelComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="container">
       <a routerLink="/search" class="back">← Torna ai risultati</a>
