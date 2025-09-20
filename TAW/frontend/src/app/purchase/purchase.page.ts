@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { DebugPanelComponent } from '../core/debug-panel.component';
+import { AuthService } from '../core/auth.service';
+
 
 type SegmentKey = 'main' | 'stop1' | 'stop2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -50,29 +52,20 @@ interface FlightResult extends FlightBase {
             <div *ngFor="let p of passengers.controls; let i = index" [formGroupName]="i" class="grid">
               <label>Nome <input formControlName="firstName" required /></label>
               <label>Cognome <input formControlName="lastName" required /></label>
-              <label>Email <input formControlName="email" type="email" required /></label>
+              <label>CF<input formControlName="cf" /></label>
+              <label>Passaporto<input formControlName="passport" /></label>
+              <!-- TODO: Extra -->
+               <!-- 'LARGER SEAT' | 'PRIORITY' | 'EXTRA BAG' -->
               <button type="button" (click)="removePassenger(i)" *ngIf="passengers.length > 1">−</button>
             </div>
           </div>
           <button type="button" class="btn btn--outline" (click)="addPassenger()">+ Aggiungi passeggero</button>
 
-          <h3>Pagamento</h3>
-          <div class="grid">
-            <label>Numero carta
-              <input formControlName="cardNumber" inputmode="numeric" maxlength="19" placeholder="4242 4242 4242 4242" required />
-            </label>
-            <label>Scadenza (MM/YY)
-              <input formControlName="exp" placeholder="12/30" required />
-            </label>
-            <label>CVC
-              <input formControlName="cvc" inputmode="numeric" maxlength="4" required />
-            </label>
-          </div>
-
           <div class="actions">
             <button type="button" class="btn btn--secondary" (click)="goToSeatSelection()" [disabled]="passengers.length === 0">
               Seleziona posti
             </button>
+            <!-- TODO: POST a /purchases per ogni ticket acquistato, poi POST /passengers per ogni passeggero creato per ogni biglietto -->
             <button class="btn" type="submit" [disabled]="form.invalid || loading">
               {{ loading ? 'Elaborazione…' : 'Paga e conferma' }}
             </button>
@@ -111,6 +104,7 @@ export class PurchasePage implements OnInit {
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
   private platformId = inject(PLATFORM_ID);
+  private auth = inject(AuthService);
   isBrowser = isPlatformBrowser(this.platformId);
 
   flight: FlightResult | null = null;
@@ -127,6 +121,13 @@ export class PurchasePage implements OnInit {
 
   ngOnInit() {
     
+    // check token
+    if(this.auth.token == null){
+      console.log("ok")
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const nav = this.router.getCurrentNavigation();
     const s1 = (nav?.extras?.state as any)?.flight;
     const s2 = this.isBrowser ? (window as any)?.history?.state?.flight : null;

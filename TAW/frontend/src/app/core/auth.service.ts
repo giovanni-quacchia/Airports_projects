@@ -28,15 +28,26 @@ export class AuthService {
       .set('password', password ?? '');
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/x-www-form-urlencoded');
-    const role  = email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user';
     return this.http.post<LoginResponse>(`${this.base}/sessions`, params.toString(), { headers })
       .pipe(
         tap(res => {
           // Qui aggiungo la mail che conosco (perché l’ho usata nel login)
-          this.setSession(res.token, { email, role });
+          this.setSession(res.token, this.decodeToken(res.token) || { email, isAdmin: email === 'admin@gmail.com' });
         })
       );
   }
+
+  decodeToken(token: string): any | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded);
+    } catch (e) {
+      console.error('Invalid JWT', e);
+      return null;
+    }
+  }
+
 
 
   register(email: string, password: string, name?: string) {
@@ -77,12 +88,12 @@ export class AuthService {
 
   get currentUser(): any | null {
     if (!this.isBrowser) return null;
-    const raw = localStorage.getItem(this.USER_KEY);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) return null;
+    return this.decodeToken(token);
   }
+
   get isAdmin(): boolean {
-    const u = this.currentUser;
-    return !!u && (u.role === 'admin' || (u.email || '').toLowerCase() === 'admin@gmail.com');
+    return this.currentUser?.isAdmin || false;
   }
 }

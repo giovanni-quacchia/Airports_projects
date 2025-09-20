@@ -170,6 +170,7 @@ export class SeatSelectionPage implements OnInit {
     return this.passengers.length > 0 && this.selectedSeats.every(Boolean);
   }
 
+  // TODO: torna i dati sul posto ai passeggeri
   confirmSeats() {
     this.persist();
     const api = (environment as any).api || (environment as any).apiBase || '/api';

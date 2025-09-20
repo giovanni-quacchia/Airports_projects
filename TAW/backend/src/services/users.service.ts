@@ -11,6 +11,7 @@ async function logIn(query) {
     const token = auth.generateAccessToken({
         id: user._id,
         mail: user.mail,
+        balance: user.balance,
         isAdmin: user.isAdmin()
     });
 
@@ -49,6 +50,7 @@ export async function createUser(User){
     const token = auth.generateAccessToken({
         id: user._id,
         mail: user.mail,
+        balance: user.balance,
         isAdmin: user.isAdmin()
     });
 
