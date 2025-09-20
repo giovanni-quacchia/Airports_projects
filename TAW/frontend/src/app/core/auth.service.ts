@@ -93,6 +93,7 @@ export class AuthService {
     try {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
+      window.location.href = '/';
     } catch {}
   }
 

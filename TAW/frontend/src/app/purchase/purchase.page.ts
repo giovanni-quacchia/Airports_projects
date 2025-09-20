@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -7,6 +7,8 @@ import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
 import { Observable, of, firstValueFrom } from 'rxjs';
+import { timeout, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 type SegmentKey = 'main' | 'stop1' | 'stop2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -54,7 +56,6 @@ type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
               <div class="row">
                 <label>Nome <input formControlName="firstName" required /></label>
                 <label>Cognome <input formControlName="lastName" required /></label>
-                <label>Email <input formControlName="email" required type="email" /></label>
                 <label>CF <input formControlName="cf" placeholder="Codice fiscale" /></label>
                 <label>Passaporto <input formControlName="passportNumber" placeholder="Numero passaporto" /></label>
                 <button type="button" class="icon-btn danger"
@@ -139,6 +140,7 @@ export class PurchasePage implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private auth = inject(AuthService);
   isBrowser = isPlatformBrowser(this.platformId);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly EXTRA_OPTIONS = ['LARGER SEAT','PRIORITY','EXTRA BAG'] as const;
 
@@ -183,7 +185,6 @@ export class PurchasePage implements OnInit {
     return this.fb.group({
       firstName:       [v?.firstName ?? '', Validators.required],
       lastName:        [v?.lastName ?? '', Validators.required],
-      email:           [v?.email ?? '', [Validators.required, Validators.email]],
       cf:              [v?.cf ?? ''],
       passportNumber:  [v?.passportNumber ?? ''],
       extras:          [Array.isArray(v?.extras) ? v.extras : []]
@@ -354,63 +355,94 @@ export class PurchasePage implements OnInit {
     return p != null ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(p) : '—';
   }
 
-  // ---- acquisto: 1) crea gli acquisti (in sequenza); 2) crea i passengers (in sequenza)
-  async onPay() {
-    if (!this.flight || this.passengers.length === 0 || this.passengers.invalid) return;
-    this.loading = true; this.error = ''; this.success = false;
+async onPay() {
+  if (!this.flight || this.passengers.length === 0 || this.passengers.invalid) return;
 
-    const api = (environment as any).api || (environment as any).apiBase || '/api';
+  this.loading = true;
+  this.error = '';
+  this.success = false;
 
-    try {
-      const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+  const api = (environment as any).api || (environment as any).apiBase || '/api';
+  const REQUEST_TIMEOUT_MS = 15000; // 15s, regola come preferisci
 
-      // prepara payload per /purchases
-      const purchasePayloads: Array<{ user: any; ticket: string; quantity: number }> = [];
-      keys.forEach(k => {
+  try {
+    const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+
+    const purchasePayloads = keys
+      .map(k => {
         const t = this.minTicket(k);
         const ticket = (t?.id || t?._id) as string | undefined;
-        if (ticket) {
-          purchasePayloads.push({ user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length });
-        }
-      });
-      if (!purchasePayloads.length) {
-        this.loading = false;
-        this.error = 'Nessun biglietto disponibile per l’itinerario.';
-        return;
-      }
+        return ticket ? { user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length } : null;
+      })
+      .filter(Boolean) as Array<{ user: any; ticket: string; quantity: number }>;
 
-      // 1) acquisti in SEQUENZA
-      const purchaseIds: string[] = [];
-      for (const p of purchasePayloads) {
-        const resp = await firstValueFrom(this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() }));
-        const id = (resp?.id ?? resp?._id) as string | undefined;
-        if (id) purchaseIds.push(id);
-      }
-      if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
-
-      // 2) passengers in SEQUENZA (per ogni acquisto, per ogni passeggero)
-      for (const purchase of purchaseIds) {
-        for (let i = 0; i < this.passengers.length; i++) {
-          const payload = this.buildPassengerPayload(i, purchase);
-          await firstValueFrom(this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() }));
-        }
-      }
-
-      this.success = true;
-    } catch (e: any) {
-      this.error = (e?.error?.message) || e?.message || 'Pagamento non riuscito';
-    } finally {
+    if (!purchasePayloads.length) {
+      this.error = 'Nessun biglietto disponibile per l’itinerario.';
       this.loading = false;
+      return;
     }
+
+    const purchases: PurchaseResponse[] = [];
+    for (let i = 0; i < purchasePayloads.length; i++) {
+      const p = purchasePayloads[i];
+      try {
+        const obs = this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() })
+                      .pipe(timeout(REQUEST_TIMEOUT_MS));
+        const res = await firstValueFrom(obs);
+        purchases.push(res);
+      } catch (err: any) {
+        console.log(err)
+        this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
+        // fallback: interrompi il processo per evitare partial state
+        throw err;
+      }
+    }
+
+    const purchaseIds = purchases.map((r:any) => (r?.id ?? r?._id)).filter(Boolean);
+    if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
+    console.log('[onPay] purchaseIds:', purchaseIds);
+
+    // 2) passengers — per ogni purchase inviamo i passeggeri
+    for (let pIndex = 0; pIndex < purchaseIds.length; pIndex++) {
+      const purchaseId = purchaseIds[pIndex];
+      console.log(`[onPay] invio passeggeri per purchase ${purchaseId}`);
+      for (let i = 0; i < this.passengers.length; i++) {
+        const payload = this.buildPassengerPayload(i, purchaseId);
+        try {
+          console.log(`[onPay] POST /passengers (purchase ${purchaseId}) passenger #${i}`, payload);
+          const obs = this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() })
+                               .pipe(timeout(REQUEST_TIMEOUT_MS));
+          const res = await firstValueFrom(obs);
+          console.log(`[onPay] /passengers response passenger #${i}:`, res);
+        } catch (err: any) {
+          console.error(`[onPay] Errore su /passengers passenger #${i}`, err);
+          this.error = (err?.error?.msg) || err?.msg || `Errore invio passeggero ${i + 1}`;
+          throw err;
+        }
+      }
+    }
+
+    alert('Acquisto completato! Controlla la tua email per la conferma.');
+    this.router.navigate(['/search']);
+  } catch (e: any) {
+    // e potrebbe venire già impostato sopra
+    this.error = this.error || (e?.error?.message) || e?.message || 'Pagamento non riuscito';
+  } finally {
+    // sicurezza: garantiamo che loading venga resettato sempre
+    setTimeout(() => {
+      this.loading = false;
+      this.cdr.markForCheck?.();
+    }, 0);
   }
+}
 
   private buildPassengerPayload(index: number, purchaseId: string) {
     const v = (this.passengers.at(index)?.value || {}) as any;
     return {
       name:            v.firstName ?? '',
       surname:         v.lastName ?? '',
-      CF:              v.cf ?? '',
-      passportNumber:  v.passportNumber ?? '',
+      CF:              v.cf || undefined,
+      passportNumber:  v.passportNumber || undefined,
       extra:           v.extras || [],
       seat:            this.seatForPassenger(index, 'main'),
       purchase:        purchaseId

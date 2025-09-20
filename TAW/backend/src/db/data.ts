@@ -21,7 +21,7 @@ export const users = [
     _id: usersId.user2,
     mail: "user2@gmail.com",
     password: "user2",
-    balance: 5000,
+    balance: 100000000,
   }
 ]
 
