@@ -12,13 +12,14 @@ import { AuthService } from './core/auth.service';
       <a routerLink="/search" class="brand">TAW Airlines</a>
       <span class="grow"></span>
 
-      <ng-container *ngIf="!auth?.currentUser?.()">
+      <ng-container *ngIf="!auth.currentUser">
         <a routerLink="/login" class="btn">Accedi</a>
         <a routerLink="/register" class="btn btn--outline">Registrati</a>
       </ng-container>
 
-      <ng-container *ngIf="auth?.currentUser?.() as u">
-        <span class="hello">Ciao, {{u.name || u.email}}</span>
+      <ng-container *ngIf="auth.currentUser as u">
+        <span class="hello">Benvenuto, {{u.email || u.mail}}</span>
+        <a *ngIf="auth.isAdmin" routerLink="/admin" class="btn btn--outline">Admin</a>
         <button class="btn btn--danger" (click)="auth.logout()">Logout</button>
       </ng-container>
     </header>

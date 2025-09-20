@@ -84,7 +84,6 @@ export class LoginComponent {
     .pipe(finalize(() => this.loading = false))
     .subscribe({
       next: (res) => {
-        this.auth.setSession(res.token, res.user);
         this.router.navigate(['/search']);
       },
       error: (err) => {

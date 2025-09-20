@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
@@ -45,12 +45,16 @@ interface FlightResult extends FlightBase {
         </section>
 
         <form [formGroup]="form" (ngSubmit)="onPay()">
-          <h3>Dati passeggero</h3>
-          <div class="grid">
-            <label>Nome <input formControlName="firstName" required /></label>
-            <label>Cognome <input formControlName="lastName" required /></label>
-            <label>Email <input formControlName="email" type="email" required /></label>
+          <h3>Dati passeggeri</h3>
+          <div formArrayName="passengers">
+            <div *ngFor="let p of passengers.controls; let i = index" [formGroupName]="i" class="grid">
+              <label>Nome <input formControlName="firstName" required /></label>
+              <label>Cognome <input formControlName="lastName" required /></label>
+              <label>Email <input formControlName="email" type="email" required /></label>
+              <button type="button" (click)="removePassenger(i)" *ngIf="passengers.length > 1">−</button>
+            </div>
           </div>
+          <button type="button" class="btn btn--outline" (click)="addPassenger()">+ Aggiungi passeggero</button>
 
           <h3>Pagamento</h3>
           <div class="grid">
@@ -65,9 +69,14 @@ interface FlightResult extends FlightBase {
             </label>
           </div>
 
-          <button class="btn" type="submit" [disabled]="form.invalid || loading">
-            {{ loading ? 'Elaborazione…' : 'Paga e conferma' }}
-          </button>
+          <div class="actions">
+            <button type="button" class="btn btn--secondary" (click)="goToSeatSelection()" [disabled]="passengers.length === 0">
+              Seleziona posti
+            </button>
+            <button class="btn" type="submit" [disabled]="form.invalid || loading">
+              {{ loading ? 'Elaborazione…' : 'Paga e conferma' }}
+            </button>
+          </div>
 
           <p class="error" *ngIf="error">{{ error }}</p>
           <p class="success" *ngIf="success">Acquisto completato! Controlla la tua email per la conferma.</p>
@@ -83,11 +92,14 @@ interface FlightResult extends FlightBase {
   styles: [`
     .container{max-width:960px;margin:24px auto;padding:0 16px}
     .card{border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin-bottom:16px;background:#fff}
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:8px}
     label{display:flex;flex-direction:column;font-weight:600}
     input{border:1px solid #cbd5e1;border-radius:10px;padding:10px;margin-top:6px}
     .price{font-size:18px;font-weight:700}
     .btn{margin-top:16px;background:#0ea5e9;color:#fff;border:none;border-radius:999px;padding:10px 16px;cursor:pointer}
+    .btn--outline{background:#fff;color:#0b7285;border:1px solid #0b7285;margin-left:12px}
+    .btn--secondary{background:#64748b;color:#fff;margin-right:12px}
+    .actions{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
     .error{color:#b42318;margin-top:12px}
     .success{color:#027a48;margin-top:12px}
     .back{display:inline-block;margin-bottom:16px;text-decoration:none}
@@ -107,24 +119,36 @@ export class PurchasePage implements OnInit {
   success = false;
 
   form = this.fb.group({
-    firstName: ['', Validators.required],
-    lastName:  ['', Validators.required],
-    email:     ['', [Validators.required, Validators.email]],
+    passengers: this.fb.array([ this.createPassengerForm() ]),
     cardNumber:['', [Validators.required, Validators.minLength(12)]],
     exp:       ['', Validators.required],
     cvc:       ['', [Validators.required, Validators.minLength(3)]],
   });
 
   ngOnInit() {
+    
     const nav = this.router.getCurrentNavigation();
     const s1 = (nav?.extras?.state as any)?.flight;
     const s2 = this.isBrowser ? (window as any)?.history?.state?.flight : null;
     const raw = (s1 ?? s2) || null;
-
-    this.flight = raw ? this.normalizeForPurchase(raw) : null; // 👈 normalizza SEMPRE
+    this.flight = raw ? this.normalizeForPurchase(raw) : JSON.parse(localStorage.getItem('lastFlight') || 'null');
   }
 
-  // ---- normalizza: route/orari/durata anche se mancano dal root
+  // ---- form helpers
+  createPassengerForm() {
+    return this.fb.group({
+      firstName: ['', Validators.required],
+      lastName:  ['', Validators.required],
+      email:     ['', [Validators.required, Validators.email]],
+    });
+  }
+  get passengers(): FormArray {
+    return this.form.get('passengers') as FormArray;
+  }
+  addPassenger() { this.passengers.push(this.createPassengerForm()); }
+  removePassenger(i: number) { this.passengers.removeAt(i); }
+
+  // ---- normalizza: route/orari/durata
   private normalizeForPurchase(f: any): FlightResult {
     const segs: FlightBase[] = [];
     if (f) {
@@ -222,6 +246,7 @@ export class PurchasePage implements OnInit {
       : '—';
   }
 
+  // ---- booking API
   onPay() {
     if (this.form.invalid || !this.flight) return;
     this.loading = true; this.error = ''; this.success = false;
@@ -238,7 +263,12 @@ export class PurchasePage implements OnInit {
       itinerary: this.flight,
       selectedTickets: sel,
       totalPrice: this.computedPrice,
-      passenger: this.form.value,
+      passengers: this.form.value.passengers,
+      payment: {
+        cardNumber: this.form.value.cardNumber,
+        exp: this.form.value.exp,
+        cvc: this.form.value.cvc
+      }
     };
 
     this.http.post(`${api}/bookings`, payload).subscribe({
@@ -246,4 +276,19 @@ export class PurchasePage implements OnInit {
       error: (e) => { this.error = (e?.error?.message) || 'Pagamento non riuscito'; this.loading = false; }
     });
   }
+
+  goToSeatSelection() {
+    if (this.flight && this.form.value.passengers) {
+      localStorage.setItem('lastFlight', JSON.stringify(this.flight));
+      localStorage.setItem('lastPassengers', JSON.stringify(this.form.value.passengers));
+    }
+
+    this.router.navigate(['/seat-selection'], {
+      state: { 
+        flight: this.flight,
+        passengers: this.form.value.passengers
+      }
+    });
+  }
+
 }

@@ -4,6 +4,8 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
+import { tap } from 'rxjs/operators';
+
 
 export interface LoginResponse { token: string; user: any; }
 export interface RegisterResponse { id: string; user?: any; token?: string; }
@@ -20,18 +22,37 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   // ---------- API ----------
-  login(mail: string, password: string) {
-    const params = new HttpParams().set('mail', mail ?? '').set('password', password ?? '');
-     const headers = new HttpHeaders()
-    .set('Content-Type', 'application/x-www-form-urlencoded');
-    return this.http.post<LoginResponse>(`${this.base}/sessions`, params.toString(), {headers});
+  login(email: string, password: string) {
+    const params = new HttpParams()
+      .set('mail', email ?? '')
+      .set('password', password ?? '');
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/x-www-form-urlencoded');
+    const role  = email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user';
+    return this.http.post<LoginResponse>(`${this.base}/sessions`, params.toString(), { headers })
+      .pipe(
+        tap(res => {
+          // Qui aggiungo la mail che conosco (perché l’ho usata nel login)
+          this.setSession(res.token, { email, role });
+        })
+      );
   }
 
+
   register(email: string, password: string, name?: string) {
-    const body = new HttpParams().set('mail', email ?? '').set('password', password ?? '');
+    const body = new HttpParams()
+      .set('mail', email ?? '')
+      .set('password', password ?? '');
     const headers = new HttpHeaders()
-    .set('Content-Type', 'application/x-www-form-urlencoded');
-    return this.http.post<LoginResponse>(`${this.base}`, body.toString(), {headers});
+      .set('Content-Type', 'application/x-www-form-urlencoded');
+    const role  = email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user';
+    return this.http.post<LoginResponse>(`${this.base}`, body.toString(), { headers })
+      .pipe(
+        tap(res => {
+          // salvo email e magari anche il nome
+          this.setSession(res.token, { email, role });
+        })
+      );
   }
 
   // ---------- Storage (safe in SSR) ----------
@@ -59,5 +80,9 @@ export class AuthService {
     const raw = localStorage.getItem(this.USER_KEY);
     if (!raw) return null;
     try { return JSON.parse(raw); } catch { return null; }
+  }
+  get isAdmin(): boolean {
+    const u = this.currentUser;
+    return !!u && (u.role === 'admin' || (u.email || '').toLowerCase() === 'admin@gmail.com');
   }
 }

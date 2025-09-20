@@ -87,8 +87,7 @@ export class RegisterComponent {
         finalize(() => this.loading = false)
       )
       .subscribe({
-        next: (loginRes) => {
-          this.auth.setSession(loginRes.token, loginRes.user);
+        next: () => {
           this.router.navigate(['/search']);
         },
         error: (err) => {

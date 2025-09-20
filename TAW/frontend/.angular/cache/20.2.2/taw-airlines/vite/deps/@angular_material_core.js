@@ -1,4 +1,15 @@
 import {
+  DateAdapter,
+  MAT_DATE_FORMATS,
+  MAT_DATE_LOCALE,
+  MAT_DATE_LOCALE_FACTORY
+} from "./chunk-MYKSWICQ.js";
+import {
+  ErrorStateMatcher,
+  ShowOnDirtyErrorStateMatcher,
+  _ErrorStateTracker
+} from "./chunk-YQIWBSQA.js";
+import {
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
   MatOptgroup,
@@ -9,16 +20,10 @@ import {
   MatPseudoCheckboxModule,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
-} from "./chunk-HHEZIADF.js";
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-  MAT_DATE_LOCALE_FACTORY
-} from "./chunk-MYKSWICQ.js";
+} from "./chunk-JD4FMKQG.js";
 import {
   MatRippleLoader
-} from "./chunk-37HKHU4E.js";
+} from "./chunk-WLNEYN4G.js";
 import {
   MAT_RIPPLE_GLOBAL_OPTIONS,
   MatRipple,
@@ -28,28 +33,23 @@ import {
   RippleState,
   _StructuralStylesLoader,
   defaultRippleAnimationConfig
-} from "./chunk-Q2K5ZATF.js";
-import {
-  ErrorStateMatcher,
-  ShowOnDirtyErrorStateMatcher,
-  _ErrorStateTracker
-} from "./chunk-YQIWBSQA.js";
+} from "./chunk-DROG4K3Q.js";
 import {
   AnimationCurves,
   AnimationDurations,
   MATERIAL_ANIMATIONS,
   _animationsDisabled,
   _getAnimationsState
-} from "./chunk-ESRMWCD7.js";
+} from "./chunk-2NGF2L6L.js";
 import {
   MATERIAL_SANITY_CHECKS,
   MatCommonModule
-} from "./chunk-RJSRQ57N.js";
-import "./chunk-3YGSUNV2.js";
+} from "./chunk-P3TUWHHT.js";
 import "./chunk-7UJZXIJQ.js";
-import "./chunk-3YOYQZCG.js";
-import "./chunk-H4LQPAO2.js";
 import "./chunk-GAK65PD2.js";
+import "./chunk-3YGSUNV2.js";
+import "./chunk-SUUW4KGA.js";
+import "./chunk-H4LQPAO2.js";
 import "./chunk-OUSM42MY.js";
 import {
   ChangeDetectionStrategy,
