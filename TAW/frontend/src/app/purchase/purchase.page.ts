@@ -5,7 +5,6 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { DebugPanelComponent } from '../core/debug-panel.component';
 import { AuthService } from '../core/auth.service';
 
 
