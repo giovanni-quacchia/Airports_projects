@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 type AirlineDTO = {
   code?: string;
   name?: string;
-  piva?: string;   // ✅ partita IVA
+  PIVA?: string;   // ✅ partita IVA
 };
 
 type UserDTO = {
@@ -57,7 +57,7 @@ type UserDTO = {
               <div class="row row-airlines" *ngFor="let a of airlinesFiltered">
                 <div>{{ a.code || '—' }}</div>
                 <div>{{ a.name || '—' }}</div>
-                <div>{{ a.piva || '—' }}</div>
+                <div>{{ a.PIVA || '—' }}</div>
               </div>
               <div *ngIf="(airlinesFiltered?.length ?? 0) === 0" class="muted pad">
                 Nessuna compagnia trovata.
@@ -175,7 +175,7 @@ export class AdminPage implements OnInit {
     const q = this.airlineQuery.trim().toLowerCase();
     if (!q) return this.airlines;
     return this.airlines.filter(a =>
-      [a.code, a.name, a.piva]
+      [a.code, a.name, a.PIVA]
         .filter(Boolean)
         .some(v => String(v).toLowerCase().includes(q))
     );

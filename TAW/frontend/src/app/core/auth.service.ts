@@ -36,13 +36,14 @@ export class AuthService {
         })
       );
   }
-  loginCompagnia(email: string, password: string) {
+  loginCompagnia(email: string, password: string, newPassword = '') {
     const params = new HttpParams()
       .set('mail', email ?? '')
-      .set('password', password ?? '');
+      .set('password', password ?? '')
+      .set('newPassword', newPassword ?? '');
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/x-www-form-urlencoded');
-    return this.http.post<LoginResponse>(`${this.base}/airlines/sessions`, params.toString(), { headers })
+    return this.http.post<LoginResponse>(`${environment.apiBase}/airlines/sessions`, params.toString(), { headers })
       .pipe(
         tap(res => {
           // Qui aggiungo la mail che conosco (perché l’ho usata nel login)

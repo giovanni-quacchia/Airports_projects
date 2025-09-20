@@ -41,6 +41,14 @@ import { Observable } from 'rxjs';
           </button>
         </mat-form-field>
 
+        <mat-form-field appearance="outline" *ngIf="errorMsg?.toLowerCase()?.includes('new password')">
+          <mat-label>New Password</mat-label>
+          <input matInput [(ngModel)]="form.newPassword" name="newPassword" [type]="hide ? 'password':'text'" required>
+          <button mat-icon-button matSuffix type="button" (click)="hide = !hide" aria-label="Mostra/Nascondi password">
+            <mat-icon>{{ hide ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
         <!-- iOS-like switch -->
         <label class="ios-switch" role="switch" [attr.aria-checked]="asAirline">
           <input
@@ -108,7 +116,7 @@ import { Observable } from 'rxjs';
   `]
 })
 export class LoginComponent {
-  form = { mail: '', password: '' };
+  form = { mail: '', password: '', newPassword: '' };
   hide = true;
   loading = false;
   errorMsg = '';
@@ -123,7 +131,7 @@ export class LoginComponent {
     this.errorMsg = '';
 
     const auth$: Observable<any> = this.asAirline
-      ? this.auth.loginCompagnia(this.form.mail, this.form.password)
+      ? this.auth.loginCompagnia(this.form.mail, this.form.password, this.form.newPassword)
       : this.auth.login(this.form.mail, this.form.password);
 
     auth$
