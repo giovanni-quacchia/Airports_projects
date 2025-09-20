@@ -5,7 +5,8 @@ const auth = require('../utils/auth.utils')
 
 // Get All passengers: ? [name, surname, CF, passportNumber, sortBy, order, seat]
 // sortBy: name, surname, seat, CF, passportNumber
-// only admin
+
+// TODO: admin can view all data, airline only of its flights, user only of its purchases
 router.get("/", auth.authenticateToken, auth.checkAdmin, passenger.getAllPassengers);
 
 // Get :id passenger: only admin

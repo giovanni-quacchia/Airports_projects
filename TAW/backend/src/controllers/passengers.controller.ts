@@ -1,14 +1,13 @@
+import { AppError } from '../models/AppError';
 import { validateNew, validatePut, validateSearch } from '../models/Passenger';
 import passengers from '../services/passengers.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
-
-// TODO: Admin, user who made the purchase, airline of the flight
 
 export async function getAllPassengers(req, res, next) {
     try {
         const {flightId, purchaseId} = req.params;
         if(flightId) validateObj({id: [flightId, "ID"]})
-        if(purchaseId) validateObj({id: [purchaseId, "ID"]})
+        if(purchaseId) validateObj({id: [purchaseId, "ID"]})   
 
         const query = validateSearch(req.query);
 

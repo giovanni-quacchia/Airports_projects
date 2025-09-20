@@ -9,8 +9,8 @@ import purchasesService from './purchases.service';
 import mongoose from 'mongoose';
 import { checkSeat } from '../utils/utils';
 
-
 async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
+
     Pa.validateSearch(query);
 
     const {sortBy = "seat", order = "asc"} = query;
@@ -36,14 +36,17 @@ async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
     if(query.CF) pipeline.push( { $match: {CF: CF}} )
     if(query.passportNumber) pipeline.push( { $match: {passportNumber: passportNumber}} )
 
-    // Only admin or specific airline can retrieve data of specific flight or purchase
+    let limitSelect = false; // check for logged user
     if(flightId){
 
-        // Only admin and specific airline of the flight
+        // Only admin and specific airline of the flight can view all data
         const airlineId = (await getFlightModel().findById(flightId).select("airline"))?.airline;
         if(!airlineId) throw new AppError("Flight not found", 4004);
 
-        if(!user.isAdmin && String(airlineId) !== String(user.id)) throw new AppError("You are not allowed to perform this operation", 4003);
+        // logged user can only view occupied seats
+        if(!user.isAdmin && String(airlineId) !== String(user.id)){
+            limitSelect = true;
+        }
 
         pipeline.push(matchId("purchase.ticket.flight._id", flightId));
 
@@ -61,6 +64,11 @@ async function getAllpassengers(query, flightId = "", purchaseId = "", user) {
         if(!user.isAdmin && airlineId !== user.id && userId !== user.id) throw new AppError("You are not allowed to perform this operation", 4003);
 
         pipeline.push(matchId("purchase._id", purchaseId));
+    }
+
+    // logged user can only view occupied seats
+    if(limitSelect){
+        pipeline.push({ $project: {seat: 1} }) // hide sensitive data
     }
 
     pipeline.push(

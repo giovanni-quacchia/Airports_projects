@@ -28,7 +28,7 @@ router.put("/:id", auth.authenticateToken, auth.checkAirline, flight.updateFligh
 router.get("/:flightId/tickets", ticket.getAllTickets);
 
 // Get passengers of a :id flight
-router.get("/:flightId/passengers", auth.authenticateToken, auth.checkAirline, passenger.getAllPassengers);
+router.get("/:flightId/passengers", auth.authenticateToken, passenger.getAllPassengers);
 
 
 
