@@ -111,4 +111,7 @@ export class AuthService {
   get isAdmin(): boolean {
     return this.currentUser?.isAdmin || false;
   }
+  isAirline(): boolean {
+    return this.currentUser?.isAirline || false;
+  }
 }

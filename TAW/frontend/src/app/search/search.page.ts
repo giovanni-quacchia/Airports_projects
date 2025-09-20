@@ -2,9 +2,7 @@ import { Component } from '@angular/core';
 import { SearchbarComponent } from './searchbar.component';
 import { ResultsListComponent } from './results-list.component';
 import { FlightSearchService } from './flight-search.service';
-
 import { FlightSearchParams, FlightResult, TicketDTO, SegmentKey, normalizeTicket, toCabin } from '../core/flight.models';
-
 import { switchMap, map } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
 
@@ -83,7 +81,7 @@ export class SearchPage {
         );
       }),
       map((itinsWithTickets: FlightResult[]) => {
-        const wantClass = this.norm(q.cabin);         // "ECONOMY" | "BUSINESS" | "FIRST"/"FIRST CLASS"
+        const wantClass = this.norm(q.cabin);
         const wantQty = Number(q.pax ?? 1);
 
         const matchesTicket = (t: TicketDTO) =>
@@ -99,7 +97,6 @@ export class SearchPage {
             return presentSegs.every(k => (itin.ticketsBySegment?.[k] ?? []).some(matchesTicket));
           })
           .map(itin => {
-            // console.log('[segments]', itin);
             const matched: Record<SegmentKey, TicketDTO[] | undefined> = {
               main: (itin.ticketsBySegment?.main ?? []).filter(matchesTicket),
               stop1: itin.stop1 ? (itin.ticketsBySegment?.stop1 ?? []).filter(matchesTicket) : undefined,

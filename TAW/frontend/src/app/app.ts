@@ -20,6 +20,7 @@ import { AuthService } from './core/auth.service';
       <ng-container *ngIf="auth.currentUser as u">
         <span class="hello">Benvenuto, {{u.email || u.mail}}</span>
         <a *ngIf="auth.isAdmin" routerLink="/admin" class="btn btn--outline">Admin</a>
+        <a *ngIf="auth.isAirline()" routerLink="/compagnia" class="btn btn--outline">Compagnia Aerea</a>
         <button class="btn btn--danger" (click)="auth.logout()">Logout</button>
       </ng-container>
     </header>

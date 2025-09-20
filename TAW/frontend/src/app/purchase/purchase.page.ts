@@ -2,11 +2,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
-import { forkJoin, Observable } from 'rxjs';
+import { Observable, of, firstValueFrom } from 'rxjs';
 
 type SegmentKey = 'main' | 'stop1' | 'stop2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -24,6 +24,7 @@ interface FlightResult extends FlightBase {
   matchedTicketsBySegment?: Partial<Record<SegmentKey, TicketDTO[]>>;
   ticketsBySegment?: Partial<Record<SegmentKey, TicketDTO[]>>;
 }
+type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
 
 @Component({
   standalone: true,
@@ -54,6 +55,8 @@ interface FlightResult extends FlightBase {
                 <label>Nome <input formControlName="firstName" required /></label>
                 <label>Cognome <input formControlName="lastName" required /></label>
                 <label>Email <input formControlName="email" required type="email" /></label>
+                <label>CF <input formControlName="cf" placeholder="Codice fiscale" /></label>
+                <label>Passaporto <input formControlName="passportNumber" placeholder="Numero passaporto" /></label>
                 <button type="button" class="icon-btn danger"
                         (click)="removePassenger(i)"
                         *ngIf="passengers.length > 1"
@@ -63,26 +66,15 @@ interface FlightResult extends FlightBase {
                 </button>
               </div>
 
-              <!-- EXTRA: chip toggle -->
               <div class="extras">
                 <div class="extras__label">Extra</div>
                 <div class="chips">
-                  <button type="button"
-                          class="chip"
-                          [class.chip--active]="hasExtra(i, 'LARGER SEAT')"
-                          (click)="toggleExtra(i, 'LARGER SEAT')">LARGER SEAT</button>
-                  <button type="button"
-                          class="chip"
-                          [class.chip--active]="hasExtra(i, 'PRIORITY')"
-                          (click)="toggleExtra(i, 'PRIORITY')">PRIORITY</button>
-                  <button type="button"
-                          class="chip"
-                          [class.chip--active]="hasExtra(i, 'EXTRA BAG')"
-                          (click)="toggleExtra(i, 'EXTRA BAG')">EXTRA BAG</button>
+                  <button type="button" class="chip" [class.chip--active]="hasExtra(i, 'LARGER SEAT')" (click)="toggleExtra(i, 'LARGER SEAT')">LARGER SEAT</button>
+                  <button type="button" class="chip" [class.chip--active]="hasExtra(i, 'PRIORITY')"   (click)="toggleExtra(i, 'PRIORITY')">PRIORITY</button>
+                  <button type="button" class="chip" [class.chip--active]="hasExtra(i, 'EXTRA BAG')"  (click)="toggleExtra(i, 'EXTRA BAG')">EXTRA BAG</button>
                 </div>
               </div>
 
-              <!-- POSTI scelti (per ogni volo) -->
               <div class="seats-summary" *ngIf="seatSummaryFor(i).length">
                 <div class="muted">Posti assegnati:</div>
                 <ul>
@@ -95,11 +87,8 @@ interface FlightResult extends FlightBase {
           <button type="button" class="btn btn--outline" (click)="addPassenger()">+ Aggiungi passeggero</button>
 
           <div class="actions">
-            <button type="button" class="btn btn--secondary"
-                    (click)="goToSeatSelection()" [disabled]="passengers.length === 0">
-              Seleziona posti
-            </button>
-            <button class="btn" type="submit" [disabled]="form.invalid || loading">
+            <button type="button" class="btn btn--secondary" (click)="goToSeatSelection()" [disabled]="passengers.length === 0">Seleziona posti</button>
+            <button class="btn" type="submit" [disabled]="loading || passengers.invalid">
               {{ loading ? 'Elaborazione…' : 'Paga e conferma' }}
             </button>
           </div>
@@ -139,7 +128,8 @@ interface FlightResult extends FlightBase {
     .seats-summary{margin-top:8px}
     .muted{color:#64748b}
     .passenger{position:relative}
-    @media (max-width: 900px){ .row{grid-template-columns:1fr} }
+    @media (max-width: 1100px){ .row{grid-template-columns:1fr 1fr; } }
+    @media (max-width: 700px){ .row{grid-template-columns:1fr; } }
   `]
 })
 export class PurchasePage implements OnInit {
@@ -159,52 +149,44 @@ export class PurchasePage implements OnInit {
 
   form = this.fb.group({
     passengers: this.fb.array([ this.createPassengerForm() ]),
-    cardNumber:['', [Validators.required, Validators.minLength(12)]],
-    exp:       ['', Validators.required],
-    cvc:       ['', [Validators.required, Validators.minLength(3)]],
   });
 
-  /** mappa segmenti per etichetta posti (Volo 1/2/3 + codice) */
   segmentsMeta: Array<{ key: SegmentKey, code: string }> = [];
 
   ngOnInit() {
-    // auth check
     if (!this.auth?.token) {
       this.router.navigate(['/login']);
       return;
     }
-
     const nav = this.router.getCurrentNavigation();
     const s1 = (nav?.extras?.state as any)?.flight;
     const s2 = this.isBrowser ? (window as any)?.history?.state?.flight : null;
     const raw = (s1 ?? s2) || null;
     this.flight = raw ? this.normalizeForPurchase(raw) : this.parse(localStorage.getItem('lastFlight'));
 
-    // segmenti per seat summary
     if (this.flight) {
       this.segmentsMeta = [{ key: 'main', code: this.flight.code }];
       if (this.flight.stop1) this.segmentsMeta.push({ key: 'stop1', code: this.flight.stop1.code });
       if (this.flight.stop2) this.segmentsMeta.push({ key: 'stop2', code: this.flight.stop2.code });
     }
 
-    // ripristina passeggeri (inclusi extra)
     const savedPassengers = this.parse(localStorage.getItem('lastPassengers'));
     if (Array.isArray(savedPassengers) && savedPassengers.length > 0) {
       const arr = this.fb.array(savedPassengers.map((p: any) => this.createPassengerForm(p)));
       this.form.setControl('passengers', arr);
     }
 
-    // persistenza automatica ad ogni modifica dei passeggeri
     this.passengers.valueChanges.subscribe(() => this.persistPassengers());
   }
 
-  // ---- form helpers
   createPassengerForm(v?: any) {
     return this.fb.group({
-      firstName: [v?.firstName ?? '', Validators.required],
-      lastName:  [v?.lastName ?? '', Validators.required],
-      email:     [v?.email ?? '', [Validators.required, Validators.email]],
-      extras:    [Array.isArray(v?.extras) ? v.extras : []] // string[]
+      firstName:       [v?.firstName ?? '', Validators.required],
+      lastName:        [v?.lastName ?? '', Validators.required],
+      email:           [v?.email ?? '', [Validators.required, Validators.email]],
+      cf:              [v?.cf ?? ''],
+      passportNumber:  [v?.passportNumber ?? ''],
+      extras:          [Array.isArray(v?.extras) ? v.extras : []]
     });
   }
   get passengers(): FormArray { return this.form.get('passengers') as FormArray; }
@@ -222,42 +204,61 @@ export class PurchasePage implements OnInit {
     this.persistPassengers();
   }
 
-  // ----- EXTRAS helpers (chip toggle)
+  // extras helpers
+  normalizeExtras(input: any[]): string[] {
+    const opts = Array.from(this.EXTRA_OPTIONS);
+    const toUpper = (v: any) => {
+      if (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < opts.length) return opts[v];
+      return String(v ?? '').toUpperCase();
+    };
+    return Array.from(new Set((input ?? []).map(toUpper).filter(Boolean)));
+  }
   hasExtra(i: number, extra: string): boolean {
-    const arr: string[] = this.ctrlAt(i, 'extras')?.value || [];
-    return Array.isArray(arr) && arr.includes(extra);
+    const ctrl = this.ctrlAt(i, 'extras');
+    const normalized = this.normalizeExtras(Array.isArray(ctrl?.value) ? ctrl!.value : []);
+    if (JSON.stringify(normalized) !== JSON.stringify(ctrl?.value)) {
+      ctrl?.setValue(normalized, { emitEvent: false });
+    }
+    return normalized.includes(String(extra).toUpperCase());
   }
   toggleExtra(i: number, extra: (typeof this.EXTRA_OPTIONS)[number]) {
     const c = this.ctrlAt(i, 'extras');
-    const arr: string[] = Array.isArray(c?.value) ? [...c!.value] : [];
-    const idx = arr.indexOf(extra);
-    if (idx >= 0) arr.splice(idx, 1); else arr.push(extra);
-    c?.setValue(arr);
+    const current = this.normalizeExtras(Array.isArray(c?.value) ? c!.value : []);
+    const value = String(extra).toUpperCase();
+    const idx = current.indexOf(value);
+    if (idx >= 0) current.splice(idx, 1); else current.push(value);
+    c?.setValue(current);
     c?.markAsDirty();
     this.persistPassengers();
   }
 
   private persistPassengers() {
-    localStorage.setItem('lastPassengers', JSON.stringify(this.passengers.value ?? []));
+    const arr = (this.passengers.value ?? []).map((p: any) => ({
+      ...p,
+      extras: this.normalizeExtras(Array.isArray(p?.extras) ? p.extras : []),
+    }));
+    localStorage.setItem('lastPassengers', JSON.stringify(arr));
   }
   private parse<T = any>(raw: string | null): T | null { try { return raw ? JSON.parse(raw) as T : null; } catch { return null; } }
 
-  // ---- seat summary helpers (legge da localStorage scritto in seat-selection)
+  private getSeatsBySegment(): SeatsBySegment {
+    return (this.parse<SeatsBySegment>(localStorage.getItem('lastSelectedSeatsBySegment')) ?? {}) as SeatsBySegment;
+  }
+  private seatForPassenger(index: number, key: SegmentKey = 'main'): string | null {
+    const map = this.getSeatsBySegment();
+    const arr = map?.[key] ?? [];
+    return (arr[index] ?? null) as string | null;
+  }
   seatSummaryFor(index: number): string[] {
-    const map = (this.parse<SeatsBySegment>(
-      localStorage.getItem('lastSelectedSeatsBySegment')
-    ) ?? {}) as SeatsBySegment;
-
+    const map = this.getSeatsBySegment();
     const out: string[] = [];
     this.segmentsMeta.forEach((s, idx) => {
-      const arr = map[s.key] ?? [];
-      const seat = arr[index] ?? null;
+      const seat = (map?.[s.key] ?? [])[index] ?? null;
       out.push(`Volo ${idx + 1} (${s.code}): ${seat ?? '—'}`);
     });
     return out;
   }
 
-  // ---- normalize e getters
   private segments(): FlightBase[] {
     if (!this.flight) return [];
     const arr: FlightBase[] = [this.flight];
@@ -271,21 +272,13 @@ export class PurchasePage implements OnInit {
   get airlineName(): string { return this.flight?.airline?.name || this.flight?.airline?.code || 'Compagnia'; }
   get flightCode(): string { return this.flight?.code || this.firstSeg()?.code || ''; }
 
-  // ⬇️ Origine/destinazione robusti (arrivo dall'ULTIMO segmento)
   get originCode(): string {
     const first = this.firstSeg();
-    return first?.route?.from?.code
-        || this.flight?.route?.from?.code
-        || (this.flight as any)?.from
-        || '';
+    return first?.route?.from?.code || this.flight?.route?.from?.code || (this.flight as any)?.from || '';
   }
   get destinationCode(): string {
     const last = this.lastSeg();
-    return last?.route?.to?.code
-        || this.flight?.route?.to?.code
-        || (this.flight as any)?.to
-        || (this.flight as any)?.destination?.code
-        || '';
+    return last?.route?.to?.code || this.flight?.route?.to?.code || (this.flight as any)?.to || (this.flight as any)?.destination?.code || '';
   }
 
   get departTime(): string | Date | null { return this.firstSeg()?.departure || this.flight?.departure || null; }
@@ -312,7 +305,6 @@ export class PurchasePage implements OnInit {
     const first = segs[0] ?? f;
     const last  = segs[segs.length - 1] ?? f;
 
-    // forza sempre la TO finale a quella dell’ultimo segmento
     const route = {
       from: first?.route?.from ?? f?.route?.from ?? null,
       to:   last?.route?.to   ?? f?.route?.to   ?? null,
@@ -359,41 +351,70 @@ export class PurchasePage implements OnInit {
   }
   get priceDisplay(): string {
     const p = this.computedPrice;
-    return p != null
-      ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(p)
-      : '—';
+    return p != null ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(p) : '—';
   }
 
-  // ---- acquisto: 1 POST /purchases per segmento
-  onPay() {
-    if (this.form.invalid || !this.flight) return;
+  // ---- acquisto: 1) crea gli acquisti (in sequenza); 2) crea i passengers (in sequenza)
+  async onPay() {
+    if (!this.flight || this.passengers.length === 0 || this.passengers.invalid) return;
     this.loading = true; this.error = ''; this.success = false;
 
     const api = (environment as any).api || (environment as any).apiBase || '/api';
-    const userId = this.extractUserId();
 
-    const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+    try {
+      const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
 
-    const payloads: Array<{ userId: any; ticketId: string; quantity: number }> = [];
-    keys.forEach(k => {
-      const t = this.minTicket(k);
-      const ticketId = (t?.id || t?._id) as string | undefined;
-      if (ticketId) {
-        payloads.push({ userId, ticketId, quantity: this.passengers.length });
+      // prepara payload per /purchases
+      const purchasePayloads: Array<{ user: any; ticket: string; quantity: number }> = [];
+      keys.forEach(k => {
+        const t = this.minTicket(k);
+        const ticket = (t?.id || t?._id) as string | undefined;
+        if (ticket) {
+          purchasePayloads.push({ user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length });
+        }
+      });
+      if (!purchasePayloads.length) {
+        this.loading = false;
+        this.error = 'Nessun biglietto disponibile per l’itinerario.';
+        return;
       }
-    });
 
-    if (!payloads.length) {
+      // 1) acquisti in SEQUENZA
+      const purchaseIds: string[] = [];
+      for (const p of purchasePayloads) {
+        const resp = await firstValueFrom(this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() }));
+        const id = (resp?.id ?? resp?._id) as string | undefined;
+        if (id) purchaseIds.push(id);
+      }
+      if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
+
+      // 2) passengers in SEQUENZA (per ogni acquisto, per ogni passeggero)
+      for (const purchase of purchaseIds) {
+        for (let i = 0; i < this.passengers.length; i++) {
+          const payload = this.buildPassengerPayload(i, purchase);
+          await firstValueFrom(this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() }));
+        }
+      }
+
+      this.success = true;
+    } catch (e: any) {
+      this.error = (e?.error?.message) || e?.message || 'Pagamento non riuscito';
+    } finally {
       this.loading = false;
-      this.error = 'Nessun biglietto disponibile per l’itinerario.';
-      return;
     }
+  }
 
-    const requests: Observable<any>[] = payloads.map(p => this.http.post(`${api}/purchases`, p));
-    forkJoin(requests).subscribe({
-      next: () => { this.success = true; this.loading = false; },
-      error: (e) => { this.error = (e?.error?.message) || 'Pagamento non riuscito'; this.loading = false; }
-    });
+  private buildPassengerPayload(index: number, purchaseId: string) {
+    const v = (this.passengers.at(index)?.value || {}) as any;
+    return {
+      name:            v.firstName ?? '',
+      surname:         v.lastName ?? '',
+      CF:              v.cf ?? '',
+      passportNumber:  v.passportNumber ?? '',
+      extra:           v.extras || [],
+      seat:            this.seatForPassenger(index, 'main'),
+      purchase:        purchaseId
+    };
   }
 
   goToSeatSelection() {
@@ -401,18 +422,21 @@ export class PurchasePage implements OnInit {
       localStorage.setItem('lastFlight', JSON.stringify(this.flight));
       this.persistPassengers();
     }
-    this.router.navigate(['/seat-selection'], {
-      state: { flight: this.flight, passengers: this.passengers.value }
-    });
+    this.router.navigate(['/seat-selection'], { state: { flight: this.flight, passengers: this.passengers.value } });
   }
 
   private extractUserId(): any {
     const a = this.auth as any;
-    // ordine: currentUser.id -> localStorage('currentUser').id -> a.userId -> a.user.id
     return a?.currentUser?.id
         ?? this.parse<{ id?: any }>(localStorage.getItem('currentUser'))?.id
         ?? a?.userId
         ?? a?.user?.id
         ?? null;
+  }
+  private buildHeaders(): HttpHeaders {
+    const token = this.auth.token;
+    let h = new HttpHeaders();
+    if (token) h = h.set('authorization', token); // NO Bearer
+    return h;
   }
 }

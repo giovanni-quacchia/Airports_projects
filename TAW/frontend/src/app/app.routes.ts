@@ -9,8 +9,8 @@ export const routes: Routes = [
   { path: 'register', loadComponent: () => import('./auth/register.component').then(m => m.RegisterComponent) },
   { path: 'purchase', loadComponent: () => import('./purchase/purchase.page').then(m => m.PurchasePage) },
 
-  // 👇 aggiungi questa
   { path: 'seat-selection', loadComponent: () => import('./purchase/seat-selection.page').then(m => m.SeatSelectionPage) },
+  { path: 'compagnia',loadComponent: () => import('./compagnia/compagnia.page').then(m => m.CompagniaPage) },
 
   { path: 'admin', canActivate: [adminGuard],
     loadComponent: () => import('./admin/admin.page').then(m => m.AdminPage) },

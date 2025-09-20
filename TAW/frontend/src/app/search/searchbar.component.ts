@@ -2,7 +2,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,13 +9,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatDateFormats } from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_FORMATS, MAT_DATE_LOCALE, MatDateFormats, MatOptionModule } from '@angular/material/core';
 import { FlightSearchService } from './flight-search.service';
 import { AirportDTO, FlightSearchParams, toCabin } from '../core/flight.models';
 
-// --- Date formats (ita) ---
 export const IT_DDMMYYYY: MatDateFormats = {
   parse:   { dateInput: 'DD/MM/YYYY' },
   display: {
@@ -27,7 +24,6 @@ export const IT_DDMMYYYY: MatDateFormats = {
   },
 };
 
-// Il form emette i campi di ricerca SENZA _id
 type FlightSearchFormParams = Omit<FlightSearchParams, '_id'>;
 
 @Component({
@@ -237,7 +233,6 @@ export class SearchbarComponent {
     if (this.model.to) this.filterTo(this.model.to);
   }
 
-  /* --- Autocomplete + Hint --- */
   filterFrom(term: string) {
     const q = (term || '').trim();
     this.api.airports(q).subscribe((list: AirportDTO[]) => {
@@ -245,6 +240,7 @@ export class SearchbarComponent {
       this.fromHint = this.bestLabel(q, list);
     });
   }
+
   filterTo(term: string) {
     const q = (term || '').trim();
     this.api.airports(q).subscribe((list: AirportDTO[]) => {
@@ -253,7 +249,7 @@ export class SearchbarComponent {
     });
   }
 
-  formatAirport(a: AirportDTO) { return `${a.code}`; } // input mostra solo il codice
+  formatAirport(a: AirportDTO) { return `${a.code}`; }
   selectFrom(val: string) { this.model.from = val; this.filterFrom(val); }
   selectTo(val: string)   { this.model.to   = val; this.filterTo(val); }
 
@@ -267,7 +263,6 @@ export class SearchbarComponent {
     return name ? `${citta} - ${name} (${pick.code})` : (pick.code || '');
   }
 
-  /* --- Date --- */
   onDateChange(which: 'depart' | 'return', value: Date | null){
     if (which === 'depart') {
       this.departDateObj = value;
@@ -286,7 +281,6 @@ export class SearchbarComponent {
   formComplete(f: any){ return f?.valid && !!this.model.returnDate && Number(this.model.pax) >= 1; }
 
   emitSearch() {
-    // adatta questi campi ai nomi reali del tuo form
     const v = this.model ?? {};
     const q: FlightSearchParams = {
       from: v.from,
@@ -301,7 +295,6 @@ export class SearchbarComponent {
   }
 }
 
-/* util */
 function toISODate(d: Date){
   const pad = (n: number) => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
