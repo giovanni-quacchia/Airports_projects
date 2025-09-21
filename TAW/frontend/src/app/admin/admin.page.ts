@@ -16,7 +16,7 @@ type AirlineCreateDTO = {
   code: string;
   name: string;
   PIVA: string;
-  logo?: string; // facoltativo
+  logo?: string; 
 };
 
 type UserDTO = {
@@ -73,7 +73,6 @@ type UserDTO = {
               </div>
             </div>
 
-            <!-- Azioni sotto tabella -->
             <div class="below-table">
               <button class="btn btn--circle" (click)="toggleAddAirline()" [attr.aria-expanded]="newAirlineVisible">
                 {{ newAirlineVisible ? '–' : '+' }}
@@ -237,10 +236,8 @@ export class AdminPage implements OnInit {
   airlinesError = '';
   usersError = '';
 
-  // stato eliminazione per singolo id
   deletingIds: Record<string, boolean> = {};
 
-  // stato form nuova compagnia
   newAirlineVisible = false;
   creatingAirline = false;
   newAirlineError = '';
@@ -340,7 +337,6 @@ export class AdminPage implements OnInit {
       return;
     }
 
-    // Costruisco il payload mantenendo ESATTAMENTE i nomi richiesti
     const payload: any = {
       mail: mail.trim(),
       code: code.trim(),
@@ -355,7 +351,6 @@ export class AdminPage implements OnInit {
       next: () => {
         this.newAirlineOk = true;
         this.resetAddAirline();
-        // Ricarico elenco per riflettere subito l’inserimento
         this.loadAirlines();
       },
       error: (err) => {

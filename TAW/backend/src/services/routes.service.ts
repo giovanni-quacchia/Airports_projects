@@ -22,13 +22,14 @@ async function getAllRoutes(query, airlineId = "", user: any = {}) {
                 }
             },
             ...JOIN("tickets", "flight._id", "", "flight", "flight.ticket"),
-            ...JOIN("passengers", "flight.ticket._id", "", "ticket", "flight.passenger"),
+            ...JOIN("purchases", "flight.ticket._id", "", "ticket", "flight.purchase"),            
+            // ...JOIN("passengers", "flight.ticket._id", "", "ticket", "flight.passenger"),
         )
         // Only specific airline can view statistics of its flights
         if(user.isAdmin || user.id === airlineId){
             pipeline.push(
             ...GROUPBY("$_id", // group by route._id
-                {  numPassengers: {$sum: 1}, }
+                {  numPassengers: {$sum: "$flight.purchase.quantity"}, }
             ),
             { $sort: { [sortBy]: sortOrder } }
         ); 

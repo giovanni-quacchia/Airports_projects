@@ -49,7 +49,6 @@ import { Observable } from 'rxjs';
           </button>
         </mat-form-field>
 
-        <!-- iOS-like switch -->
         <label class="ios-switch" role="switch" [attr.aria-checked]="asAirline">
           <input
             type="checkbox"
@@ -87,7 +86,6 @@ import { Observable } from 'rxjs';
     :host ::ng-deep .mat-mdc-form-field-infix{ padding:14px 16px !important; }
     :host ::ng-deep .mat-mdc-text-field-wrapper{ border-radius:12px !important; }
 
-    /* --- iOS style switch --- */
     .ios-switch{
       display:flex; align-items:center; gap:10px; user-select:none; cursor:pointer;
     }
@@ -106,7 +104,7 @@ import { Observable } from 'rxjs';
       transition:transform .2s ease;
     }
     .ios-switch input:checked + .track{
-      background:#34c759; /* iOS green */
+      background:#34c759; 
     }
     .ios-switch input:checked + .track .thumb{
       transform: translateX(20px);

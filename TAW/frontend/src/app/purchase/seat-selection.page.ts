@@ -169,7 +169,7 @@ export class SeatSelectionPage implements OnInit {
           : Array.from({ length: this.passengers.length }, () => null);
     }
 
-    // normalizza eventuali "4D" -> "D4"
+    // normalizza "4D" -> "D4"
     for (const key of Object.keys(this.selectedSeatsBySegment) as SegmentKey[]) {
       const arr = this.selectedSeatsBySegment[key] ?? [];
       this.selectedSeatsBySegment[key] = arr.map(v => this.toLetterNumber(this.normSeat(v ?? '')));
@@ -182,7 +182,6 @@ export class SeatSelectionPage implements OnInit {
     }
   }
 
-  // === HTTP helpers (senza Bearer) ===
   buildHeaders(): HttpHeaders {
     const token = this.auth.token;
     let h = new HttpHeaders();

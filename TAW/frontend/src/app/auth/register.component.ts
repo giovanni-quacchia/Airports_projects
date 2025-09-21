@@ -26,11 +26,6 @@ import { AuthService } from '../core/auth.service';
 
       <form (ngSubmit)="onSubmit()" #f="ngForm" class="form">
         <mat-form-field appearance="outline">
-          <mat-label>Nome (opzionale)</mat-label>
-          <input matInput [(ngModel)]="form.name" name="name">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
           <input matInput [(ngModel)]="form.email" name="email" type="email" required>
         </mat-form-field>
@@ -68,7 +63,7 @@ import { AuthService } from '../core/auth.service';
   `]
 })
 export class RegisterComponent {
-  form = { name: '', email: '', password: '' };
+  form = { email: '', password: '' };
   hide = true;
   loading = false;
   errorMsg = '';
@@ -80,8 +75,8 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMsg = '';
 
-    this.auth.register(this.form.email, this.form.password, this.form.name)
-      // opzionale: auto-login subito dopo la registrazione
+    this.auth.register(this.form.email, this.form.password)
+      // auto-login subito dopo la registrazione
       .pipe(
         switchMap(() => this.auth.login(this.form.email, this.form.password)),
         finalize(() => this.loading = false)

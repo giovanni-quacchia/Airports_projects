@@ -205,7 +205,6 @@ export class PurchasePage implements OnInit {
     this.persistPassengers();
   }
 
-  // extras helpers
   normalizeExtras(input: any[]): string[] {
     const opts = Array.from(this.EXTRA_OPTIONS);
     const toUpper = (v: any) => {
@@ -393,7 +392,6 @@ async onPay() {
       } catch (err: any) {
         console.log(err)
         this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
-        // fallback: interrompi il processo per evitare partial state
         throw err;
       }
     }
@@ -425,10 +423,9 @@ async onPay() {
     alert('Acquisto completato! Controlla la tua email per la conferma.');
     this.router.navigate(['/search']);
   } catch (e: any) {
-    // e potrebbe venire già impostato sopra
     this.error = this.error || (e?.error?.message) || e?.message || 'Pagamento non riuscito';
   } finally {
-    // sicurezza: garantiamo che loading venga resettato sempre
+    // loading viene resettato sempre
     setTimeout(() => {
       this.loading = false;
       this.cdr.markForCheck?.();

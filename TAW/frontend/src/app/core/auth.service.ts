@@ -75,7 +75,6 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.base}`, body.toString(), { headers })
       .pipe(
         tap(res => {
-          // salvo email e magari anche il nome
           this.setSession(res.token, { email, role });
         })
       );
