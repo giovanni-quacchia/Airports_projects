@@ -31,7 +31,7 @@ export class DurationPipe implements PipeTransform {
 
   <article class="card" *ngFor="let r of sortedResults(); trackBy: trackRes">
     <header class="head">
-      <div class="carrier">
+      <!-- <div class="carrier">
         <img
           class="carrier-logo"
           [src]="logoOf(r)"
@@ -44,7 +44,7 @@ export class DurationPipe implements PipeTransform {
           {{ r.airline?.name || r.airline?.code || '—' }}
         </span>
         <small *ngIf="query?.cabin">· {{ query?.cabin }}</small>
-      </div>
+      </div> -->
 
       <div class="badges">
         <span class="chip" [class.green]="!r.numStops">
@@ -58,7 +58,24 @@ export class DurationPipe implements PipeTransform {
 
     <section class="segments">
       <ng-container *ngFor="let s of segmentsOf(r); let i = index; let last = last">
+        <!-- logo -->
+        <div class="carrier">
+          <img
+            class="carrier-logo"
+            [src]="logoOf(r)"
+            (error)="onLogoError($event)"
+            [alt]="(r.airline?.name || r.airline?.code || 'Airline') + ' logo'"
+            loading="lazy"
+            decoding="async"
+          />
+          <span class="carrier-name">
+            {{ r.airline?.name || r.airline?.code || '—' }}
+          </span>
+          <small *ngIf="query?.cabin">· {{ query?.cabin }}</small>
+        </div>
+        <!-- logo -->  
         <div class="segment">
+            
           <div class="when left">
             <div class="dow">{{ s.departure | date:'EEEE' }}</div>
             <div class="day">{{ s.departure | date:'dd' }}</div>
@@ -90,55 +107,37 @@ export class DurationPipe implements PipeTransform {
             </div>
           </div>
 
-          <!-- First flight -->
           <div class="seg-tickets" [ngSwitch]="i">
+
+          
+
+            <!-- First flight -->
             <ng-container *ngSwitchCase="0">
               <ng-container *ngIf="hasTickets(r,'main')">
-                  <span class="badge">{{ tickets(r,'main').length }} opzioni</span>
                   <ng-container *ngIf="lowestTicket(r,'main') as t">
                     <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                    <small class="seg-qty">· {{ t.quantity }} posti</small>
-                    <small class="seg-class">· {{ t.type }}</small>
+                    <small class="seg-qty">{{ t.quantity }} posti</small>
                   </ng-container>
-                  <ng-container *ngFor="let t of (tickets(r,'main') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">{{ t.quantity }} posti</small>
-                  <small class="seg-class"> · {{ t.type }}</small>
-                </ng-container>
               </ng-container>
             </ng-container>
 
             <!-- Stop1 -->
             <ng-container *ngSwitchCase="1">
               <ng-container *ngIf="hasTickets(r,'stop1')">
-                  <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
                   <ng-container *ngIf="lowestTicket(r,'stop1') as t">
                     <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                    <small class="seg-qty">· {{ t.quantity }} posti</small>
-                    <small class="seg-class">· {{ t.type }}</small>
+                    <small class="seg-qty">{{ t.quantity }} posti</small>
                   </ng-container>
-                  <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">{{ t.quantity }} posti</small>
-                  <small class="seg-class"> · {{ t.type }}</small>
-                </ng-container>
               </ng-container>
             </ng-container>
 
             <!-- Stop2 -->
             <ng-container *ngSwitchCase="2">
               <ng-container *ngIf="hasTickets(r,'stop2')">
-                  <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
                   <ng-container *ngIf="lowestTicket(r,'stop2') as t">
                     <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                    <small class="seg-qty">· {{ t.quantity }} posti</small>
-                    <small class="seg-class">· {{ t.type }}</small>
+                    <small class="seg-qty">{{ t.quantity }} posti</small>
                   </ng-container>
-                  <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">{{ t.quantity }} posti</small>
-                  <small class="seg-class"> · {{ t.type }}</small>
-                </ng-container>
               </ng-container>
             </ng-container>
           </div>
@@ -182,8 +181,9 @@ export class DurationPipe implements PipeTransform {
            padding:16px; margin-bottom:16px }
     .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px }
     .carrier-name{ font-weight:600; font-size:1.05rem; }
-    .carrier small{ margin-left:6px; opacity:.7; font-weight:400 }
+    .carrier small{ margin-left:6px; opacity:.7; font-weight:400; }
     .carrier-logo{
+      margin-top: 10px;
       height:22px; width:auto; object-fit:contain;
       filter: drop-shadow(0 1px 0 rgba(0,0,0,.04));
     }
@@ -234,31 +234,51 @@ export class DurationPipe implements PipeTransform {
     .cta:active{ transform:translateY(1px) }
   `]
 })
+
 export class ResultsListComponent {
   @Input() results: FlightResult[] = [];
   @Input() query: FlightSearchParams | null = null;
   private readonly FALLBACK_LOGO = '';
   private base = environment.apiBase;
   private readonly SEG_KEYS = ['main','stop1','stop2'] as const;
+
   constructor(private http: HttpClient) {}
+
+  /** Prodotto cartesiano per tutte le combinazioni di ticket */
+  private cartesian<T>(...arrays: T[][]): T[][] {
+    return arrays.reduce<T[][]>(
+      (acc, arr) => acc.flatMap(a => arr.map(v => [...a, v])),
+      [[]]
+    );
+  }
 
   private expandByTickets(r: FlightResult): (FlightResult & { __ticket?: TicketDTO; __key: string })[] {
     const allTickets = r.matchedTicketsBySegment ?? (r as any).ticketsBySegment ?? {};
-    const main = (allTickets?.main ?? []) as TicketDTO[];
 
-    if (main.length > 0) {
-      return main.map(t => {
-        const perTicket = { ...allTickets, main: [t] } as any;
-        return {
-          ...(r as any),
-          price: t.price,
-          matchedTicketsBySegment: perTicket,
-          __ticket: t,
-          __key: `${(r as any)?._id || r.code || 'r'}::${(t as any)?._id || t.type || t.price}`
-        };
-      });
+    // prendo i ticket per ciascun segmento
+    const segTickets: TicketDTO[][] = this.SEG_KEYS.map(k => (allTickets?.[k] ?? []) as TicketDTO[]);
+
+    // se non c’è nessun ticket, ritorno il volo così com’è
+    if (segTickets.every(list => list.length === 0)) {
+      return [{ ...(r as any), __key: `${(r as any)?._id || r.code || Math.random()}` }];
     }
-    return [{ ...(r as any), __key: `${(r as any)?._id || r.code || Math.random()}` }];
+
+    // calcolo tutte le combinazioni
+    const combos = this.cartesian(...segTickets.map(l => l.length ? l : [null as any]));
+
+    return combos.map(combo => {
+      const perTicket: any = {};
+      this.SEG_KEYS.forEach((k, i) => {
+        perTicket[k] = combo[i] ? [combo[i]] : [];
+      });
+
+      return {
+        ...(r as any),
+        matchedTicketsBySegment: perTicket,
+        __ticket: combo.find(Boolean) ?? null,
+        __key: `${(r as any)?._id || r.code || 'r'}::${combo.map(c => c?._id || c?.type || c?.price).join('-')}`
+      };
+    });
   }
 
   private expandedResults(): (FlightResult & { __ticket?: TicketDTO; __key: string })[] {
@@ -340,7 +360,6 @@ export class ResultsListComponent {
     }
     return total > 0 ? total : null;
   }
-
 
   buildPurchaseFlight(r: FlightResult): FlightResult {
     const segs: any[] = [];

@@ -430,6 +430,7 @@ async onPay() {
                       .pipe(timeout(REQUEST_TIMEOUT_MS));
         const res = await firstValueFrom(obs);
         purchases.push(res);
+
       } catch (err: any) {
         console.log(err)
         this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
@@ -456,7 +457,8 @@ async onPay() {
         }
       }
     }
-
+    // update saldo
+    this.auth.putCurrentBalance();
     alert('Acquisto completato! Controlla la tua email per la conferma.');
     this.router.navigate(['/search']);
   } catch (e: any) {

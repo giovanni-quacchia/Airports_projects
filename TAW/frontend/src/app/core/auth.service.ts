@@ -4,7 +4,8 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 
 export interface LoginResponse { token: string; user: any; }
@@ -104,10 +105,27 @@ export class AuthService {
 
   get currentUser(): any | null {
     if (!this.isBrowser) return null;
-    const token = localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.USER_KEY);
     if (!token) return null;
-    return this.decodeToken(token);
+    return JSON.parse(token);
   }
+
+  // Get current balance
+  putCurrentBalance() {
+    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}`, { headers: this.buildHeaders() })
+      .subscribe(res => {
+        const user: any = res;
+        localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user._id}));
+      });
+  }
+
+  private buildHeaders(): HttpHeaders {
+    let headers = new HttpHeaders();
+    if (this.token) {
+      headers = headers.set('authorization', this.token);
+    }
+    return headers;
+  } 
 
   get isAdmin(): boolean {
     return this.currentUser?.isAdmin || false;

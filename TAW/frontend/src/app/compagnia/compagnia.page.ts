@@ -58,7 +58,7 @@ type AirportDTO = {
             <h3>Rotte</h3>
             <div class="actions">
               <input class="input" placeholder="Filtra…" [(ngModel)]="routeQuery">
-              <button class="btn btn--sm" (click)="toggleMyRoutes()"> 
+              <button class="btn btn--sm" (click)="toggleMyRoutes()"
                       [class.btn--active]="showOnlyMyRoutes" title="show only my routes">
                 {{ showOnlyMyRoutes ? 'Utilizzate' : 'Tutte' }}
               </button>
