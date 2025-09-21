@@ -23,6 +23,12 @@ import {
   MatSuffix
 } from "./chunk-BFPBOHM4.js";
 import {
+  FormGroupDirective,
+  NgControl,
+  NgForm,
+  Validators
+} from "./chunk-FJSZLSQ5.js";
+import {
   coerceBooleanProperty,
   getSupportedInputTypes
 } from "./chunk-LJMLVLON.js";
@@ -36,12 +42,6 @@ import "./chunk-GAK65PD2.js";
 import {
   Platform
 } from "./chunk-3YOYQZCG.js";
-import {
-  FormGroupDirective,
-  NgControl,
-  NgForm,
-  Validators
-} from "./chunk-FJSZLSQ5.js";
 import "./chunk-H4LQPAO2.js";
 import "./chunk-OUSM42MY.js";
 import {
