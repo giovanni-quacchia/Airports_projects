@@ -6,9 +6,6 @@ import {
   MAT_DATE_LOCALE_FACTORY
 } from "./chunk-MJ25PVZD.js";
 import {
-  MatRippleLoader
-} from "./chunk-6G6DFQJ7.js";
-import {
   _MatInternalFormField
 } from "./chunk-ZFRUF553.js";
 import {
@@ -28,6 +25,9 @@ import {
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
 } from "./chunk-6BD4IL5Y.js";
+import {
+  MatRippleLoader
+} from "./chunk-6G6DFQJ7.js";
 import {
   MatRippleModule
 } from "./chunk-YZY4X4RK.js";

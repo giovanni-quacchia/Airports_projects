@@ -20,18 +20,16 @@ export class DurationPipe implements PipeTransform {
   standalone: true,
   imports: [CommonModule, DatePipe, MatIconModule, DurationPipe, RouterLink],
   template: `
-  <!-- FILTRI (niente "Andata e ritorno") -->
   <div class="filters" *ngIf="query">
     <span class="badge">Passeggeri: {{query.pax}}</span>
     <span class="badge">Classe: {{query.cabin}}</span>
   </div>
 
-  <!-- Error: no results -->
-  <div *ngIf="query && results?.length === 0" class="card no-results-card">
+  <div *ngIf="query && sortedResults().length === 0" class="card no-results-card">
     No results found.
   </div>
 
-  <article class="card" *ngFor="let r of results">
+  <article class="card" *ngFor="let r of sortedResults(); trackBy: trackRes">
     <header class="head">
       <div class="carrier">
         <img
@@ -58,12 +56,9 @@ export class DurationPipe implements PipeTransform {
       </div>
     </header>
 
-
-    <!-- SEGMENTI -->
     <section class="segments">
       <ng-container *ngFor="let s of segmentsOf(r); let i = index; let last = last">
         <div class="segment">
-          <!-- left date -->
           <div class="when left">
             <div class="dow">{{ s.departure | date:'EEEE' }}</div>
             <div class="day">{{ s.departure | date:'dd' }}</div>
@@ -72,14 +67,12 @@ export class DurationPipe implements PipeTransform {
             <div class="hour">{{ s.departure | date:'HH:mm' }}</div>
           </div>
 
-          <!-- timeline -->
           <div class="timeline">
             <div class="dot"></div>
             <div class="line"><mat-icon>flight_takeoff</mat-icon></div>
             <div class="dot end"></div>
           </div>
 
-          <!-- right date -->
           <div class="when right">
             <div class="dow">{{ s.arrival | date:'EEEE' }}</div>
             <div class="day">{{ s.arrival | date:'dd' }}</div>
@@ -88,7 +81,6 @@ export class DurationPipe implements PipeTransform {
             <div class="hour">{{ s.arrival | date:'HH:mm' }}</div>
           </div>
 
-          <!-- route + meta -->
           <div class="route">
             <div class="airports">
               {{ s.route.from.city }} ({{ s.route.from.code }}) → {{ s.route.to.city }} ({{ s.route.to.code }})
@@ -98,9 +90,7 @@ export class DurationPipe implements PipeTransform {
             </div>
           </div>
 
-          <!-- TICKET DEL SEGMENTO (usa matchedTicketsBySegment) -->
           <div class="seg-tickets" [ngSwitch]="i">
-            <!-- main -->
             <ng-container *ngSwitchCase="0">
               <ng-container *ngIf="hasTickets(r,'main')">
                   <span class="badge">{{ tickets(r,'main').length }} opzioni</span>
@@ -112,7 +102,6 @@ export class DurationPipe implements PipeTransform {
               </ng-container>
             </ng-container>
 
-            <!-- stop1 -->
             <ng-container *ngSwitchCase="1">
               <ng-container *ngIf="hasTickets(r,'stop1')">
                   <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
@@ -124,7 +113,6 @@ export class DurationPipe implements PipeTransform {
               </ng-container>
             </ng-container>
 
-            <!-- stop2 -->
             <ng-container *ngSwitchCase="2">
               <ng-container *ngIf="hasTickets(r,'stop2')">
                   <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
@@ -138,7 +126,6 @@ export class DurationPipe implements PipeTransform {
           </div>
         </div>
 
-        <!-- SCALO -->
         <div class="layover" *ngIf="!last">
           <mat-icon>schedule</mat-icon>
           Scalo a {{ segmentsOf(r)[i].route.to.city }} ({{ segmentsOf(r)[i].route.to.code }})
@@ -147,14 +134,11 @@ export class DurationPipe implements PipeTransform {
       </ng-container>
     </section>
 
-
-    <!-- FOOTER: totale a sinistra, bottoni a destra (stile come "Cerca voli") -->
     <footer class="foot">
       <div class="total">
         <span *ngIf="totalPrice(r) as tp">Totale: <strong>€ {{ tp | number:'1.0-0' }}</strong></span>
       </div>
       <div class="actions">
-
         <button
           class="cta primary"
           [routerLink]="['/purchase']"
@@ -166,7 +150,6 @@ export class DurationPipe implements PipeTransform {
   </article>
   `,
   styles: [`
-    // Error card
     .no-results-card {
       margin: 0 0 16px 0;
       background: #fff;
@@ -175,25 +158,21 @@ export class DurationPipe implements PipeTransform {
       padding: 16px;
       text-align: center;
     }
-
-    /* badges top */
     .filters{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 16px }
     .badge{ padding:6px 10px; border-radius:999px; background:#eef6ff; font-size:.85rem }
-
     .card{ background:#fff; border-radius:18px; box-shadow:0 12px 30px rgba(0,0,0,.06);
            padding:16px; margin-bottom:16px }
     .head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px }
     .carrier-name{ font-weight:600; font-size:1.05rem; }
     .carrier small{ margin-left:6px; opacity:.7; font-weight:400 }
-      .carrier-logo{
-        height:22px; width:auto; object-fit:contain;
-        filter: drop-shadow(0 1px 0 rgba(0,0,0,.04));
-      }
+    .carrier-logo{
+      height:22px; width:auto; object-fit:contain;
+      filter: drop-shadow(0 1px 0 rgba(0,0,0,.04));
+    }
     .badges{ display:flex; gap:8px; align-items:center }
     .chip{ padding:4px 10px; border-radius:999px; background:#f3f4f6; font-size:.85rem }
     .chip.green{ background:#dcfce7; color:#166534 }
     .chip.light{ background:#eef2ff; color:#3730a3 }
-
     .segments{ display:flex; flex-direction:column; gap:12px }
     .segment{
       position: relative;
@@ -210,7 +189,6 @@ export class DurationPipe implements PipeTransform {
     .when .year{ grid-area:year; color:#6b7280; font-size:.9rem }
     .when .hour{ grid-area:hour; font-weight:700 }
     .when.right{ text-align:right }
-
     .timeline{ display:grid; grid-template-columns:16px 1fr 16px; align-items:center; gap:6px }
     .dot{ width:10px; height:10px; border-radius:999px; background:#0ea5e9 }
     .timeline .line{ height:4px; background:#0ea5e922; border-radius:999px; display:flex; align-items:center; justify-content:center }
@@ -218,20 +196,15 @@ export class DurationPipe implements PipeTransform {
     .route{ grid-column:1 / -1; display:flex; flex-direction:column; gap:2px; margin-top:6px }
     .airports{ font-weight:700 }
     .meta{ color:#6b7280; font-size:.9rem }
-
     .seg-price{
       position:absolute; right:12px; bottom:10px;
       font-weight:700; color:#0f172a; background:#ffffffc7;
       padding:4px 8px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.06);
     }
-
     .layover{ display:flex; align-items:center; gap:6px; color:#6b7280; font-size:.9rem; padding:6px 2px }
-
     .foot{ display:flex; align-items:center; justify-content:space-between; margin-top:12px }
     .total{ color:#0f172a; font-size:1rem }
     .total strong{ font-size:1.05rem }
-
-    /* CTA come "Cerca voli" (pill blu) */
     .cta{
       appearance:none; border:0; cursor:pointer;
       border-radius:999px; padding:10px 18px; font-weight:600;
@@ -250,6 +223,25 @@ export class ResultsListComponent {
   private base = environment.apiBase;
   constructor(private http: HttpClient) {}
 
+  sortedResults(): FlightResult[] {
+    const arr = Array.isArray(this.results) ? [...this.results] : [];
+    arr.sort((a, b) => {
+      const pa = this.totalPrice(a);
+      const pb = this.totalPrice(b);
+      const aa = pa == null ? Number.POSITIVE_INFINITY : pa;
+      const bb = pb == null ? Number.POSITIVE_INFINITY : pb;
+      if (aa !== bb) return aa - bb;
+      const da = a?.totDuration ?? 0;
+      const db = b?.totDuration ?? 0;
+      return da - db;
+    });
+    return arr;
+  }
+
+  trackRes(_: number, r: FlightResult) {
+    return (r as any)?._id || (r as any)?.id || r?.code || _;
+  }
+
   segmentsOf(r: any): any[] {
     const segs = [r];
     if (r.stop1) segs.push(r.stop1);
@@ -264,12 +256,11 @@ export class ResultsListComponent {
   }
 
   priceOf(s: any): number|null {
-    // adatta qui se i prezzi sono annidati (es. s.fare.price)
     return typeof s?.price === 'number' ? s.price : null;
   }
 
   totalPrice(r: any): number|null {
-    if (typeof r?.price === 'number') return r.price; // se il backend fornisce il totale
+    if (typeof r?.price === 'number') return r.price;
     const sum = this.segmentsOf(r).reduce((acc, s) => acc + (this.priceOf(s) || 0), 0);
     return sum > 0 ? sum : null;
   }
@@ -281,21 +272,22 @@ export class ResultsListComponent {
 
   onLogoError(ev: Event) {
     const img = ev.target as HTMLImageElement;
-    // evita loop infinito se anche il fallback fallisce
     if (img && img.src !== this.FALLBACK_LOGO) {
       img.src = this.FALLBACK_LOGO;
     } else {
-      img.style.display = 'none'; // nascondi del tutto in caso estremo
+      img.style.display = 'none';
     }
   }
+
   tickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO[] {
     return (r?.matchedTicketsBySegment?.[key] ?? []) as TicketDTO[];
   }
+
   hasTickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): boolean {
     return this.tickets(r, key).length > 0;
   }
+
   buildPurchaseFlight(r: FlightResult): FlightResult {
-    // ricavo i segmenti come fai in template
     const segs: any[] = [];
     segs.push(r);
     if (r.stop1) segs.push(r.stop1);
@@ -304,17 +296,14 @@ export class ResultsListComponent {
     const first = segs[0] ?? r;
     const last  = segs[segs.length - 1] ?? r;
 
-    // route: from del primo, to dell’ultimo
     const route = r.route ?? {
       from: first?.route?.from,
       to:   last?.route?.to,
     };
 
-    // orari
     const departure = r.departure ?? first?.departure ?? null;
     const arrival   = r.finalArrival ?? r.arrival ?? last?.arrival ?? null;
 
-    // durata totale
     let totDuration = typeof r.totDuration === 'number' ? r.totDuration : undefined;
     if (totDuration == null) {
       const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
@@ -327,7 +316,6 @@ export class ResultsListComponent {
       }
     }
 
-    // porta con te i ticket già filtrati (se presenti)
     const matchedTicketsBySegment = r.matchedTicketsBySegment ?? r.ticketsBySegment ?? {};
 
     return {
