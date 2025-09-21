@@ -1,19 +1,4 @@
 import {
-<<<<<<< HEAD
-  MAT_OPTGROUP,
-  MAT_OPTION_PARENT_COMPONENT,
-  MatOptgroup,
-  MatOption,
-  MatOptionModule,
-  MatOptionSelectionChange,
-  MatPseudoCheckbox,
-  MatPseudoCheckboxModule,
-  _countGroupLabelsBeforeOption,
-  _getOptionScrollPosition
-} from "./chunk-2SZ2V77F.js";
-import {
-=======
->>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
@@ -21,26 +6,13 @@ import {
 } from "./chunk-MYKSWICQ.js";
 import {
   MatRippleLoader
-} from "./chunk-BE6FO7MZ.js";
-import {
-  _MatInternalFormField
-} from "./chunk-T3DMVIGZ.js";
+} from "./chunk-MCW776RY.js";
 import {
   ErrorStateMatcher,
   ShowOnDirtyErrorStateMatcher,
   _ErrorStateTracker
 } from "./chunk-YQIWBSQA.js";
 import {
-<<<<<<< HEAD
-  MatRippleLoader
-} from "./chunk-7PTL6T3E.js";
-import {
-  MatRippleModule
-} from "./chunk-5ZZTDOSV.js";
-import {
-  _MatInternalFormField
-} from "./chunk-T3DMVIGZ.js";
-=======
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
   MatOptgroup,
@@ -51,11 +23,13 @@ import {
   MatPseudoCheckboxModule,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
-} from "./chunk-HLVSLNAF.js";
+} from "./chunk-VPFMQ22K.js";
 import {
   MatRippleModule
-} from "./chunk-JBVO4FVR.js";
->>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
+} from "./chunk-HYBYXLV3.js";
+import {
+  _MatInternalFormField
+} from "./chunk-T3DMVIGZ.js";
 import {
   MAT_RIPPLE_GLOBAL_OPTIONS,
   MatRipple,
@@ -64,38 +38,22 @@ import {
   RippleState,
   _StructuralStylesLoader,
   defaultRippleAnimationConfig
-<<<<<<< HEAD
-} from "./chunk-PG3LQHQ7.js";
-=======
-} from "./chunk-TGXAXKCH.js";
->>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
+} from "./chunk-4GJQQISY.js";
 import {
   AnimationCurves,
   AnimationDurations,
   MATERIAL_ANIMATIONS,
   _animationsDisabled,
   _getAnimationsState
-<<<<<<< HEAD
-} from "./chunk-3YBIRLJ5.js";
+} from "./chunk-LJMLVLON.js";
 import {
   MATERIAL_SANITY_CHECKS,
   MatCommonModule
-} from "./chunk-2V67M6MR.js";
+} from "./chunk-5YU2INGS.js";
 import "./chunk-3YGSUNV2.js";
 import "./chunk-7UJZXIJQ.js";
+import "./chunk-GAK65PD2.js";
 import "./chunk-3YOYQZCG.js";
-import "./chunk-GAK65PD2.js";
-=======
-} from "./chunk-OKC7BKPY.js";
-import {
-  MATERIAL_SANITY_CHECKS,
-  MatCommonModule
-} from "./chunk-WLP7JHPQ.js";
-import "./chunk-7UJZXIJQ.js";
-import "./chunk-GAK65PD2.js";
-import "./chunk-3YGSUNV2.js";
-import "./chunk-SUUW4KGA.js";
->>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
 import "./chunk-H4LQPAO2.js";
 import "./chunk-OUSM42MY.js";
 import {

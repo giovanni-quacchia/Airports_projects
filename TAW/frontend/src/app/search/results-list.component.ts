@@ -223,8 +223,37 @@ export class ResultsListComponent {
   private base = environment.apiBase;
   constructor(private http: HttpClient) {}
 
+  private expandByTickets(r: FlightResult): (FlightResult & { __ticket?: TicketDTO; __key: string })[] {
+    const allTickets = r.matchedTicketsBySegment ?? (r as any).ticketsBySegment ?? {};
+    const main = (allTickets?.main ?? []) as TicketDTO[];
+
+    if (main.length > 0) {
+      return main.map(t => {
+        const perTicket = {
+          ...allTickets,
+          main: [t]
+        } as any;
+
+        return {
+          ...(r as any),
+          price: t.price,
+          matchedTicketsBySegment: perTicket,
+          __ticket: t,
+          __key: `${(r as any)?._id || r.code || 'r'}::${(t as any)?._id || t.type || t.price}`
+        };
+      });
+    }
+
+    return [{ ...(r as any), __key: `${(r as any)?._id || r.code || Math.random()}` }];
+  }
+
+  private expandedResults(): (FlightResult & { __ticket?: TicketDTO; __key: string })[] {
+    const src = Array.isArray(this.results) ? this.results : [];
+    return src.flatMap(r => this.expandByTickets(r));
+  }
+
   sortedResults(): FlightResult[] {
-    const arr = Array.isArray(this.results) ? [...this.results] : [];
+    const arr = this.expandedResults();
     arr.sort((a, b) => {
       const pa = this.totalPrice(a);
       const pb = this.totalPrice(b);
@@ -238,8 +267,8 @@ export class ResultsListComponent {
     return arr;
   }
 
-  trackRes(_: number, r: FlightResult) {
-    return (r as any)?._id || (r as any)?.id || r?.code || _;
+  trackRes(_: number, r: any) {
+    return r?.__key || r?._id || r?.id || r?.code || _;
   }
 
   segmentsOf(r: any): any[] {
@@ -316,7 +345,7 @@ export class ResultsListComponent {
       }
     }
 
-    const matchedTicketsBySegment = r.matchedTicketsBySegment ?? r.ticketsBySegment ?? {};
+    const matchedTicketsBySegment = r.matchedTicketsBySegment ?? (r as any).ticketsBySegment ?? {};
 
     return {
       ...r,

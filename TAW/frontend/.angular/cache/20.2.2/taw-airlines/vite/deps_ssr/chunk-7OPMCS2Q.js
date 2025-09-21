@@ -1,13 +1,13 @@
 import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
+  HTTP_ROOT_INTERCEPTOR_FNS
+} from "./chunk-JVD4QKRA.js";
+import {
   BrowserDomAdapter,
   BrowserModule,
   EVENT_MANAGER_PLUGINS,
   EventManagerPlugin
 } from "./chunk-2WDNWDAT.js";
-import {
-  HTTP_ROOT_INTERCEPTOR_FNS
-} from "./chunk-JVD4QKRA.js";
 import {
   NullViewportScroller,
   PLATFORM_SERVER_ID,
@@ -17954,4 +17954,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-32NYEXTQ.js.map
+//# sourceMappingURL=chunk-7OPMCS2Q.js.map
