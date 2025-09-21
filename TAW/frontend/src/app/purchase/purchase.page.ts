@@ -103,7 +103,7 @@ type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
             </div>
           </div>
 
-          <button type="button" class="btn btn--outline" (click)="addPassenger()">+ Aggiungi passeggero</button>
+          <button type="button" class="btn btn--outline" (click)="addPassenger()" [disabled]="purchases.length > 0">+ Aggiungi passeggero</button>
 
           <div class="actions">
             <button type="button" class="btn btn--secondary" (click)="goToSeatSelection()" [disabled]="passengers.length === 0">Seleziona posti</button>
@@ -166,6 +166,7 @@ export class PurchasePage implements OnInit {
   readonly EXTRA_OPTIONS = ['LARGER SEAT','PRIORITY','EXTRA BAG'] as const;
 
   flight: FlightResult | null = null;
+  purchases: PurchaseResponse[] = [];
   loading = false;
   error = '';
   success = false;
@@ -422,23 +423,26 @@ async onPay() {
       return;
     }
 
-    const purchases: PurchaseResponse[] = [];
-    for (let i = 0; i < purchasePayloads.length; i++) {
-      const p = purchasePayloads[i];
-      try {
-        const obs = this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() })
-                      .pipe(timeout(REQUEST_TIMEOUT_MS));
-        const res = await firstValueFrom(obs);
-        purchases.push(res);
+    // Controlla se e' gia ' stato fatto l'acquisto, ma ci sono stati degli errori nella creazione dei passeggeri
+    if(this.purchases.length <= 0){
+      for (let i = 0; i < purchasePayloads.length; i++) {
+        const p = purchasePayloads[i];
+        try {
+          const obs = this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() })
+                        .pipe(timeout(REQUEST_TIMEOUT_MS));
+          const res = await firstValueFrom(obs);
+          this.purchases.push(res);
 
-      } catch (err: any) {
-        console.log(err)
-        this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
-        throw err;
+        } catch (err: any) {
+          console.log(err)
+          this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
+          throw err;
+        }
       }
     }
+    
 
-    const purchaseIds = purchases.map((r:any) => (r?.id ?? r?._id)).filter(Boolean);
+    const purchaseIds = this.purchases.map((r:any) => (r?.id ?? r?._id)).filter(Boolean);
     if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
     console.log('[onPay] purchaseIds:', purchaseIds);
 

@@ -4,7 +4,6 @@ import Airport from '../models/Airport';
 import Ro, {Route} from '../models/Route';
 import { AppError } from '../models/AppError';
 
-// TODO: check req.user
 async function getAllRoutes(query, airlineId = "", user: any = {}) {
 
     const parsedData: any = Ro.validateSearch(query);
@@ -23,7 +22,6 @@ async function getAllRoutes(query, airlineId = "", user: any = {}) {
             },
             ...JOIN("tickets", "flight._id", "", "flight", "flight.ticket"),
             ...JOIN("purchases", "flight.ticket._id", "", "ticket", "flight.purchase"),            
-            // ...JOIN("passengers", "flight.ticket._id", "", "ticket", "flight.passenger"),
         )
         // Only specific airline can view statistics of its flights
         if(user.isAdmin || user.id === airlineId){

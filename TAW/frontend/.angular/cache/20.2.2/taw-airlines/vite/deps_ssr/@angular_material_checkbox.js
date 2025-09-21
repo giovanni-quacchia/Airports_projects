@@ -7,10 +7,6 @@ import {
   _StructuralStylesLoader
 } from "./chunk-ET355IIG.js";
 import {
-  NG_VALIDATORS,
-  NG_VALUE_ACCESSOR
-} from "./chunk-PZK4CTWR.js";
-import {
   _animationsDisabled
 } from "./chunk-2VHQZS5J.js";
 import {
@@ -23,6 +19,10 @@ import {
 import "./chunk-FQL6O3MQ.js";
 import "./chunk-T4PXRGKK.js";
 import "./chunk-VRLUFGSC.js";
+import {
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR
+} from "./chunk-PZK4CTWR.js";
 import "./chunk-MHGVWNK6.js";
 import "./chunk-U4VNP6SC.js";
 import {
