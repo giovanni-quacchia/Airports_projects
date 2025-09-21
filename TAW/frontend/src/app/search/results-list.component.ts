@@ -94,33 +94,33 @@ export class DurationPipe implements PipeTransform {
             <ng-container *ngSwitchCase="0">
               <ng-container *ngIf="hasTickets(r,'main')">
                   <span class="badge">{{ tickets(r,'main').length }} opzioni</span>
-                  <ng-container *ngFor="let t of (tickets(r,'main') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
-                </ng-container>
+                  <ng-container *ngIf="lowestTicket(r,'main') as t">
+                    <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                    <small class="seg-qty">· {{ t.quantity }} posti</small>
+                    <small class="seg-class">· {{ t.type }}</small>
+                  </ng-container>
               </ng-container>
             </ng-container>
 
             <ng-container *ngSwitchCase="1">
               <ng-container *ngIf="hasTickets(r,'stop1')">
                   <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
-                  <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
-                </ng-container>
+                  <ng-container *ngIf="lowestTicket(r,'stop1') as t">
+                    <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                    <small class="seg-qty">· {{ t.quantity }} posti</small>
+                    <small class="seg-class">· {{ t.type }}</small>
+                  </ng-container>
               </ng-container>
             </ng-container>
 
             <ng-container *ngSwitchCase="2">
               <ng-container *ngIf="hasTickets(r,'stop2')">
                   <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
-                  <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
-                  <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
-                </ng-container>
+                  <ng-container *ngIf="lowestTicket(r,'stop2') as t">
+                    <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
+                    <small class="seg-qty">· {{ t.quantity }} posti</small>
+                    <small class="seg-class">· {{ t.type }}</small>
+                  </ng-container>
               </ng-container>
             </ng-container>
           </div>
@@ -221,6 +221,7 @@ export class ResultsListComponent {
   @Input() query: FlightSearchParams | null = null;
   private readonly FALLBACK_LOGO = '';
   private base = environment.apiBase;
+  private readonly SEG_KEYS = ['main','stop1','stop2'] as const;
   constructor(private http: HttpClient) {}
 
   private expandByTickets(r: FlightResult): (FlightResult & { __ticket?: TicketDTO; __key: string })[] {
@@ -229,11 +230,7 @@ export class ResultsListComponent {
 
     if (main.length > 0) {
       return main.map(t => {
-        const perTicket = {
-          ...allTickets,
-          main: [t]
-        } as any;
-
+        const perTicket = { ...allTickets, main: [t] } as any;
         return {
           ...(r as any),
           price: t.price,
@@ -243,7 +240,6 @@ export class ResultsListComponent {
         };
       });
     }
-
     return [{ ...(r as any), __key: `${(r as any)?._id || r.code || Math.random()}` }];
   }
 
@@ -284,16 +280,6 @@ export class ResultsListComponent {
     return Math.max(0, Math.round(t / 60000));
   }
 
-  priceOf(s: any): number|null {
-    return typeof s?.price === 'number' ? s.price : null;
-  }
-
-  totalPrice(r: any): number|null {
-    if (typeof r?.price === 'number') return r.price;
-    const sum = this.segmentsOf(r).reduce((acc, s) => acc + (this.priceOf(s) || 0), 0);
-    return sum > 0 ? sum : null;
-  }
-
   logoOf(r: any): string {
     const url = r?.airline?.logo?.trim?.();
     return url && url.length ? url : this.FALLBACK_LOGO;
@@ -311,10 +297,32 @@ export class ResultsListComponent {
   tickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO[] {
     return (r?.matchedTicketsBySegment?.[key] ?? []) as TicketDTO[];
   }
-
   hasTickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): boolean {
     return this.tickets(r, key).length > 0;
   }
+
+  lowestTicket(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO | null {
+    const list = this.tickets(r, key);
+    if (!list.length) return null;
+    return [...list].sort((a,b) => (a.price ?? Infinity) - (b.price ?? Infinity))[0] || null;
+  }
+  private lowestPrice(r: FlightResult, key: 'main'|'stop1'|'stop2'): number|null {
+    const t = this.lowestTicket(r, key);
+    return typeof t?.price === 'number' ? t!.price! : null;
+  }
+
+  totalPrice(r: FlightResult): number | null {
+    const parts = this.SEG_KEYS.filter(k => this.hasTickets(r, k));
+    if (!parts.length) return null;
+    let total = 0;
+    for (const k of parts) {
+      const p = this.lowestPrice(r, k);
+      if (p == null) return null;
+      total += p;
+    }
+    return total > 0 ? total : null;
+  }
+
 
   buildPurchaseFlight(r: FlightResult): FlightResult {
     const segs: any[] = [];
@@ -336,13 +344,9 @@ export class ResultsListComponent {
     let totDuration = typeof r.totDuration === 'number' ? r.totDuration : undefined;
     if (totDuration == null) {
       const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
-      if (sum > 0) {
-        totDuration = sum;
-      } else if (departure && arrival) {
-        totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime()) / 60000);
-      } else {
-        totDuration = 0;
-      }
+      if (sum > 0) totDuration = sum;
+      else if (departure && arrival) totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime()) / 60000);
+      else totDuration = 0;
     }
 
     const matchedTicketsBySegment = r.matchedTicketsBySegment ?? (r as any).ticketsBySegment ?? {};
