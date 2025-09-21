@@ -282,7 +282,13 @@ type TicketDTO = {
               </div>
 
               <div class="row row-tickets" *ngFor="let t of ticketsFiltered">
-                <div><input class="input" [(ngModel)]="t.type"></div>
+                <div>
+                  <select class="input" [(ngModel)]="t.type">
+                    <option value="ECONOMY">ECONOMY</option>
+                    <option value="BUSINESS">BUSINESS</option>
+                    <option value="FIRST CLASS">FIRST CLASS</option>
+                  </select>
+                </div>
                 <div><input class="input" type="number" [(ngModel)]="t.price"></div>
                 <div><input class="input" type="number" [(ngModel)]="t.quantity"></div>
                 <div>{{ fmtFlight(t.flight) }}</div>
@@ -579,9 +585,10 @@ export class CompagniaPage implements OnInit {
   }
 
   /* === Update Tickets === */
-  updateTicket(ticket: TicketDTO) {
+  updateTicket(ticket: any) {
     if (!ticket._id) return;
-    this.http.put(`${this.TICKETS_ENDPOINT}/${ticket._id}`, ticket, { headers: this.headers() })
+    // ticket.flight has {_id, airline, airplane, ...} i just need the id
+    this.http.put(`${this.base}/tickets/${ticket._id}`, {...ticket, flight: ticket?.flight?._id}, { headers: this.headers() })
       .subscribe({
         next: () => console.log("Ticket aggiornato", ticket),
         error: err => alert(err?.error?.msg || 'Errore aggiornamento ticket')
