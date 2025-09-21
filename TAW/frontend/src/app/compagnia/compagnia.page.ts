@@ -1,4 +1,3 @@
-// src/app/compagnia/compagnia.page.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,26 +6,25 @@ import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
 import { finalize } from 'rxjs/operators';
 
-/* ---- Tipi ---- */
 type Airport = { _id?: string, name?: string; city?: string; code?: string; country?: string };
-type RouteDTO = { _id?: string; from: Airport; to: Airport };
+type RouteDTO = { _id?: string; from: Airport; to: Airport, numPassengers?: number };
 type AirplaneDTO = {
   _id?: string;
   code: string;
   model: string;
-  airline: string;     // codice o id compagnia (come espone il backend)
+  airline: string;     
   rows: number;
-  letters: string;     // es: "ABCDEF"
-  route?: RouteDTO | string; // si accetta id o oggetto
-  startDate?: string;  // ISO yyyy-mm-dd
-  endDate?: string;    // ISO yyyy-mm-dd
+  letters: string;     
+  route?: RouteDTO | string; 
+  startDate?: string;  
+  endDate?: string;    
 };
 type FlightDTO = {
   _id?: string;
   code: string;
-  departure: string;   // ISO datetime
-  arrival: string;     // ISO datetime
-  duration: number;    // minuti
+  departure: string;  
+  arrival: string;    
+  duration: number;    
   route: RouteDTO | string;
   airline: string;
   airplane: AirplaneDTO | string;
@@ -35,10 +33,10 @@ type FlightDTO = {
 };
 type AirportDTO = {
   _id: string;
-  code: string;     // codice aeroporto, es. "FCO"
-  name?: string;    // nome aeroporto, es. "Leonardo da Vinci"
-  city?: string;    // città, es. "Roma"
-  country?: string; // paese, es. "Italia"
+  code: string;     
+  name?: string;    
+  city?: string;   
+  country?: string; 
 }
 
 
@@ -74,12 +72,15 @@ type AirportDTO = {
             <p class="muted" *ngIf="!routesError">Trovate: <strong>{{ routesFiltered.length }}</strong></p>
 
             <div class="table">
-              <div class="thead thead-routes">
-                <div>From</div><div>To</div>
+              <div class="thead" [ngClass]="showOnlyMyRoutes ? 'thead-my-routes' : 'thead-routes'">
+                <div>From</div>
+                <div>To</div>
+                <div *ngIf="showOnlyMyRoutes">Passeggeri</div>
               </div>
-              <div class="row row-routes" *ngFor="let r of routesFiltered">
+              <div class="row" [ngClass]="showOnlyMyRoutes ? 'row-my-routes' : 'row-routes'" *ngFor="let r of routesFiltered">
                 <div>{{ fmtAirport(r.from) }}</div>
                 <div>{{ fmtAirport(r.to) }}</div>
+                <div *ngIf="showOnlyMyRoutes">{{ r.numPassengers || 0 }}</div>
               </div>
               <div *ngIf="routesFiltered.length===0" class="muted pad">Nessuna rotta.</div>
             </div>
@@ -198,7 +199,7 @@ type AirportDTO = {
 
             <div class="table">
               <div class="thead thead-flights">
-                <div>Code</div><div>Route</div><div>Airplane</div><div>Partenza</div><div>Arrivo</div><div>Durata</div><div>Numero passeggeri</div><div>Incasso</div>
+                <div>Code</div><div>Route</div><div>Airplane</div><div>Partenza</div><div>Arrivo</div><div>Durata</div><div>Passeggeri</div><div>Incasso</div>
               </div>
               <div class="row row-flights" *ngFor="let f of flightsFiltered">
                 <div>{{ f.code }}</div>
@@ -277,6 +278,7 @@ type AirportDTO = {
     .input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
 
     .thead-routes,.row-routes{grid-template-columns:1fr 1fr}
+    .thead-my-routes,.row-my-routes{grid-template-columns:1fr 1fr 100px}
     .thead-airplanes,.row-airplanes{grid-template-columns:120px 1fr 1fr 1fr}
     .thead-flights,.row-flights{grid-template-columns:120px 1fr 100px 1fr 1fr 100px 100px 100px}
 
@@ -306,7 +308,6 @@ export class CompagniaPage implements OnInit {
 
   constructor(private http: HttpClient) {}
 
-  /* ---- Stato liste/filtri ---- */
   routes: RouteDTO[] = [];
   airplanes: AirplaneDTO[] = [];
   flights: FlightDTO[] = [];
@@ -319,13 +320,12 @@ export class CompagniaPage implements OnInit {
   loadingRoutes = false; loadingAirplanes = false; loadingFlights = false; loadingAiports = false;
   routesError = ''; airplanesError = ''; flightsError = ''; airportsError = '';
 
-  /* ---- Stato creazione ---- */
   showAddRoute = false; creatingRoute = false; createRouteError = '';
   newRoute: { from: string; to: string } = { from: '', to: '' };
 
   showAddAirplane = false; creatingAirplane = false; createAirplaneError = '';
   newAirplane: AirplaneDTO = { code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' };
-  newAirplaneRouteRef = ''; // id rotta o lasciato vuoto
+  newAirplaneRouteRef = '';
 
   showAddFlight = false; creatingFlight = false; createFlightError = '';
   newFlight: FlightDTO = { code:'', departure:'', arrival:'', duration:0, route:'', airline:this.auth.currentUser?.id, airplane:'' };
@@ -338,7 +338,6 @@ export class CompagniaPage implements OnInit {
     this.loadAirports();
   }
 
-  /* ---- Helpers ---- */
   private headers(): HttpHeaders {
     const t = this.auth.token;
     let h = new HttpHeaders();
@@ -413,7 +412,7 @@ fmtRoute(r: any, short = false): string {
   /* ---- Load ---- */
   loadRoutes() {
     this.loadingRoutes = true; this.routesError = '';
-    this.http.get<RouteDTO[]>(`${this.base}` + `${this.showOnlyMyRoutes ? `/airlines/${this.auth.currentUser?.id}/` : ""}` + "/routes", { headers: this.headers() }).subscribe({
+    this.http.get<RouteDTO[]>(`${this.base}` + `${this.showOnlyMyRoutes ? `/airlines/${this.auth.currentUser?.id}` : ""}` + "/routes", { headers: this.headers() }).subscribe({
       next: res => this.routes = Array.isArray(res) ? res : [],
       error: err => this.routesError = err?.error?.msg || 'Errore caricamento rotte',
       complete: () => this.loadingRoutes = false
