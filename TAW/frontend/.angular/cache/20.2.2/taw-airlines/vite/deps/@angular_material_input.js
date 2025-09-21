@@ -5,10 +5,29 @@ import {
   MAT_INPUT_VALUE_ACCESSOR
 } from "./chunk-L2OZJFWT.js";
 import {
+<<<<<<< HEAD
+=======
+  MatFormFieldModule
+} from "./chunk-TGZVUUAY.js";
+import {
+  AutofillMonitor,
+  TextFieldModule
+} from "./chunk-7DAAX6CP.js";
+import {
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
   ErrorStateMatcher,
   _ErrorStateTracker
 } from "./chunk-YQIWBSQA.js";
 import {
+<<<<<<< HEAD
+=======
+  FormGroupDirective,
+  NgControl,
+  NgForm,
+  Validators
+} from "./chunk-FJSZLSQ5.js";
+import {
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
   MAT_FORM_FIELD,
   MatError,
   MatFormField,
@@ -17,6 +36,7 @@ import {
   MatLabel,
   MatPrefix,
   MatSuffix
+<<<<<<< HEAD
 } from "./chunk-RN6ZTSYX.js";
 import {
   AutofillMonitor,
@@ -42,6 +62,23 @@ import {
   NgForm,
   Validators
 } from "./chunk-FJSZLSQ5.js";
+=======
+} from "./chunk-SJK5KYPW.js";
+import {
+  coerceBooleanProperty,
+  getSupportedInputTypes
+} from "./chunk-OKC7BKPY.js";
+import {
+  MatCommonModule,
+  _IdGenerator
+} from "./chunk-WLP7JHPQ.js";
+import "./chunk-7UJZXIJQ.js";
+import "./chunk-GAK65PD2.js";
+import "./chunk-3YGSUNV2.js";
+import {
+  Platform
+} from "./chunk-SUUW4KGA.js";
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
 import "./chunk-H4LQPAO2.js";
 import "./chunk-OUSM42MY.js";
 import {
@@ -67,8 +104,8 @@ import {
   ɵɵdomProperty,
   ɵɵlistener
 } from "./chunk-FVA7C6JK.js";
-import "./chunk-HWYXSU2G.js";
 import "./chunk-JRFR6BLO.js";
+import "./chunk-HWYXSU2G.js";
 import {
   Subject
 } from "./chunk-MARUHEWW.js";

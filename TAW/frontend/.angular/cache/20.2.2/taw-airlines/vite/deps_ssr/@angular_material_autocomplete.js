@@ -1,5 +1,6 @@
 import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
+<<<<<<< HEAD
   OverlayConfig,
   OverlayModule,
   TemplatePortal,
@@ -8,6 +9,8 @@ import {
   createRepositionScrollStrategy
 } from "./chunk-CCHM5ANH.js";
 import {
+=======
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
   MAT_OPTGROUP,
   MAT_OPTION_PARENT_COMPONENT,
   MatOptgroup,
@@ -16,10 +19,31 @@ import {
   MatOptionSelectionChange,
   _countGroupLabelsBeforeOption,
   _getOptionScrollPosition
+<<<<<<< HEAD
 } from "./chunk-6BD4IL5Y.js";
+=======
+} from "./chunk-TIZZW2H4.js";
+import {
+  OverlayConfig,
+  OverlayModule,
+  TemplatePortal,
+  createFlexibleConnectedPositionStrategy,
+  createOverlayRef,
+  createRepositionScrollStrategy
+} from "./chunk-XRQW7NH5.js";
+import "./chunk-XDLT24EV.js";
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
 import {
   MAT_FORM_FIELD
-} from "./chunk-OFZNAZVM.js";
+} from "./chunk-3GPZTUZY.js";
+import {
+  CdkScrollableModule,
+  ViewportRuler
+} from "./chunk-5CAWVTMU.js";
+import "./chunk-ET355IIG.js";
+import {
+  NG_VALUE_ACCESSOR
+} from "./chunk-PZK4CTWR.js";
 import {
   CdkScrollableModule,
   ViewportRuler
@@ -29,7 +53,7 @@ import "./chunk-3THHXRDR.js";
 import {
   Breakpoints,
   _animationsDisabled
-} from "./chunk-MGEIW45Q.js";
+} from "./chunk-2VHQZS5J.js";
 import {
   ActiveDescendantKeyManager,
   BreakpointObserver,
@@ -46,18 +70,19 @@ import {
   coerceArray,
   hasModifierKey,
   removeAriaReferencedId
+<<<<<<< HEAD
 } from "./chunk-CBL2EXK6.js";
+=======
+} from "./chunk-3JPDXME3.js";
+import "./chunk-XGGHD6XU.js";
+>>>>>>> faa2ef1672cde9978fb6e3f4a1dc67df2deccd6f
 import "./chunk-FQL6O3MQ.js";
 import {
   Directionality
 } from "./chunk-T4PXRGKK.js";
-import "./chunk-XGGHD6XU.js";
 import {
   Platform
-} from "./chunk-XQALIUH5.js";
-import {
-  NG_VALUE_ACCESSOR
-} from "./chunk-PZK4CTWR.js";
+} from "./chunk-VRLUFGSC.js";
 import "./chunk-MHGVWNK6.js";
 import "./chunk-U4VNP6SC.js";
 import {
