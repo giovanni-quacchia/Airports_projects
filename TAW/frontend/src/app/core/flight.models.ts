@@ -53,7 +53,6 @@ export interface FlightSearchParams {
   onlyDirect?: boolean
 }
 
-// compatibilità ticket
 export interface TicketDTO {
   type?: string;
   quantity?: number;
