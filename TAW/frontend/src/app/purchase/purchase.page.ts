@@ -40,12 +40,30 @@ type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
       <ng-container *ngIf="flight; else missing">
         <section class="card">
           <h2>{{ airlineName }} — {{ flightCode }}</h2>
-          <p>
+
+          <p *ngIf="legs.length <= 1">
             {{ originCode }} → {{ destinationCode }}<br>
             Partenza: {{ departTime | date:'short' }}<br>
             Arrivo:   {{ arriveTime | date:'short' }}<br>
             Durata:   {{ totalDuration }} min
           </p>
+
+          <div *ngIf="legs.length > 1" class="itinerary">
+            <div *ngFor="let l of legs; let i = index" class="leg">
+              <div class="leg__route">
+                {{ l.from }} → {{ l.to }} <span class="muted">({{ l.code }})</span>
+              </div>
+              <div class="leg__meta">
+                Partenza: {{ l.depart | date:'short' }} ·
+                Arrivo: {{ l.arrive | date:'short' }}
+                <ng-container *ngIf="l.duration != null"> · Durata: {{ l.duration }} min</ng-container>
+              </div>
+            </div>
+            <div class="total muted" style="margin-top:6px">
+              Totale: {{ originCode }} → {{ destinationCode }} · {{ totalDuration }} min
+            </div>
+          </div>
+
           <p class="price">Prezzo stimato: {{ priceDisplay }}</p>
         </section>
 
@@ -131,6 +149,9 @@ type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
     .passenger{position:relative}
     @media (max-width: 1100px){ .row{grid-template-columns:1fr 1fr; } }
     @media (max-width: 700px){ .row{grid-template-columns:1fr; } }
+    .itinerary{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+    .leg__route{font-weight:600}
+    .leg__meta{font-size:14px}
   `]
 })
 export class PurchasePage implements OnInit {
@@ -295,6 +316,26 @@ export class PurchasePage implements OnInit {
     return 0;
   }
 
+  get legs(): Array<{ code: string; from: string; to: string; depart: string | Date | null; arrive: string | Date | null; duration: number | null; }> {
+    const segs = this.segments();
+    return segs.map((s, i) => {
+      const from = i === 0
+        ? (this.originCode || s?.route?.from?.code || '')
+        : (s?.route?.from?.code || segs[i - 1]?.route?.to?.code || '');
+      const to = i < segs.length - 1
+        ? (segs[i + 1]?.route?.from?.code || s?.route?.to?.code || '')
+        : (this.destinationCode || s?.route?.to?.code || '');
+      return {
+        code: s?.code || '',
+        from,
+        to,
+        depart: s?.departure ?? null,
+        arrive: s?.arrival ?? null,
+        duration: typeof s?.duration === 'number' ? s.duration : null,
+      };
+    });
+  }
+
   private normalizeForPurchase(f: any): FlightResult {
     const segs: FlightBase[] = [];
     if (f) {
@@ -362,7 +403,7 @@ async onPay() {
   this.success = false;
 
   const api = (environment as any).api || (environment as any).apiBase || '/api';
-  const REQUEST_TIMEOUT_MS = 15000; // 15s, regola come preferisci
+  const REQUEST_TIMEOUT_MS = 15000;
 
   try {
     const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
@@ -389,6 +430,7 @@ async onPay() {
                       .pipe(timeout(REQUEST_TIMEOUT_MS));
         const res = await firstValueFrom(obs);
         purchases.push(res);
+
       } catch (err: any) {
         console.log(err)
         this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
@@ -400,32 +442,28 @@ async onPay() {
     if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
     console.log('[onPay] purchaseIds:', purchaseIds);
 
-    // 2) passengers — per ogni purchase inviamo i passeggeri
     for (let pIndex = 0; pIndex < purchaseIds.length; pIndex++) {
       const purchaseId = purchaseIds[pIndex];
-      console.log(`[onPay] invio passeggeri per purchase ${purchaseId}`);
       for (let i = 0; i < this.passengers.length; i++) {
         const payload = this.buildPassengerPayload(i, purchaseId);
         try {
-          console.log(`[onPay] POST /passengers (purchase ${purchaseId}) passenger #${i}`, payload);
           const obs = this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() })
                                .pipe(timeout(REQUEST_TIMEOUT_MS));
           const res = await firstValueFrom(obs);
           console.log(`[onPay] /passengers response passenger #${i}:`, res);
         } catch (err: any) {
-          console.error(`[onPay] Errore su /passengers passenger #${i}`, err);
           this.error = (err?.error?.msg) || err?.msg || `Errore invio passeggero ${i + 1}`;
           throw err;
         }
       }
     }
-
+    // update saldo
+    this.auth.putCurrentBalance();
     alert('Acquisto completato! Controlla la tua email per la conferma.');
     this.router.navigate(['/search']);
   } catch (e: any) {
     this.error = this.error || (e?.error?.message) || e?.message || 'Pagamento non riuscito';
   } finally {
-    // loading viene resettato sempre
     setTimeout(() => {
       this.loading = false;
       this.cdr.markForCheck?.();
@@ -465,7 +503,7 @@ async onPay() {
   private buildHeaders(): HttpHeaders {
     const token = this.auth.token;
     let h = new HttpHeaders();
-    if (token) h = h.set('authorization', token); // NO Bearer
+    if (token) h = h.set('authorization', token);
     return h;
   }
 }

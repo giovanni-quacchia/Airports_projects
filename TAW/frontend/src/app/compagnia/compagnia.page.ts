@@ -12,19 +12,19 @@ type AirplaneDTO = {
   _id?: string;
   code: string;
   model: string;
-  airline: string;     
+  airline: string;
   rows: number;
-  letters: string;     
-  route?: RouteDTO | string; 
-  startDate?: string;  
-  endDate?: string;    
+  letters: string;
+  route?: RouteDTO | string;
+  startDate?: string;
+  endDate?: string;
 };
 type FlightDTO = {
   _id?: string;
   code: string;
-  departure: string;  
-  arrival: string;    
-  duration: number;    
+  departure: string;
+  arrival: string;
+  duration: number;
   route: RouteDTO | string;
   airline: string;
   airplane: AirplaneDTO | string;
@@ -33,12 +33,20 @@ type FlightDTO = {
 };
 type AirportDTO = {
   _id: string;
-  code: string;     
-  name?: string;    
-  city?: string;   
-  country?: string; 
-}
-
+  code: string;
+  name?: string;
+  city?: string;
+  country?: string;
+};
+type TicketDTO = {
+  _id?: string;
+  type: string;
+  price: number;
+  quantity: number;
+  route?: RouteDTO | string;
+  airplane?: AirplaneDTO | string;
+  flight?: FlightDTO | string;
+};
 
 @Component({
   standalone: true,
@@ -72,10 +80,12 @@ type AirportDTO = {
             <p class="muted" *ngIf="!routesError">Trovate: <strong>{{ routesFiltered.length }}</strong></p>
 
             <div class="table">
-              <div class="thead thead-routes">
-                <div>From</div><div>To</div><div *ngIf="showOnlyMyRoutes">Passeggeri</div>
+              <div class="thead" [ngClass]="showOnlyMyRoutes ? 'thead-my-routes' : 'thead-routes'">
+                <div>From</div>
+                <div>To</div>
+                <div *ngIf="showOnlyMyRoutes">Passeggeri</div>
               </div>
-              <div class="row row-routes" *ngFor="let r of routesFiltered">
+              <div class="row" [ngClass]="showOnlyMyRoutes ? 'row-my-routes' : 'row-routes'" *ngFor="let r of routesFiltered">
                 <div>{{ fmtAirport(r.from) }}</div>
                 <div>{{ fmtAirport(r.to) }}</div>
                 <div *ngIf="showOnlyMyRoutes">{{ r.numPassengers || 0 }}</div>
@@ -107,8 +117,6 @@ type AirportDTO = {
                     </option>
                   </select>
               </fieldset>
-
-
               </div>
               <div class="form-actions">
                 <button type="button" class="btn btn--outline" (click)="resetRoute()">Annulla</button>
@@ -144,7 +152,7 @@ type AirportDTO = {
                 <div>{{ a.code }}</div>
                 <div>{{ a.model }}</div>
                 <div>{{ fmtRoute(a.route, true) }}</div>
-                <div>{{  formatDatetime(a.startDate) || '—' }} → {{ formatDatetime(a.endDate) || '—' }}</div>
+                <div>{{ formatDatetime(a.startDate) || '—' }} → {{ formatDatetime(a.endDate) || '—' }}</div>
               </div>
               <div *ngIf="airplanesFiltered.length===0" class="muted pad">Nessun aeroplano.</div>
             </div>
@@ -247,6 +255,50 @@ type AirportDTO = {
           </ng-template>
         </div>
 
+        <!-- TICKETS -->
+        <div class="card stretch">
+          <div class="card-head">
+            <h3>Tickets</h3>
+            <div class="actions">
+              <input class="input" placeholder="Filtra…" [(ngModel)]="ticketsQuery">
+              <button class="btn btn--sm" (click)="loadTickets()" [disabled]="loadingTickets">↻</button>
+            </div>
+          </div>
+
+          <ng-container *ngIf="loadingTickets; else ticketsBody">
+            <p class="muted">Caricamento tickets…</p>
+          </ng-container>
+          <ng-template #ticketsBody>
+            <p *ngIf="ticketsError" class="error">{{ ticketsError }}</p>
+            <p class="muted" *ngIf="!ticketsError">Trovati: <strong>{{ ticketsFiltered.length }}</strong></p>
+
+            <div class="table">
+              <div class="thead thead-tickets">
+                <div>Type</div>
+                <div>Price</div>
+                <div>Quantity</div>
+                <div>Flight</div>
+                <div>Azioni</div>
+              </div>
+
+              <div class="row row-tickets" *ngFor="let t of ticketsFiltered">
+                <div>
+                  <select class="input" [(ngModel)]="t.type">
+                    <option value="ECONOMY">ECONOMY</option>
+                    <option value="BUSINESS">BUSINESS</option>
+                    <option value="FIRST CLASS">FIRST CLASS</option>
+                  </select>
+                </div>
+                <div><input class="input" type="number" [(ngModel)]="t.price"></div>
+                <div><input class="input" type="number" [(ngModel)]="t.quantity"></div>
+                <div>{{ fmtFlight(t.flight) }}</div>
+                <div><button class="btn btn--sm" (click)="updateTicket(t)">💾</button></div>
+              </div>
+
+              <div *ngIf="ticketsFiltered.length===0" class="muted pad">Nessun ticket.</div>
+            </div>
+          </ng-template>
+        </div>
       </div>
     </div>
   `,
@@ -276,14 +328,13 @@ type AirportDTO = {
     .input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
 
     .thead-routes,.row-routes{grid-template-columns:1fr 1fr}
+    .thead-my-routes,.row-my-routes{grid-template-columns:1fr 1fr 100px}
     .thead-airplanes,.row-airplanes{grid-template-columns:120px 1fr 1fr 1fr}
     .thead-flights,.row-flights{grid-template-columns:120px 1fr 100px 1fr 1fr 100px 100px 100px}
+    .thead-tickets,.row-tickets{grid-template-columns:120px 100px 100px 1fr 80px}
 
     .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
-
-    .btn--active {
-      background: #0b7285 !important;
-    }
+    .btn--active { background: #0b7285 !important; }
 
     @media (max-width:900px){
       .grid{grid-template-columns:1fr}
@@ -292,16 +343,19 @@ type AirportDTO = {
       .subcard{grid-template-columns:1fr}
       .thead-airplanes,.row-airplanes{grid-template-columns:1fr 1fr}
       .thead-flights,.row-flights{grid-template-columns:1fr 1fr}
+      .thead-tickets,.row-tickets{grid-template-columns:1fr 1fr}
     }
   `]
 })
 export class CompagniaPage implements OnInit {
   base = environment.apiBase;
   private auth = inject(AuthService);
+
   private ROUTES_ENDPOINT = `${this.base}/routes`;
   private AIRPLANES_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/airplanes`;
   private FLIGHTS_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/flights`;
   private AIRPORTS_ENDPOINT = `${this.base}/airports`;
+  private TICKETS_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/tickets`;
 
   constructor(private http: HttpClient) {}
 
@@ -309,13 +363,14 @@ export class CompagniaPage implements OnInit {
   airplanes: AirplaneDTO[] = [];
   flights: FlightDTO[] = [];
   airports: AirportDTO[] = [];
+  tickets: TicketDTO[] = [];
 
-  showOnlyMyRoutes = false; 
+  showOnlyMyRoutes = false;
 
-  routeQuery = ''; airplaneQuery = ''; flightQuery = ''; airportQuery = '';
+  routeQuery = ''; airplaneQuery = ''; flightQuery = ''; airportQuery = ''; ticketsQuery = '';
 
-  loadingRoutes = false; loadingAirplanes = false; loadingFlights = false; loadingAiports = false;
-  routesError = ''; airplanesError = ''; flightsError = ''; airportsError = '';
+  loadingRoutes = false; loadingAirplanes = false; loadingFlights = false; loadingAiports = false; loadingTickets = false;
+  routesError = ''; airplanesError = ''; flightsError = ''; airportsError = ''; ticketsError = '';
 
   showAddRoute = false; creatingRoute = false; createRouteError = '';
   newRoute: { from: string; to: string } = { from: '', to: '' };
@@ -333,6 +388,7 @@ export class CompagniaPage implements OnInit {
     this.loadAirplanes();
     this.loadFlights();
     this.loadAirports();
+    this.loadTickets();
   }
 
   private headers(): HttpHeaders {
@@ -341,12 +397,13 @@ export class CompagniaPage implements OnInit {
     if (t) h = h.set('authorization', t);
     return h;
   }
+
+  /* === Formatter === */
   fmtAirport(a?: Airport | string, short = false): string {
     if (!a) return '—';
     if (typeof a === 'string') {
-      // trova l'aeroporto in this.airports
       const ap = this.airports.find(x => x._id === a);
-      if (!ap) return a; // se non trovato, mostra l'id
+      if (!ap) return a;
       a = ap;
     }
     const parts = [a.city, a.name, a.code, a.country].filter(Boolean);
@@ -354,14 +411,14 @@ export class CompagniaPage implements OnInit {
     return parts.join(' · ');
   }
 
-fmtRoute(r: any, short = false): string {
-  if (!r) return '—';
-  if (typeof r === 'string') {
-    const route = this.routes.find(x => x._id === r);
-    return route ? `${this.fmtAirport(route.from)} → ${this.fmtAirport(route.to)}` : r;
+  fmtRoute(r: any, short = false): string {
+    if (!r) return '—';
+    if (typeof r === 'string') {
+      const route = this.routes.find(x => x._id === r);
+      return route ? `${this.fmtAirport(route.from)} → ${this.fmtAirport(route.to)}` : r;
+    }
+    return `${this.fmtAirport(r.from, short)} → ${this.fmtAirport(r.to, short)}`;
   }
-  return `${this.fmtAirport(r.from, short)} → ${this.fmtAirport(r.to, short)}`;
-}
 
   fmtAirplane(a: any): string {
     if (!a) return '—';
@@ -370,18 +427,29 @@ fmtRoute(r: any, short = false): string {
   }
 
   formatDatetime(ts: string | undefined): string {
-  if (!ts) return '—';
-  const d = new Date(ts);
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-}
+    if (!ts) return '—';
+    const d = new Date(ts);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
 
+  fmtFlight(f: any): string {
+    if (!f) return '—';
+    if (typeof f === 'string') {
+      const fl = this.flights.find(x => x._id === f);
+      if (fl) {
+        return `${fl.code} (${this.formatDatetime(fl.departure)} → ${this.formatDatetime(fl.arrival)})`;
+      }
+      return f;
+    }
+    return `${f.code} (${this.formatDatetime(f.departure)} → ${this.formatDatetime(f.arrival)})`;
+  }
 
-  /* ---- Filtri ---- */
+  /* === Filtri === */
   get routesFiltered() {
     const q = this.routeQuery.trim().toLowerCase();
     if (!q) return this.routes;
@@ -405,8 +473,16 @@ fmtRoute(r: any, short = false): string {
         .some(v => String(v).toLowerCase().includes(q))
     );
   }
+  get ticketsFiltered() {
+    const q = this.ticketsQuery.trim().toLowerCase();
+    if (!q) return this.tickets;
+    return this.tickets.filter(t =>
+      [t.type, t.price, t.quantity].filter(Boolean)
+        .some(v => String(v).toLowerCase().includes(q))
+    );
+  }
 
-  /* ---- Load ---- */
+  /* === Load === */
   loadRoutes() {
     this.loadingRoutes = true; this.routesError = '';
     this.http.get<RouteDTO[]>(`${this.base}` + `${this.showOnlyMyRoutes ? `/airlines/${this.auth.currentUser?.id}` : ""}` + "/routes", { headers: this.headers() }).subscribe({
@@ -438,48 +514,35 @@ fmtRoute(r: any, short = false): string {
       error: err => this.airportsError = err?.error?.msg || 'Errore caricamento aeroporti',
     });
   }
-
-  /* ---- Create: Rotte ---- */
-resetRoute() {
-  this.newRoute = { from: '', to: '' };
-  this.createRouteError = '';
-  this.showAddRoute = false;
-}
-
-addRoute() {
-  this.createRouteError = '';
-
-  const payload = { from: this.newRoute.from, to: this.newRoute.to };
-
-  if (!payload.from || !payload.to) {
-    this.createRouteError = 'Seleziona From e To.';
-    return;
+  loadTickets() {
+    this.loadingTickets = true; this.ticketsError = '';
+    this.http.get<TicketDTO[]>(this.TICKETS_ENDPOINT, { headers: this.headers() }).subscribe({
+      next: res => this.tickets = Array.isArray(res) ? res : [],
+      error: err => this.ticketsError = err?.error?.msg || 'Errore caricamento tickets',
+      complete: () => this.loadingTickets = false
+    });
   }
 
-  this.creatingRoute = true;
-  this.http.post<RouteDTO>(this.ROUTES_ENDPOINT, payload, { headers: this.headers() })
-    .pipe(finalize(() => this.creatingRoute = false))
-    .subscribe({
-      next: () => { 
-        this.resetRoute(); 
-        this.loadRoutes(); 
-      },
-      error: err => this.createRouteError = err?.error?.msg || 'Errore creazione rotta'
-    });
-}
+  /* === Create / Reset === */
+  resetRoute() { this.newRoute = { from: '', to: '' }; this.createRouteError = ''; this.showAddRoute = false; }
+  addRoute() {
+    this.createRouteError = '';
+    const payload = { from: this.newRoute.from, to: this.newRoute.to };
+    if (!payload.from || !payload.to) { this.createRouteError = 'Seleziona From e To.'; return; }
+    this.creatingRoute = true;
+    this.http.post<RouteDTO>(this.ROUTES_ENDPOINT, payload, { headers: this.headers() })
+      .pipe(finalize(() => this.creatingRoute = false))
+      .subscribe({
+        next: () => { this.resetRoute(); this.loadRoutes(); },
+        error: err => this.createRouteError = err?.error?.msg || 'Errore creazione rotta'
+      });
+  }
+  toggleMyRoutes() { this.showOnlyMyRoutes = !this.showOnlyMyRoutes; this.loadRoutes(); }
 
-toggleMyRoutes() {
-  console.log("ciao")
-  this.showOnlyMyRoutes = !this.showOnlyMyRoutes;
-  this.loadRoutes();
-}
-
-  /* ---- Create: Aeroplani ---- */
   resetAirplane(){ this.newAirplane = { code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' }; this.newAirplaneRouteRef=''; this.createAirplaneError=''; this.showAddAirplane=false; }
   addAirplane(){
     this.createAirplaneError = '';
     const payload: any = { ...this.newAirplane };
-    console.log(payload)
     if (this.newAirplaneRouteRef) payload.route = this.newAirplaneRouteRef;
     if (!payload.code || !payload.model || !payload.rows || !payload.letters){
       this.createAirplaneError = 'Compila code, model, rows, letters';
@@ -495,7 +558,6 @@ toggleMyRoutes() {
     });
   }
 
-  /* ---- Create: Voli ---- */
   resetFlight(){ this.newFlight = { code:'', departure:'', arrival:'', duration:0, route:'', airline:'', airplane:'' }; this.newFlightRouteRef=''; this.newFlightAirplaneRef=''; this.createFlightError=''; this.showAddFlight=false; }
   addFlight(){
     this.createFlightError = '';
@@ -520,5 +582,16 @@ toggleMyRoutes() {
       error: err => this.createFlightError = err?.error?.msg || 'Errore creazione volo',
       complete: () => this.creatingFlight = false
     });
+  }
+
+  /* === Update Tickets === */
+  updateTicket(ticket: any) {
+    if (!ticket._id) return;
+    // ticket.flight has {_id, airline, airplane, ...} i just need the id
+    this.http.put(`${this.base}/tickets/${ticket._id}`, {...ticket, flight: ticket?.flight?._id}, { headers: this.headers() })
+      .subscribe({
+        next: () => console.log("Ticket aggiornato", ticket),
+        error: err => alert(err?.error?.msg || 'Errore aggiornamento ticket')
+      });
   }
 }
