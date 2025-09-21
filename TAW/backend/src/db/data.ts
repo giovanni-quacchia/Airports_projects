@@ -346,7 +346,8 @@ const ticketsId = {
   9: "6550a1f43b7e41b94cfe7d09",
   10: "6550a1f43b7e41b94cfe7d0a",
   11: "6550a1f43b7e41b94cfe7d0b",
-  12: "6550a1f43b7e41b94cfe7d0c"
+  12: "6550a1f43b7e41b94cfe7d0c",
+  13: "6550a1f43b7e41b94cfe7d0d"
 };
 
 export const tickets = [
@@ -365,6 +366,7 @@ export const tickets = [
   { _id: ticketsId[11], code: 11, type: 'ECONOMY', price: 600, quantity: 8, flight: flightsId.FR505_2,  },
 
   { _id: ticketsId[12], code: 12, type: 'ECONOMY', price: 600, quantity: 20, flight: flightsId.AZ303 },
+  { _id: ticketsId[13], code: 13, type: 'ECONOMY', price: 300, quantity: 10, flight: flightsId.FR505_1 },
 ];
 
 const purchasesId = {

@@ -90,36 +90,36 @@ export class DurationPipe implements PipeTransform {
             </div>
           </div>
 
+          <!-- First flight -->
           <div class="seg-tickets" [ngSwitch]="i">
             <ng-container *ngSwitchCase="0">
               <ng-container *ngIf="hasTickets(r,'main')">
-                  <span class="badge">{{ tickets(r,'main').length }} opzioni</span>
                   <ng-container *ngFor="let t of (tickets(r,'main') | slice:0:1)">
                   <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
+                  <small class="seg-qty">{{ t.quantity }} posti</small>
+                  <small class="seg-class"> · {{ t.type }}</small>
                 </ng-container>
               </ng-container>
             </ng-container>
 
+            <!-- Stop1 -->
             <ng-container *ngSwitchCase="1">
               <ng-container *ngIf="hasTickets(r,'stop1')">
-                  <span class="badge">{{ tickets(r,'stop1').length }} opzioni</span>
                   <ng-container *ngFor="let t of (tickets(r,'stop1') | slice:0:1)">
                   <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
+                  <small class="seg-qty">{{ t.quantity }} posti</small>
+                  <small class="seg-class"> · {{ t.type }}</small>
                 </ng-container>
               </ng-container>
             </ng-container>
 
+            <!-- Stop2 -->
             <ng-container *ngSwitchCase="2">
               <ng-container *ngIf="hasTickets(r,'stop2')">
-                  <span class="badge">{{ tickets(r,'stop2').length }} opzioni</span>
                   <ng-container *ngFor="let t of (tickets(r,'stop2') | slice:0:1)">
                   <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                  <small class="seg-qty">· {{ t.quantity }} posti</small>
-                  <small class="seg-class">· {{ t.type }}</small>
+                  <small class="seg-qty">{{ t.quantity }} posti</small>
+                  <small class="seg-class"> · {{ t.type }}</small>
                 </ng-container>
               </ng-container>
             </ng-container>
