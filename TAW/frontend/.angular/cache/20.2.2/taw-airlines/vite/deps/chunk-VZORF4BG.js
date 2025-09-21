@@ -1,16 +1,15 @@
-import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
   MatRipple
-} from "./chunk-GDEKBMUY.js";
+} from "./chunk-NSBRR2FD.js";
 import {
   MatCommonModule
-} from "./chunk-BPH4GQEF.js";
+} from "./chunk-P3TUWHHT.js";
 import {
   NgModule,
   setClassMetadata,
   ɵɵdefineInjector,
   ɵɵdefineNgModule
-} from "./chunk-L3IPE4VT.js";
+} from "./chunk-FVA7C6JK.js";
 
 // node_modules/@angular/material/fesm2022/ripple-module.mjs
 var MatRippleModule = class _MatRippleModule {
@@ -39,4 +38,4 @@ var MatRippleModule = class _MatRippleModule {
 export {
   MatRippleModule
 };
-//# sourceMappingURL=chunk-KFYT5MEB.js.map
+//# sourceMappingURL=chunk-VZORF4BG.js.map

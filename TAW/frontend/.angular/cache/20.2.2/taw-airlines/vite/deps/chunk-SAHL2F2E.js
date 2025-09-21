@@ -1,4 +1,3 @@
-import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
   MatError,
   MatFormField,
@@ -6,17 +5,17 @@ import {
   MatLabel,
   MatPrefix,
   MatSuffix
-} from "./chunk-BOFGE5OL.js";
+} from "./chunk-ZUMEOLMG.js";
 import {
   MatCommonModule,
   ObserversModule
-} from "./chunk-BPH4GQEF.js";
+} from "./chunk-P3TUWHHT.js";
 import {
   NgModule,
   setClassMetadata,
   ɵɵdefineInjector,
   ɵɵdefineNgModule
-} from "./chunk-L3IPE4VT.js";
+} from "./chunk-FVA7C6JK.js";
 
 // node_modules/@angular/material/fesm2022/form-field-module.mjs
 var MatFormFieldModule = class _MatFormFieldModule {
@@ -45,4 +44,4 @@ var MatFormFieldModule = class _MatFormFieldModule {
 export {
   MatFormFieldModule
 };
-//# sourceMappingURL=chunk-LDDRF5MX.js.map
+//# sourceMappingURL=chunk-SAHL2F2E.js.map
