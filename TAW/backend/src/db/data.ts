@@ -49,7 +49,7 @@ export const airlines = [
     code: "BA",
     PIVA: "GB987654321",
     name: "British Airways",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/d/d7/British_Airways_Logo.svg",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/0/01/BRITISH_AIRWAYS_logo.svg", // non funziona
     mail: "contact@ba.com"
   },
   {
@@ -57,7 +57,7 @@ export const airlines = [
     code: "AF",
     PIVA: "FR456789123",
     name: "Air France",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/b/b0/Air_France_Logo.svg",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/4/44/Air_France_Logo.svg",
     mail: "contact@airfrance.com"
   },
   {
@@ -65,7 +65,7 @@ export const airlines = [
     code: "LH",
     PIVA: "DE852369741",
     name: "Lufthansa",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Lufthansa_Logo_2018.svg",
+    logo: "https://cdn.worldvectorlogo.com/logos/lufthansa-2.svg",
     mail: "contact@lufthansa.com"
   },
   {
@@ -73,7 +73,7 @@ export const airlines = [
     code: "AZ",
     PIVA: "IT741852963",
     name: "ITA Airways",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/f/f1/ITA_Airways_logo.svg",
+    logo: "https://cdn.worldvectorlogo.com/logos/ita-airways.svg",
     mail: "contact@itaairways.com"
   },
   {
@@ -81,10 +81,11 @@ export const airlines = [
     code: "EK",
     PIVA: "AE987654321",
     name: "Emirates",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/d/d8/Emirates_logo.svg",
+    logo: "https://cdn.worldvectorlogo.com/logos/emirates-1.svg",
     mail: "contact@emirates.com"
   }
 ];
+
 
 const airplanesId = {
   1: "6540a1f43b7e41b94cfe6d01",
@@ -349,23 +350,21 @@ const ticketsId = {
 };
 
 export const tickets = [
-  { _id: ticketsId[1], code: 1, type: 'ECONOMY', price: 500, quantity: 50, flight: flightsId.EK101, departure: new Date('2025-09-10T08:30:00Z') },
-  { _id: ticketsId[2], code: 2, type: 'ECONOMY', price: 1200, quantity: 20, flight: flightsId.EK101, departure: new Date('2025-09-10T08:30:00Z') },
-  { _id: ticketsId[3], code: 3, type: 'ECONOMY', price: 2500, quantity: 10, flight: flightsId.AF202, departure: new Date('2025-09-12T13:45:00Z') },
-  
-  { _id: ticketsId[4], code: 4, type: 'ECONOMY', price: 400, quantity: 60, flight: flightsId.AZ303, departure: new Date('2025-09-14T07:00:00Z') },
-  
-  { _id: ticketsId[5], code: 5, type: 'ECONOMY', price: 1000, quantity: 25, flight: flightsId.LH404, departure: new Date('2025-09-16T22:00:00Z') },
-  { _id: ticketsId[6], code: 6, type: 'ECONOMY', price: 2200, quantity: 8, flight: flightsId.FR505_1, departure: new Date('2025-09-16T09:30:00Z') },
-  { _id: ticketsId[7], code: 7, type: 'ECONOMY', price: 550, quantity: 55, flight: flightsId.BA606, departure: new Date('2025-09-18T11:15:00Z') },
-  { _id: ticketsId[8], code: 8, type: 'ECONOMY', price: 1300, quantity: 18, flight: flightsId.EK707, departure: new Date('2025-09-19T20:45:00Z') },
-  { _id: ticketsId[9], code: 9, type: 'ECONOMY', price: 450, quantity: 45, flight: flightsId.AF808, departure: new Date('2025-09-20T06:00:00Z') },
-  { _id: ticketsId[10], code: 10, type: 'ECONOMY', price: 2000, quantity: 12, flight: flightsId.FR909, departure: new Date('2025-09-22T14:30:00Z') },
-  { _id: ticketsId[11], code: 11, type: 'ECONOMY', price: 600, quantity: 8, flight: flightsId.FR505_2, departure: new Date('2025-10-16T09:30:00Z') },
+  { _id: ticketsId[1], code: 1, type: 'ECONOMY', price: 500, quantity: 50, flight: flightsId.EK101,  },
+  { _id: ticketsId[2], code: 2, type: 'ECONOMY', price: 1200, quantity: 20, flight: flightsId.EK101,  },
+  { _id: ticketsId[3], code: 3, type: 'ECONOMY', price: 2500, quantity: 10, flight: flightsId.AF202,  },
 
-  { _id: ticketsId[12], code: 12, type: 'ECONOMY', price: 600, quantity: 20, flight: flightsId.AZ303, departure: new Date('2025-09-15T07:00:00Z') },
+  { _id: ticketsId[4], code: 4, type: 'ECONOMY', price: 400, quantity: 60, flight: flightsId.AZ303,  },
 
+  { _id: ticketsId[5], code: 5, type: 'ECONOMY', price: 1000, quantity: 25, flight: flightsId.LH404,  },
+  { _id: ticketsId[6], code: 6, type: 'ECONOMY', price: 2200, quantity: 8, flight: flightsId.FR505_1,  },
+  { _id: ticketsId[7], code: 7, type: 'ECONOMY', price: 550, quantity: 55, flight: flightsId.BA606,  },
+  { _id: ticketsId[8], code: 8, type: 'ECONOMY', price: 1300, quantity: 18, flight: flightsId.EK707,  },
+  { _id: ticketsId[9], code: 9, type: 'ECONOMY', price: 450, quantity: 45, flight: flightsId.AF808,  },
+  { _id: ticketsId[10], code: 10, type: 'ECONOMY', price: 2000, quantity: 12, flight: flightsId.FR909,  },
+  { _id: ticketsId[11], code: 11, type: 'ECONOMY', price: 600, quantity: 8, flight: flightsId.FR505_2,  },
 
+  { _id: ticketsId[12], code: 12, type: 'ECONOMY', price: 600, quantity: 20, flight: flightsId.AZ303 },
 ];
 
 const purchasesId = {
