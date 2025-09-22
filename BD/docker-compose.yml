@@ -9,8 +9,9 @@ services:
       POSTGRES_DB: flights_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+    # TODO: porta cambiata su host perche 5432 era occupata
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - bd-network
     # Al primo avvio, il database aspetta qualche secondo per finire di configurarsi
@@ -25,7 +26,8 @@ services:
       dockerfile: Dockerfile
     container_name: bd_backend
     ports:
-      - "5000:5000"
+    # TODO: porte occupate cambiate da 5000 a 5001
+      - "5001:5001"
     environment:
       - FLASK_APP=run.py
       - FLASK_ENV=development
