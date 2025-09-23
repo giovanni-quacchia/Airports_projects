@@ -9,10 +9,15 @@ def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
         messages = error.messages
+        data = getattr(error, 'data', {})  # valori inviati, se presenti
+        errors = []
+
         for field, errs in messages.items():
-            err = errs[0]  # primo errore
-            value = error.data.get(field, '') if hasattr(error, 'data') else ''
-            return jsonify({"error": f"Field '{field}' with value '{value}' not valid: {err}"}), 400    
+            value = data.get(field, '') if data else ''
+            for err in errs:
+                errors.append(f"Field '{field}' with value '{value}' not valid: {err}")
+
+        return jsonify({"errors": errors}), 400 
     
     # Handle DB integrity errors
     @app.errorhandler(IntegrityError)

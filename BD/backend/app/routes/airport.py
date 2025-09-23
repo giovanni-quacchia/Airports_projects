@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.airport_service import get_all_airports, create_airport, get_airport_by_id, delete_airport_by_id
-from app.models.airport import AirportSchema
+from app.schemas.airport_schema import AirportSchema
 from app.extensions import db
 
 airport_bp = Blueprint('airport_bp', __name__)
@@ -22,17 +22,19 @@ def get_airport(airport_id):
 # Create airport
 @airport_bp.route('/', methods=['POST'])
 def new_airport():
-    data = airport_schema.load(request.form)
+    data = airport_schema.load(request.get_json())
     airport = create_airport(data)
     return jsonify(airport), 201
 
 # Delete airport
 @airport_bp.route('/<int:airport_id>', methods=['DELETE'])
 def delete_airport(airport_id):
-    airport = delete_airport_by_id(airport_id)
+    result = delete_airport_by_id(airport_id)
+    return jsonify(result), 200
 
-# hook chiamato dopo una richiesta
-@airport_bp.after_request
-def after_request(res):
-    db.commit()
-    return res
+# Update airport
+@airport_bp.route('/<int:airport_id>', methods=['PUT'])
+def update_airport(airport_id):
+    data = airport_schema.load(request.get_json(), partial=True)
+    airport = update_airport(airport_id, data)
+    return jsonify(airport), 200

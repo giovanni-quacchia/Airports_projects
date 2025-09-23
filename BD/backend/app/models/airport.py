@@ -1,17 +1,4 @@
 from app.extensions import db
-from marshmallow import Schema, fields
-from marshmallow.validate import Length, Regexp
-
-class AirportSchema(Schema):
-    id = fields.Int(dump_only=True) # dump-only means it will not be required when creating a new instance
-    # 3 uppercase letters
-    code = fields.Str(
-        required=True,
-        validate=Regexp(r'^[A-Z]{3}$')
-    )
-    name = fields.Str(required=True)
-    city = fields.Str(required=True)
-    country = fields.Str(required=True)
 
 class Airport(db.Model):
     __tablename__ = 'airports'
@@ -27,10 +14,21 @@ class Airport(db.Model):
         self.city = city
         self.country = country
 
+    def __repr__(self):
+        return f"<Airport {self.code} - {self.name}>"
+
     def save(self):
         db.session.add(self)
         db.session.commit()
-    
+
     def delete(self):
         db.session.delete(self)
+        db.session.commit()
+    
+    def update(self, data):
+        for key, value in data.items():
+            if hasattr(self, key):
+                if key == 'code':
+                    value = value.upper()
+                setattr(self, key, value)
         db.session.commit()

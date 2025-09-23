@@ -50,8 +50,7 @@ def delete_airport_by_id(airport_id):
     
 def update_airport_by_id(airport_id, data):
     airport = Airport.query.get_or_404(airport_id)
-    
-    airport.save()
+    airport.update(data)
     return {
         "id": airport.id,
         "code": airport.code,
