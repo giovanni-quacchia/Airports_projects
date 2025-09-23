@@ -12,3 +12,5 @@ class AirportSchema(Schema):
     city = fields.Str(required=True)
     country = fields.Str(required=True)
         
+class AirportQuerySchema(Schema):
+    q = fields.Str()

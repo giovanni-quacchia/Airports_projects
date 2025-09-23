@@ -1,4 +1,5 @@
-from sqlalchemy import or_, select
+from flask import abort
+from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from app.models.route import Route
 from app.models.airport import Airport
@@ -29,7 +30,7 @@ def get_route_by_id(route_id):
 
     route = db.session.execute(query).one_or_none()
     if not route:
-        return None
+        abort(404)
 
     return get_route_json(route)
 
@@ -54,7 +55,7 @@ def update_route_by_id(route_id, data):
     route = Route.query.get_or_404(route_id)
     route.update(data)
     return {
-        "id": airport.id,
+        "id": route.id,
         "from_airport": route.from_airport,
         "to_airport": route.to_airport
     }

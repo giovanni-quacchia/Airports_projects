@@ -3,33 +3,33 @@ import hmac
 import hashlib
 from app.extensions import db
 
-class User(db.Model):
-    __tablename__ = 'users'
+class Airline(db.Model):
+    __tablename__ = 'airlines'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mail = db.Column(db.String(120), unique=True, nullable=False)
     # Save salt and digest as binary to save space (hex strings take double space)
     salt = db.Column(db.LargeBinary(16), nullable=False)
     digest = db.Column(db.LargeBinary(64), nullable=False)
-    isAdmin = db.Column(db.Boolean, default=False, nullable=False)
-    balance = db.Column(db.Float, default=0.0, nullable=False)
+    code = db.Column(db.String(2), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    PIVA = db.Column(db.String(11), unique=True, nullable=False)
+    logo = db.Column(db.String(255), nullable=True)
+    isFirstLogin = db.Column(db.Boolean, default=True, nullable=False)
 
-    # Constraints
-    __table_args__ = (
-        # CHECK
-        db.CheckConstraint('balance >= 0', name='check_positive_balance'),
-    )
-
-    def __init__(self, mail, password, isAdmin=False, balance=0.0, id=None):
+    def __init__(self, mail, password, code, name, PIVA, logo=None, isFirstLogin=True, id=None):
         if id is not None:
             self.id = id
         self.mail = mail
         self.set_password(password)
-        self.isAdmin = isAdmin
-        self.balance = balance
+        self.code = code
+        self.name = name
+        self.PIVA = PIVA
+        self.logo = logo
+        self.isFirstLogin = isFirstLogin
 
     def __repr__(self):
-        return f"<User {self.mail} - Admin: {self.isAdmin} - Balance: {self.balance}>"
-    
+        return f"<Airline {self.mail} - Code: {self.code} - Name: {self.name}>"
+
     def set_password(self, password: str):
         self.salt = os.urandom(16)
         self.digest = hashlib.pbkdf2_hmac(
@@ -47,10 +47,10 @@ class User(db.Model):
             100000
         )
         return hmac.compare_digest(self.digest, test_digest)
-
+    
     def save(self):
         db.session.add(self)
-        print("New user created:", self)
+        print("New airline created:", self)
         db.session.commit()
 
     def delete(self):

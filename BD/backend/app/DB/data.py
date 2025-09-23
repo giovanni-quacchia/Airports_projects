@@ -9,13 +9,19 @@ airports = [
 ]
 
 routes = [
-    {"from_airport": 1, "to_airport": 2},  # JFK --> LHR
-    {"from_airport": 2, "to_airport": 3},  # LHR --> CDG
-    {"from_airport": 3, "to_airport": 1},  # CDG --> JFK
-    {"from_airport": 4, "to_airport": 5},  # HND --> DXB
-    {"from_airport": 5, "to_airport": 4},  # DXB --> HND
-    {"from_airport": 6, "to_airport": 7},  # VCE --> FCO
-    {"from_airport": 7, "to_airport": 6},  # FCO --> VCE
-    {"from_airport": 1, "to_airport": 6},  # JFK --> VCE
-    {"from_airport": 2, "to_airport": 7},  # LHR --> FCO
+    {"id": 1, "from_airport": 1, "to_airport": 2},  # JFK --> LHR
+    {"id": 2, "from_airport": 2, "to_airport": 3},  # LHR --> CDG
+    {"id": 3, "from_airport": 3, "to_airport": 1},  # CDG --> JFK
+    {"id": 4, "from_airport": 4, "to_airport": 5},  # HND --> DXB
+    {"id": 5, "from_airport": 5, "to_airport": 4},  # DXB --> HND
+    {"id": 6, "from_airport": 6, "to_airport": 7},  # VCE --> FCO
+    {"id": 7, "from_airport": 7, "to_airport": 6},  # FCO --> VCE
+    {"id": 8, "from_airport": 1, "to_airport": 6},  # JFK --> VCE
+    {"id": 9, "from_airport": 2, "to_airport": 7},  # LHR --> FCO
+]
+
+users = [
+    {"id": 1, "mail": "admin@gmail.com", "password": "admin", "balance": 300.0, "isAdmin": True},
+    {"id": 2, "mail": "user1@gmail.com", "password": "user1", "balance": 100.0},
+    {"id": 3, "mail": "user2@gmail.com", "password": "user2", "balance": 200.0},
 ]

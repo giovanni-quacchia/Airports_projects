@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.airport_service import get_all_airports, create_airport, get_airport_by_id, delete_airport_by_id, update_airport_by_id
-from app.schemas.airport_schema import AirportSchema
+from app.schemas.airport_schema import AirportSchema, AirportQuerySchema
 from app.extensions import db
 
 airport_bp = Blueprint('airport_bp', __name__)
@@ -9,8 +9,8 @@ airport_schema = AirportSchema()
 # Get all airports
 @airport_bp.route('/', methods=['GET'])
 def get_airports():
-    q = request.args.get('q')
-    results = get_all_airports(q)
+    params = AirportQuerySchema().load(request.args)
+    results = get_all_airports(params.get("q"))
     return jsonify(results), 200
 
 # Get airport by ID

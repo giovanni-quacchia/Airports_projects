@@ -27,8 +27,12 @@ def register_error_handlers(app):
     @app.errorhandler(IntegrityError)
     def handle_integrity_error(error):
         # Duplicate error
+        print(str(error.orig))
         if 'duplicate key value violates unique constraint' in str(error.orig):
             return jsonify({"error": "Duplicate entry"}), 409
+        # check_different_airports error
+        elif 'check_different_airports' in str(error.orig):
+            return jsonify({"error": "from_airport and to_airport must be different"}), 400
         return jsonify({"error": "Database integrity error"}), 400
     
     # Resource not found: 404
