@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.services.airport_service import get_all_airports, create_airport, get_airport_by_id, delete_airport_by_id
+from app.services.airport_service import get_all_airports, create_airport, get_airport_by_id, delete_airport_by_id, update_airport_by_id
 from app.schemas.airport_schema import AirportSchema
 from app.extensions import db
 
@@ -36,5 +36,5 @@ def delete_airport(airport_id):
 @airport_bp.route('/<int:airport_id>', methods=['PUT'])
 def update_airport(airport_id):
     data = airport_schema.load(request.get_json(), partial=True)
-    airport = update_airport(airport_id, data)
+    airport = update_airport_by_id(airport_id, data)
     return jsonify(airport), 200

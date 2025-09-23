@@ -123,6 +123,8 @@ Replica set: Utilizza un transaction coordinator che garantisce atomicità multi
 
 ## Progetto DB
 
+docker compose down -v (elimina anche i dati dal db)
+
 - Trigger per flight.airline = flight.airplane.airline
 - Un volo di una compagnia per una certa rotta deve avere lo stesso codice (TRIGGER)
 - Flight.code = airline.code + number (TRIGGER)

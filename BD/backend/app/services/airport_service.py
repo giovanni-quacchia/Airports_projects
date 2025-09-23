@@ -5,8 +5,8 @@ def get_all_airports(q):
     query = Airport.query
     
     if q:
-        query = query.filter(AirportsMatch(q))
-        
+        query = query.filter(AirportsMatch(Airport, q))
+
     airports = query.all()
     
     return [{
@@ -60,10 +60,10 @@ def update_airport_by_id(airport_id, data):
     }
 
 # WHERE code LIKE '%q%' OR name LIKE '%q%' ...
-def AirportsMatch(q):
+def AirportsMatch(table, q):
     return or_(
-        Airport.code.ilike(f'%{q}%'),
-        Airport.name.ilike(f'%{q}%'),
-        Airport.city.ilike(f'%{q}%'),
-        Airport.country.ilike(f'%{q}%')
+        table.code.ilike(f'%{q}%'),
+        table.name.ilike(f'%{q}%'),
+        table.city.ilike(f'%{q}%'),
+        table.country.ilike(f'%{q}%')
     )

@@ -1,3 +1,4 @@
+from copy import error
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
@@ -8,16 +9,19 @@ def register_error_handlers(app):
     # Handle validation errors with marshmallow
     @app.errorhandler(ValidationError)
     def handle_validation_error(error):
-        messages = error.messages
-        data = getattr(error, 'data', {})  # valori inviati, se presenti
+        messages = error.messages  # dict of field -> errors
         errors = []
 
         for field, errs in messages.items():
-            value = data.get(field, '') if data else ''
+            value = getattr(error, 'data', {}).get(field, '') if hasattr(error, 'data') else ''
             for err in errs:
-                errors.append(f"Field '{field}' with value '{value}' not valid: {err}")
+                if field == "_schema":
+                    # attach to all fields mentioned in message or leave as general
+                    errors.append(f"{err}")
+                else:
+                    errors.append(f"Field '{field}' with value '{value}' not valid: {err}")
 
-        return jsonify({"errors": errors}), 400 
+        return jsonify({"errors": errors}), 400
     
     # Handle DB integrity errors
     @app.errorhandler(IntegrityError)

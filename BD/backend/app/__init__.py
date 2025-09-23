@@ -2,8 +2,10 @@ from flask import Flask
 from .routes import main_blueprint
 from .extensions import db
 
-from app.routes import main_blueprint, api, airport_bp
+from app.routes import main_blueprint, api, airport_bp, route_bp
 from app.error_handlers import register_error_handlers
+
+from app.DB.init_db import init_db
 
 # Ensure stdout is line-buffered
 import sys
@@ -19,7 +21,7 @@ def create_app():
     register_blueprints(app)
 
     with app.app_context():
-        db.create_all()
+        init_db()
         print("Database tables created")
 
     return app
@@ -28,3 +30,4 @@ def register_blueprints(app):
     app.register_blueprint(main_blueprint)
     app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(airport_bp, url_prefix='/api/airports')
+    app.register_blueprint(route_bp, url_prefix='/api/routes')
