@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields, ValidationError, validates_schema
         
 class RouteSchema(Schema):
-    id = fields.Int(dump_only=True)
     from_airport = fields.Int(required=True)
     to_airport = fields.Int(required=True)
     

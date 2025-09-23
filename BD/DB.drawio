@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="Pagina-1" id="Y2F9K8NCZ-bAOCw_idQH">
-        <mxGraphModel dx="2690" dy="2935" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="none" math="0" shadow="0">
+        <mxGraphModel dx="3103" dy="3348" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -356,19 +356,13 @@
                 </mxCell>
                 <mxCell id="74" value="èRelativoA" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="44" vertex="1" connectable="0">
                     <mxGeometry x="-0.075" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint y="-4" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="45" value="" style="endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="80" y="-1170" as="sourcePoint"/>
                         <mxPoint x="80" y="-1200" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="46" value="" style="endArrow=none;html=1;" parent="1" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="70" y="-1190.07" as="sourcePoint"/>
-                        <mxPoint x="90" y="-1190.07" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="48" value="" style="endArrow=classic;html=1;" parent="1" edge="1">
@@ -409,14 +403,14 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="94" value="haPosto" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="-128.5" y="-930" width="340" height="90" as="geometry"/>
+                <mxCell id="94" value="HaPosto" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-128.5" y="-917" width="338.5" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="95" value="posto: &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="94" vertex="1">
-                    <mxGeometry y="30" width="340" height="30" as="geometry"/>
+                <mxCell id="95" value="code: &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="94" vertex="1">
+                    <mxGeometry y="30" width="338.5" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="96" value="extra:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Enum(&#39;LARGER SEAT&#39;, &#39;PRIORITY&#39;, &#39;EXTRA BAG&#39;)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="94" vertex="1">
-                    <mxGeometry y="60" width="340" height="30" as="geometry"/>
+                    <mxGeometry y="60" width="338.5" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="99" value="" style="endArrow=classic;html=1;entryX=-0.006;entryY=0.003;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="40" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -646,7 +640,7 @@
                 <mxCell id="190" value="passeggero:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;int (PK) &amp;lt;FK(Passeggeri)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="189" vertex="1">
                     <mxGeometry y="30" width="340" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="191" value="biglietto:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;int (PK) &amp;lt;FK(Biglietti)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="189" vertex="1">
+                <mxCell id="191" value="volo:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;int (PK) &amp;lt;FK(Voli)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="189" vertex="1">
                     <mxGeometry y="60" width="340" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="244" value="posto: &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="189" vertex="1">
@@ -687,10 +681,10 @@
                 <mxCell id="216" value="AcquistiBiglietti" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="-76" y="-210" width="235" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="217" value="acquisto: (PK) &amp;lt;FK(Acquisti)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="216" vertex="1">
+                <mxCell id="217" value="acquisto: int (PK) &amp;lt;FK(Acquisti)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="216" vertex="1">
                     <mxGeometry y="30" width="235" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="221" value="biglietto:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;(PK) &amp;lt;FK(Biglietti)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="216" vertex="1">
+                <mxCell id="221" value="biglietto:&amp;nbsp;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;int (PK) &amp;lt;FK(Biglietti)&amp;gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="216" vertex="1">
                     <mxGeometry y="60" width="235" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="222" style="edgeStyle=none;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.679;entryY=1.025;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="216" target="173" edge="1">
@@ -738,32 +732,14 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="237" value="" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="95" edge="1">
+                <mxCell id="237" value="" style="endArrow=classic;html=1;" parent="1" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="290" y="-1010" as="sourcePoint"/>
+                        <mxPoint x="-130" y="-880" as="sourcePoint"/>
                         <mxPoint x="-240" y="-1150" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="-240" y="-885"/>
+                            <mxPoint x="-180" y="-880"/>
+                            <mxPoint x="-240" y="-880"/>
                         </Array>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="238" value="" style="endArrow=classic;html=1;exitX=0.757;exitY=-0.031;exitDx=0;exitDy=0;entryX=0.304;entryY=1.048;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" parent="1" source="94" target="59" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="-87.36000000000001" y="-646.6800000000001" as="sourcePoint"/>
-                        <mxPoint x="211.5000000000001" y="-980.0000000000002" as="targetPoint"/>
-                        <Array as="points"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="239" value="" style="endArrow=classic;html=1;" parent="1" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="129.05" y="-950" as="sourcePoint"/>
-                        <mxPoint x="129.05" y="-980" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="240" value="" style="endArrow=classic;html=1;" parent="1" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="-240" y="-1110" as="sourcePoint"/>
-                        <mxPoint x="-240" y="-1140" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="242" value="" style="endArrow=classic;html=1;entryX=-0.015;entryY=0.003;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="163" target="171" edge="1">
@@ -788,28 +764,59 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="248" value="" style="endArrow=classic;html=1;exitX=0.995;exitY=1.004;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="191" edge="1">
+                <mxCell id="248" value="" style="endArrow=classic;html=1;exitX=0.434;exitY=1.042;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="245" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="250" y="30" as="sourcePoint"/>
-                        <mxPoint x="-30" y="40" as="targetPoint"/>
+                        <mxPoint x="-260.20000000000005" y="160.1199999999999" as="sourcePoint"/>
+                        <mxPoint x="450" y="-255" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="-100" y="40"/>
+                            <mxPoint x="-321" y="180"/>
+                            <mxPoint x="450" y="180"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="249" value="biglietto" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="248" vertex="1" connectable="0">
+                <mxCell id="249" value="volo" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="248" vertex="1" connectable="0">
                     <mxGeometry x="0.0608" y="-1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="250" value="" style="endArrow=none;html=1;" parent="1" edge="1">
-                    <mxGeometry width="50" height="50" relative="1" as="geometry">
-                        <mxPoint x="-250" y="-1130" as="sourcePoint"/>
-                        <mxPoint x="-230" y="-1130" as="targetPoint"/>
+                <mxCell id="256" value="Spiegare nella documetnazione N a N&lt;br&gt;prima avevo 1 acquisto per ogni tipo di biglietto,&lt;div&gt;1 passeggero per ogni acquisto&lt;br&gt;quindi per un volo con 2 scali (3 voli in tutto)&lt;br&gt;avevo 3 acquisti con n passeggeri e 3*n passeggeri&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="-420" y="-1455" width="300" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="263" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.221;entryY=1.025;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="210.00000000000023" y="-873.75" as="sourcePoint"/>
+                        <mxPoint x="509.94000000000005" y="-1220" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="511" y="-873.75"/>
+                        </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="256" value="Spiegare nella documetnazione N a N&lt;br&gt;prima avevo 1 acquisto per ogni tipo di biglietto,&lt;div&gt;1 passeggero per ogni acquisto&lt;br&gt;quindi per un volo con 2 scali (3 voli in tutto)&lt;br&gt;avevo 3 acquisti con n passeggeri e 3*n passeggeri&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-355" y="-1452" width="300" height="90" as="geometry"/>
+                <mxCell id="264" value="" style="endArrow=classic;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="510" y="-1170" as="sourcePoint"/>
+                        <mxPoint x="510" y="-1210" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="268" value="" style="endArrow=classic;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="-240" y="-1110" as="sourcePoint"/>
+                        <mxPoint x="-240" y="-1140" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="271" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="70" y="-1400" as="sourcePoint"/>
+                        <mxPoint x="90" y="-1400" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="272" value="Parzialità: storico acquisti&lt;div&gt;quando canc utente?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-100" y="-1390" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="273" value="" style="endArrow=none;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="9" y="-490" as="sourcePoint"/>
+                        <mxPoint x="29" y="-490" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
             </root>
         </mxGraphModel>
