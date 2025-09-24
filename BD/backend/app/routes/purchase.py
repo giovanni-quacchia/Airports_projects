@@ -1,10 +1,10 @@
 from flask import Blueprint, jsonify, request
 from app.services.purchase_service import get_all_purchases, create_purchase, get_purchase_by_id, delete_purchase_by_id, update_purchase_by_id
-from app.schemas.purchase_schema import PurchaseSchema
-from app.extensions import db
+from app.schemas.purchase_schema import PurchaseCreateSchema, PurchaseUpdateSchema
 
 purchase_bp = Blueprint('purchase_bp', __name__)
-purchase_schema = PurchaseSchema()
+purchase_create_schema = PurchaseCreateSchema()
+purchase_update_schema = PurchaseUpdateSchema()
 
 # Get all purchases
 @purchase_bp.route('/', methods=['GET'])
@@ -21,7 +21,7 @@ def get_purchase(purchase_id):
 # Create purchase
 @purchase_bp.route('/', methods=['POST'])
 def new_purchase():
-    data = purchase_schema.load(request.get_json())
+    data = purchase_create_schema.load(request.get_json())
     purchase = create_purchase(data)
     return jsonify(purchase), 201
 
@@ -34,7 +34,6 @@ def delete_purchase(purchase_id):
 # Update purchase
 @purchase_bp.route('/<int:purchase_id>', methods=['PUT'])
 def update_purchase(purchase_id):
-    
-    data = purchase_schema.load(request.get_json(), partial=True)
+    data = purchase_update_schema.load(request.get_json(), partial=True)
     purchase = update_purchase_by_id(purchase_id, data)
     return jsonify(purchase), 200

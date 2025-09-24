@@ -6,9 +6,11 @@ from app.models.airline import Airline
 from app.models.airplane import Airplane
 from app.models.RoutesAirplanes import RoutesAirplanes
 from app.models.flight import Flight
+from app.models.ticket import Ticket
+from app.models.purchase import Purchase
 from sqlalchemy import text
 
-from .data import airports, routes, users, airlines, airplanes, routesAirplanes, flights
+from .data import airports, routes, users, airlines, airplanes, routesAirplanes, flights, tickets, purchases
 
 def init_db():
     db.drop_all()
@@ -48,6 +50,16 @@ def init_db():
         flight = Flight(**flight_data)
         db.session.add(flight)
     update_PK_increment('flights', len(flights) + 1)
+
+    for ticket_data in tickets:
+        ticket = Ticket(**ticket_data)
+        db.session.add(ticket)
+    update_PK_increment('tickets', len(tickets) + 1)
+
+    for purchase_data in purchases:
+        purchase = Purchase(**purchase_data)
+        db.session.add(purchase)
+    update_PK_increment('purchases', len(purchases) + 1)
 
     db.session.commit()
 

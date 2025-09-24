@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.services.airline_service import get_all_airlines, create_airline, get_airline_by_id, delete_airline_by_id, update_airline_by_id
 from app.services.airplane_service import get_airplanes_by_airlineId
+from app.services.flight_service import get_flights_by_airlineId
 from app.schemas.airline_schema import AirlineCreateSchema, AirlineUpdateSchema, AirlineQuerySchema
 
 airline_bp = Blueprint('airline_bp', __name__)
@@ -25,6 +26,12 @@ def get_airline(airline_id):
 @airline_bp.route('/<int:airline_id>/airplanes', methods=['GET'])
 def get_airplanes_by_airline(airline_id):
     results = get_airplanes_by_airlineId(airline_id)
+    return jsonify(results), 200
+
+# Get flights by airline ID TODO
+@airline_bp.route('/<int:airline_id>/flights', methods=['GET'])
+def get_flights_by_airline(airline_id):
+    results = get_flights_by_airlineId(airline_id)
     return jsonify(results), 200
 
 # Create airline

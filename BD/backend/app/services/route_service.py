@@ -94,3 +94,8 @@ def get_route_json(route):
             "country": route.to_country
         }
     }
+
+def route_exists(route_id) -> bool:
+    exists_query = select(Route.id).where(Route.id == route_id).exists()
+    exists_route = db.session.execute(select(exists_query)).scalar()
+    return exists_route

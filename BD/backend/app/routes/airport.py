@@ -5,11 +5,12 @@ from app.extensions import db
 
 airport_bp = Blueprint('airport_bp', __name__)
 airport_schema = AirportSchema()
+airport_query_schema = AirportQuerySchema()
 
 # Get all airports
 @airport_bp.route('/', methods=['GET'])
 def get_airports():
-    params = AirportQuerySchema().load(request.args)
+    params = airport_query_schema.load(request.args)
     results = get_all_airports(params.get("q"))
     return jsonify(results), 200
 

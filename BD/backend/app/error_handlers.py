@@ -38,7 +38,8 @@ def register_error_handlers(app):
     # Resource not found: 404
     @app.errorhandler(404)
     def handle_404(error):
-        return jsonify({"error": "Resource not found"}), 404
+        print(error)
+        return jsonify({"error": error.description or "Resource not found"}), 404
     
     # Generic server error: 500
     @app.errorhandler(500)

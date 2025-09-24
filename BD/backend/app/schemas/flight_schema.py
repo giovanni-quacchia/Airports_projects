@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, ValidationError, validates
 
 class FlightSchema(Schema):
+    id = fields.Int(dump_only=True)
     code = fields.Str(required=True)
     
     departure = fields.DateTime(required=True)

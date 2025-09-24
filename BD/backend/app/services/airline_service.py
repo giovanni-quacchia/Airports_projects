@@ -1,6 +1,7 @@
 from app.models.airline import Airline
 from flask import abort
-from sqlalchemy import or_
+from sqlalchemy import or_, select
+from app.extensions import db
 
 def get_all_airlines(q):
     query = Airline.query
@@ -56,3 +57,8 @@ def AirlineMatch(table, q):
         table.name.ilike(f'%{q}%'),
         table.PIVA.ilike(f'%{q}%'),
     )
+
+def airline_exists(airline_id) -> bool:
+    exists_query = select(Airline.id).where(Airline.id == airline_id).exists()
+    exists_airline = db.session.execute(select(exists_query)).scalar()
+    return exists_airline

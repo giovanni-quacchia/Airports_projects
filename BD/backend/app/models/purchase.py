@@ -14,7 +14,7 @@ class Purchase(db.Model):
     # Constraints
     __table_args__ = (
         # FK: On delete SET NULL to keep purchase history even if user is deleted
-        db.ForeignKeyConstraint(['user'], ['users.id'], name='fk_user', onupdate='CASCADE', ondelete='SET NULL'),
+        db.ForeignKeyConstraint(['user'], ['users.id'], name='fk_user', onupdate='CASCADE', ondelete='SET NULL', deferrable=True, initially='DEFERRED'),
 
         # CHECK
         db.CheckConstraint('quantity > 0', name='ck_quantity_positive'),

@@ -2,6 +2,8 @@ from app.models.airplane import Airplane
 from app.models.RoutesAirplanes import RoutesAirplanes
 from sqlalchemy import select, desc
 from app.extensions import db
+from flask import abort
+from app.services.route_service import route_exists
 
 
 def get_all_airplanes(model=None):
@@ -23,10 +25,13 @@ def get_airplanes_by_airlineId(airline_id):
 SELECT a.*, ra.startDate, ra.endDate
 FROM airplanes a JOIN routes_airplanes ra ON a.id = ra.airplane
 WHERE ra.route = route_id
-ORDER BY ra.endDate DESC;
+ORDER BY ra.endDate DESC
 """
-
 def get_airplanes_by_routeId(route_id):
+
+    if(not route_exists(route_id)):
+        abort(404)
+
     # Trova tutti gli aerei con relativo periodo associato
     query = (
         select(Airplane, RoutesAirplanes.startDate, RoutesAirplanes.endDate)
@@ -34,6 +39,8 @@ def get_airplanes_by_routeId(route_id):
         .where(RoutesAirplanes.route == route_id)
         .order_by(desc(RoutesAirplanes.endDate))
     )
+
+    print(query)
 
     results = db.session.execute(query).all()
     

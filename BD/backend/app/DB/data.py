@@ -22,7 +22,7 @@ routes = [
 
 users = [
     {"id": 1, "mail": "admin@gmail.com", "password": "admin", "balance": 300.0, "isAdmin": True},
-    {"id": 2, "mail": "user1@gmail.com", "password": "user1", "balance": 100.0},
+    {"id": 2, "mail": "user1@gmail.com", "password": "user1", "balance": 1000000.0},
     {"id": 3, "mail": "user2@gmail.com", "password": "user2", "balance": 200.0},
 ]
 
@@ -83,3 +83,29 @@ flights = [
     # Volo errato: aereo non assegnato alla compagnia
     # {"id": 12, "code": "AZ501", "route": 5, "airline": 1, "airplane": 5, "departure": "2023-11-01 08:00:00", "arrival": "2023-11-01 12:00:00", "duration": 240},
 ]
+
+tickets = [
+    {"id": 1, "type": "ECONOMY", "price": 150.0, "quantity": 50, "flight": 1},
+    {"id": 2, "type": "BUSINESS", "price": 450.0, "quantity": 20, "flight": 1},
+    {"id": 3, "type": "FIRST_CLASS", "price": 900.0, "quantity": 10, "flight": 1},
+    {"id": 4, "type": "ECONOMY", "price": 100.0, "quantity": 60, "flight": 2},
+    {"id": 5, "type": "BUSINESS", "price": 300.0, "quantity": 15, "flight": 2},
+    {"id": 6, "type": "FIRST_CLASS", "price": 800.0, "quantity": 5, "flight": 2},
+]
+
+purchases = [
+    {"id": 1, "user": 2, "total_cost": 300.0, "date": "2023-10-01 09:00:00", "quantity": 2},
+    {"id": 2, "user": 3, "total_cost": 450.0, "date": "2023-11-01 10:00:00", "quantity": 1},
+]
+
+"""
+
+Test for purchases creation
+
+{
+    "user": 2,
+    "quantity": 2,
+    "tickets": [1, 2]
+}
+
+"""

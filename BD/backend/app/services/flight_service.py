@@ -2,24 +2,33 @@ from flask import abort
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from app.models.flight import Flight
+from app.schemas.flight_schema import FlightSchema
 from app.extensions import db
+from app.services.airline_service import airline_exists
 
 def get_all_flights(code=None):
 
     query = select(Flight)
 
     if code:
-        query = query.where(Flight.code == code)
+        query = query.where(Flight.code.ilike(f"%{code}%"))
 
     flights = db.session.execute(query).scalars().all()
 
-    return [get_flight_json(flight) for flight in flights]
+    return FlightSchema(many=True).dump(flights)
+
+def get_flights_by_airlineId(airline_id):
+    
+    if(not airline_exists(airline_id)):
+        abort(404)
+
+    query = select(Flight).where(Flight.airline == airline_id)
+    flights = db.session.execute(query).scalars().all()
+    return FlightSchema(many=True).dump(flights)
 
 def get_flight_by_id(flight_id):
-    flight = db.session.get(Flight, flight_id)
-    if not flight:
-        abort(404)
-    return get_flight_json(flight)
+    flight = Flight.query.get_or_404(flight_id)
+    return FlightSchema().dump(flight)
 
 def create_flight(data):
     new_flight = Flight(
@@ -32,7 +41,7 @@ def create_flight(data):
         duration=data.get('duration')
     )
     new_flight.save()
-    return get_flight_json(new_flight)
+    return FlightSchema().dump(new_flight)
 
 def delete_flight_by_id(flight_id):
     flight = Flight.query.get_or_404(flight_id)
@@ -42,16 +51,4 @@ def delete_flight_by_id(flight_id):
 def update_flight_by_id(flight_id, data):
     flight = Flight.query.get_or_404(flight_id)
     flight.update(data)
-    return get_flight_json(flight)
-
-def get_flight_json(flight):
-    return {
-        "id": flight.id,
-        "code": flight.code,
-        "departure": flight.departure,
-        "arrival": flight.arrival,
-        "duration": flight.duration,
-        "route": flight.route,
-        "airline": flight.airline,
-        "airplane": flight.airplane
-    }
+    return FlightSchema().dump(flight)
