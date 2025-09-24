@@ -26,7 +26,6 @@ def get_user_by_id(user_id):
     }
 
 def create_user(data):
-    print(data)
     new_user = User(
         mail=data.get('mail'),
         password=data.get('password'),
@@ -48,7 +47,6 @@ def update_user_by_id(user_id, data):
     user = User.query.get_or_404(user_id)
     if 'password' in data:
         user.set_password(data.pop('password'))
-        print(user.digest)
     user.update(data)
     return {
         "id": user.id,

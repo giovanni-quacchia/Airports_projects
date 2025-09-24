@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.route_service import get_all_routes, create_route, get_route_by_id, delete_route_by_id, update_route_by_id
+from app.services.airplane_service import get_airplanes_by_routeId
 from app.schemas.route_schema import RouteSchema, RouteQuerySchema
 from app.extensions import db
 
@@ -12,6 +13,12 @@ route_query_schema = RouteQuerySchema()
 def get_routes():
     params = route_query_schema.load(request.args)
     results = get_all_routes(params.get('from_airport'), params.get('to_airport'))
+    return jsonify(results), 200
+
+# Get airplanes by route ID
+@route_bp.route('/<int:route_id>/airplanes', methods=['GET'])
+def get_airplanes_by_route(route_id):
+    results = get_airplanes_by_routeId(route_id)
     return jsonify(results), 200
 
 # Get route by ID

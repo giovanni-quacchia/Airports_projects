@@ -34,7 +34,7 @@ def delete_purchase(purchase_id):
 # Update purchase
 @purchase_bp.route('/<int:purchase_id>', methods=['PUT'])
 def update_purchase(purchase_id):
-    # TODO: trigger before update: check new.quantity >= passengers
+    
     data = purchase_schema.load(request.get_json(), partial=True)
     purchase = update_purchase_by_id(purchase_id, data)
     return jsonify(purchase), 200

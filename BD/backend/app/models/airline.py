@@ -16,11 +16,11 @@ class Airline(db.Model):
     logo = db.Column(db.String(255), nullable=True)
     isFirstLogin = db.Column(db.Boolean, default=True, nullable=False)
 
-    def __init__(self, mail, password, code, name, PIVA, logo=None, isFirstLogin=True, id=None):
+    def __init__(self, mail, code, name, PIVA, logo=None, isFirstLogin=True, id=None):
         if id is not None:
             self.id = id
         self.mail = mail
-        self.set_password(password)
+        self.set_password("password")  # Default password
         self.code = code
         self.name = name
         self.PIVA = PIVA

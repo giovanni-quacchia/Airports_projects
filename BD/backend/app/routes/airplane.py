@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.services.route_service import get_all_airplanes, get_airplane_by_id, create_airplane, delete_airplane_by_id, update_airplane_by_id
+from app.services.airplane_service import get_all_airplanes, get_airplane_by_id, create_airplane, delete_airplane_by_id, update_airplane_by_id
 from app.schemas.airplane_schema import AirplaneSchema, AirplaneQuerySchema
 
 airplane_bp = Blueprint('airplane_bp', __name__)
@@ -10,7 +10,7 @@ airplane_query_schema = AirplaneQuerySchema()
 @airplane_bp.route('/', methods=['GET'])
 def get_airplanes():
     params = airplane_query_schema.load(request.args)
-    results = get_all_airplanes(params.get('from_airport'), params.get('to_airport'))
+    results = get_all_airplanes(params.get('model'))
     return jsonify(results), 200
 
 # Get airplane by ID

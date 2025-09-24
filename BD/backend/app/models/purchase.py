@@ -7,6 +7,9 @@ class Purchase(db.Model):
     total_cost = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     quantity = db.Column(db.Integer, nullable=False)   # number of passengers
+    
+    # TODO: trigger only before update: check new.quantity >= passengers
+    # TODO: trigger before insert/update: check user balance >= total_cost
 
     # Constraints
     __table_args__ = (

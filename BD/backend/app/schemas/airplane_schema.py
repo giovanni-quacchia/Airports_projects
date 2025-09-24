@@ -4,4 +4,7 @@ class AirplaneSchema(Schema):
     model = fields.Str(required=True)
     letters = fields.Int(required=True)
     rows = fields.Int(required=True)
-    airline = fields.Int(required=True)
+    airline = fields.Int()
+    
+class AirplaneQuerySchema(Schema):
+    model = fields.Str()

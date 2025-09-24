@@ -3,4 +3,7 @@ from .api import api
 from .airport import airport_bp
 from .route import route_bp
 from .user import user_bp
+from .airline import airline_bp
+from .airplane import airplane_bp
 from .purchase import purchase_bp
+from .flight import flight_bp
