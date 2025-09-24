@@ -43,3 +43,10 @@ Thumbs.db
 
 # Env
 .env
+
+# python cache files
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
