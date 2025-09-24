@@ -131,3 +131,4 @@ docker compose down -v (elimina anche i dati dal db)
 - Viste per utenti non admin
 - deferrable
 - Indici
+- Vista materializzata per calcolo statistiche: Es: Calcolo su tutti i voli di tutte le compagnie e poi ognuna filtra sulla propria
