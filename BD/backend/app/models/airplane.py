@@ -6,7 +6,7 @@ class Airplane(db.Model):
     model = db.Column(db.String(50), nullable=False)
     letters = db.Column(db.Integer, nullable=False)
     rows = db.Column(db.Integer, nullable=False)
-    airline = db.Column(db.Integer, nullable=False)
+    airline = db.Column(db.Integer)
 
     # Constraints
     __table_args__ = (
