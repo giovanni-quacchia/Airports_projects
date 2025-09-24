@@ -1,14 +1,33 @@
 from app.models.purchase import Purchase
 from app.models.ticket import Ticket
 from app.models.user import User
-from app.models.PurchaseTicket import Purchase as PurchaseTicket
+from app.models.PurchaseTicket import PurchaseTicket
 from app.schemas.purchase_schema import PurchaseSchema
 from app.extensions import db
+from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError 
 
+# TODO: stampare anche array di tickets acquistati
+"""
+SELECT p.*, GROUP_CONCAT(pt.ticket) AS tickets
+FROM purchases p LEFT OUTER JOIN purchasesTickets pt ON p.id = pt.purchase
+"""
 def get_all_purchases():
-    purchases = Purchase.query.all()
-    return [PurchaseSchema().dump(purchase) for purchase in purchases]
+
+    query = (
+        select(Purchase, func.array_agg(PurchaseTicket.ticket).label('tickets'))
+        .outerjoin(PurchaseTicket, Purchase.id == PurchaseTicket.purchase) # anche acquisti senza tickets
+        .group_by(Purchase.id)
+    )
+
+    print(query)
+
+    results = db.session.execute(query).all()
+
+    return [
+        PurchaseSchema().dump(purchase) | {"tickets": tickets if tickets != [None] else []}
+        for purchase, tickets in results
+    ]
 
 def get_purchase_by_id(purchase_id):
     purchase = Purchase.query.get_or_404(purchase_id)
@@ -61,7 +80,7 @@ def create_purchase(data):
 
                 # Check and update current balance
                 if balance < current_cost:
-                    raise ValueError(f"Insufficient balance for User ID {user.id}. Required: {total_cost}, Available: {balance}")
+                    raise ValueError(f"Insufficient balance for User ID {user.id}. Required: {current_cost} for ticket {ticket_id}, Available: {balance}")
                 balance -= current_cost
                 
                 # Create ticket-purchase

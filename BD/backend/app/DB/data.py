@@ -22,7 +22,7 @@ routes = [
 
 users = [
     {"id": 1, "mail": "admin@gmail.com", "password": "admin", "balance": 300.0, "isAdmin": True},
-    {"id": 2, "mail": "user1@gmail.com", "password": "user1", "balance": 1000000.0},
+    {"id": 2, "mail": "user1@gmail.com", "password": "user1", "balance": 10000.0},
     {"id": 3, "mail": "user2@gmail.com", "password": "user2", "balance": 200.0},
 ]
 
@@ -99,8 +99,7 @@ purchases = [
 ]
 
 """
-
-Test for purchases creation
+Test for purchases creation: POST /purchases
 
 {
     "user": 2,
@@ -108,4 +107,10 @@ Test for purchases creation
     "tickets": [1, 2]
 }
 
+should do 
+- create: purchase with total_cost = 150*2 + 450*2 = 1200.0
+- create 2 purchasesTickets entries
+- update: user balance -= 1200.0
+- update: ticket 1 quantity -= 2
+- update: ticket 2 quantity -= 2
 """

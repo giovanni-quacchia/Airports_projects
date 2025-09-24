@@ -1,9 +1,10 @@
 from app.models.airplane import Airplane
 from app.models.RoutesAirplanes import RoutesAirplanes
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from app.extensions import db
 from flask import abort
 from app.services.route_service import route_exists
+from app.schemas.airplane_schema import AirplaneSchema
 
 
 def get_all_airplanes(model=None):
@@ -14,54 +15,59 @@ def get_all_airplanes(model=None):
 
     airplanes = query.all()
 
-    return [get_airplane_json(airplane) for airplane in airplanes]
+    return [AirplaneSchema().dump(airplane) for airplane in airplanes]
 
 def get_airplanes_by_airlineId(airline_id):
     airplanes = Airplane.query.filter_by(airline=airline_id).all()
-    return [get_airplane_json(airplane) for airplane in airplanes]
+    return [AirplaneSchema().dump(airplane) for airplane in airplanes]
 
 
 """
-SELECT a.*, ra.startDate, ra.endDate
-FROM airplanes a JOIN routes_airplanes ra ON a.id = ra.airplane
-WHERE ra.route = route_id
-ORDER BY ra.endDate DESC
+SELECT
+    a.*,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'startDate', ra.startDate,
+            'endDate', ra.endDate
+        )
+    ) AS periods
+FROM Airplane a
+JOIN RoutesAirplanes ra ON a.id = ra.airplane
+WHERE ra.route = ?
+GROUP BY a.id, a.model;
+
 """
 def get_airplanes_by_routeId(route_id):
 
     if(not route_exists(route_id)):
-        abort(404)
+        abort(404, description=f"Route with ID {route_id} does not exist.")
 
     # Trova tutti gli aerei con relativo periodo associato
     query = (
-        select(Airplane, RoutesAirplanes.startDate, RoutesAirplanes.endDate)
+        select(
+            Airplane, 
+            func.json_agg(
+                func.json_build_object(
+                    'startDate', RoutesAirplanes.startDate,
+                    'endDate', RoutesAirplanes.endDate
+                )
+            )
+        )
         .join(RoutesAirplanes, Airplane.id == RoutesAirplanes.airplane)
         .where(RoutesAirplanes.route == route_id)
-        .order_by(desc(RoutesAirplanes.endDate))
+        .group_by(Airplane.id)
     )
 
-    print(query)
-
     results = db.session.execute(query).all()
-    
-    # Raggruppa per aereo, costruendo una lista di periodi per ciascun aereo
-    airplanes_dict = {}
-    for airplane, start_date, end_date in results:
-        if airplane.id not in airplanes_dict:
-            airplanes_dict[airplane.id] = {
-                "airplane": airplane,
-                "periods": []
-            }
-        airplanes_dict[airplane.id]["periods"].append({
-            "startDate": start_date,
-            "endDate": end_date
-        })
 
-    return [get_airplane_json(a["airplane"]) | {"periods": a["periods"]} for a in airplanes_dict.values()]
+    return [
+        AirplaneSchema().dump(airplane) | {"periods": periods}
+        for airplane, periods in results
+    ]
 
 def get_airplane_by_id(airplane_id):
     airplane = Airplane.query.get_or_404(airplane_id)
-    return get_airplane_json(airplane)
+    return AirplaneSchema().dump(airplane)
 
 def create_airplane(data):
     new_airplane = Airplane(
@@ -71,7 +77,7 @@ def create_airplane(data):
         airline=data['airline']
     )
     new_airplane.save()
-    return get_airplane_json(new_airplane)
+    return AirplaneSchema().dump(new_airplane)
 
 def delete_airplane_by_id(airplane_id):
     airplane = Airplane.query.get_or_404(airplane_id)
@@ -81,13 +87,4 @@ def delete_airplane_by_id(airplane_id):
 def update_airplane_by_id(airplane_id, data):
     airplane = Airplane.query.get_or_404(airplane_id)
     airplane.update(data)
-    return get_airplane_json(airplane)
-    
-def get_airplane_json(airplane):
-    return {
-        "id": airplane.id,
-        "model": airplane.model,
-        "letters": airplane.letters,
-        "rows": airplane.rows,
-        "airline": airplane.airline
-    }
+    return AirplaneSchema().dump(airplane)

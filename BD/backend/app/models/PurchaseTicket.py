@@ -1,6 +1,6 @@
 from app.extensions import db
 
-class Purchase(db.Model):
+class PurchaseTicket(db.Model):
     __tablename__ = 'purchasesTickets'
     purchase = db.Column(db.Integer, primary_key=True)
     ticket = db.Column(db.Integer, primary_key=True)

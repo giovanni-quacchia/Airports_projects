@@ -35,6 +35,11 @@ def register_error_handlers(app):
             return jsonify({"error": "from_airport and to_airport must be different"}), 400
         return jsonify({"error": "Database integrity error"}), 400
     
+    # Handle ValueError exceptions
+    @app.errorhandler(ValueError)
+    def handle_value_error(error):
+        return jsonify({"error": str(error)}), 400
+
     # Resource not found: 404
     @app.errorhandler(404)
     def handle_404(error):
