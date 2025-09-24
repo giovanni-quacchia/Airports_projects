@@ -98,6 +98,11 @@ purchases = [
     {"id": 2, "user": 3, "total_cost": 450.0, "date": "2023-11-01 10:00:00", "quantity": 1},
 ]
 
+purchasesTickets = [
+    {"id": 1, "purchase": 1, "ticket": 1},
+    {"id": 2, "purchase": 1, "ticket": 2}
+]
+
 """
 Test for purchases creation: POST /purchases
 
