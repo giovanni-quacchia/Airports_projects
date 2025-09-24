@@ -64,15 +64,19 @@ routesAirplanes = [
 ]
 
 flights = [
-    {"id": 1, "code": "AA100", "route": 1, "airline": 1, "airplane": 1, "departure": "2023-10-01 08:00:00", "arrival": "2023-10-01 20:00:00", "duration": 480},
-    {"id": 2, "code": "BA200", "route": 2, "airline": 2, "airplane": 2, "departure": "2023-11-01 09:00:00", "arrival": "2023-11-01 11:00:00", "duration": 120},
-    {"id": 3, "code": "AF300", "route": 3, "airline": 3, "airplane": 3, "departure": "2023-09-15 10:00:00", "arrival": "2023-09-15 22:00:00", "duration": 720},
-    {"id": 4, "code": "EK400", "route": 4, "airline": 4, "airplane": 4, "departure": "2023-12-01 11:00:00", "arrival": "2023-12-01 23:00:00", "duration": 720},
-    {"id": 5, "code": "AZ500", "route": 5, "airline": 5, "airplane": 5, "departure": "2023-10-20 12:00:00", "arrival": "2023-10-20 18:00:00", "duration": 360},
-    {"id": 6, "code": "FR600", "route": 6, "airline": 6, "airplane": 6, "departure": "2023-11-10 13:00:00", "arrival": "2023-11-10 15:00:00", "duration": 120},
-    {"id": 7, "code": "AA101", "route": 1, "airline": 1, "airplane": 1, "departure": "2024-01-01 14:00:00", "arrival": "2024-01-01 22:00:00", "duration": 480},
-    {"id": 8, "code": "BA201", "route": 2, "airline": 2, "airplane": 2, "departure": "2024-01-01 00:00:00", "arrival": "2024-01-01 02:00:00", "duration": 120},
-    {"id": 9, "code": "AF301", "route": 3, "airline": 3, "airplane": 3, "departure": "2023-10-05 00:00:00", "arrival": "2023-10-05 12:00:00", "duration": 720},
+    {"id": 1, "code": "EK101", "route": 5, "airline": 4, "airplane": 4, "departure": "2025-09-10T08:30:00Z", "arrival": "2025-09-10T20:30:00Z", "duration": 720},
+    {"id": 2, "code": "AF202", "route": 7, "airline": 3, "airplane": 3, "departure": "2025-09-12T13:45:00Z", "arrival": "2025-09-13T01:45:00Z", "duration": 660},
+    {"id": 3, "code": "AZ303", "route": 6, "airline": 5, "airplane": 5, "departure": "2025-09-14T07:00:00Z", "arrival": "2025-09-14T08:30:00Z", "duration": 90},
+    {"id": 4, "code": "LH404", "route": 4, "airline": 2, "airplane": 2, "departure": "2025-09-16T22:00:00Z", "arrival": "2025-09-17T12:00:00Z", "duration": 840},
+    {"id": 5, "code": "FR505", "route": 6, "airline": 6, "airplane": 6, "departure": "2025-09-16T09:30:00Z", "arrival": "2025-09-16T18:30:00Z", "duration": 540},
+    {"id": 6, "code": "FR505", "route": 6, "airline": 6, "airplane": 6, "departure": "2025-10-16T09:30:00Z", "arrival": "2025-10-16T18:30:00Z", "duration": 540},
+    {"id": 7, "code": "BA606", "route": 4, "airline": 2, "airplane": 2, "departure": "2025-09-18T11:15:00Z", "arrival": "2025-09-18T21:15:00Z", "duration": 600},
+    {"id": 8, "code": "BA608", "route": 8, "airline": 2, "airplane": 2, "departure": "2025-09-18T11:15:00Z", "arrival": "2025-09-18T21:15:00Z", "duration": 600},
+    {"id": 9, "code": "EK707", "route": 3, "airline": 4, "airplane": 4, "departure": "2025-09-19T20:45:00Z", "arrival": "2025-09-20T08:45:00Z", "duration": 720},
+    {"id": 10, "code": "AF808", "route": 2, "airline": 3, "airplane": 3, "departure": "2025-09-20T06:00:00Z", "arrival": "2025-09-20T14:00:00Z", "duration": 480},
+    {"id": 11, "code": "FR909", "route": 3, "airline": 6, "airplane": 6, "departure": "2025-09-22T14:30:00Z", "arrival": "2025-09-22T22:30:00Z", "duration": 480},
+    {"id": 12, "code": "AZ010", "route": 7, "airline": 5, "airplane": 5, "departure": "2025-09-25T18:00:00Z", "arrival": "2025-09-26T00:00:00Z", "duration": 360},
+    {"id": 13, "code": "EK312", "route": 5, "airline": 4, "airplane": 4, "departure": "2025-09-20T09:30:00Z", "arrival": "2025-09-20T19:30:00Z", "duration": 600}
 
     # Volo errato: aereo non associato alla rotta
     # {"id": 10, "code": "EK401", "route": 1, "airline": 4, "airplane": 4, "departure": "2024-01-10 10:00:00", "arrival": "2024-01-10 18:00:00", "duration": 480},

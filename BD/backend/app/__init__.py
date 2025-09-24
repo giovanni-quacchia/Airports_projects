@@ -2,7 +2,7 @@ from flask import Flask
 from .routes import main_blueprint
 from .extensions import db
 
-from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp
+from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp, itinerary_bp
 from app.error_handlers import register_error_handlers
 
 from app.DB.init_db import init_db
@@ -37,3 +37,4 @@ def register_blueprints(app):
     app.register_blueprint(airplane_bp, url_prefix='/api/airplanes')
     app.register_blueprint(flight_bp, url_prefix='/api/flights')
     app.register_blueprint(ticket_bp, url_prefix='/api/tickets')
+    app.register_blueprint(itinerary_bp, url_prefix='/api/itineraries')

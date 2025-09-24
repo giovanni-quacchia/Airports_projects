@@ -8,3 +8,4 @@ from .airplane import airplane_bp
 from .purchase import purchase_bp
 from .flight import flight_bp
 from .ticket import ticket_bp
+from .itinerary import itinerary_bp
