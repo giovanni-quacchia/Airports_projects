@@ -1,14 +1,41 @@
-from app.models.airline import Airline
+from app.models.airline import Airline, AirlinePublic
+from app.schemas.airline_schema import AirlineSchema, AirlinePublicSchema
 from flask import abort
 from sqlalchemy import or_, select
 from app.extensions import db
+from flask_login import login_user, logout_user
+
+def login_airline_(mail, password, newPassword=None):
+    airline = Airline.query.filter_by(mail=mail).first()
+
+    if not airline or not airline.check_password(password):
+        abort(401, description="Invalid email or password")
+
+    if airline.isFirstLogin:
+        if newPassword is None:
+            abort(400, description="First login requires a new password")
+        airline.set_password(newPassword)
+        airline.isFirstLogin = False
+        airline.save()
+        db.session.commit()
+    login_user(airline)
+    return {"message": "Login successful"}
+
+def logout_airline_():
+    logout_user()
+    return {"message": "Logged out successfully"}
+
 
 def get_all_airlines(q):
-    query = Airline.query
+
+    Table = Airline
+    Schema = AirlineSchema
+
+    query = db.session.query(Table)
     if q:
-        query = query.filter(AirlineMatch(Airline, q))
+        query = query.filter(AirlineMatch(Table, q))
     airlines = query.all()
-    return [get_airline_json(airline) for airline in airlines]
+    return [Schema().dump(airline) for airline in airlines]
 
 def get_airline_by_id(airline_id):
     airline = Airline.query.get(airline_id)

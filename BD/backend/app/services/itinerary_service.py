@@ -1,51 +1,36 @@
 from sqlalchemy import text
-from app.schemas.flight_schema import FlightSchema
 from app.extensions import db
-from datetime import datetime
 
-flight_schema = FlightSchema()
+def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_date=None, onlyDirect=False):
 
-def get_all_itineraries(from_airport=None, to_airport=None):
-    sql = "SELECT * FROM itineraries WHERE 1=1"
+    sql = "SELECT * FROM itineraries"
     params = {}
+    filters = []
 
-    from_airport = "LHR"
+    if to_date:
+        to_date += " 23:59:59"
 
+    if onlyDirect:
+        filters.append("flight2 IS NULL")
     if from_airport:
-        sql += " AND flight1->>'from' = :from_airport"
+        filters.append("flight1 ->> 'from' = :from_airport")
         params['from_airport'] = from_airport
     if to_airport:
-        sql += " AND flight2->>'to' = :to_airport"
+        filters.append("((flight1 ->> 'to' = :to_airport AND flight2 IS NULL) OR flight2 ->> 'to' = :to_airport)")
         params['to_airport'] = to_airport
+    if from_date:
+        filters.append("(TO_TIMESTAMP(flight1 ->> 'departure', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') >= :from_date)")
+        params['from_date'] = from_date
+    # Controlla f1.arrival se f2 è NULL, altrimenti controlla f2.arrival
+    if to_date:
+        filters.append("((flight2 IS NULL AND TO_TIMESTAMP(flight1 ->> 'arrival', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') <= :to_date) "
+                    "OR (flight2 IS NOT NULL AND TO_TIMESTAMP(flight2 ->> 'arrival', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"') <= :to_date))")
+        params['to_date'] = to_date
+
+    if filters:
+        sql += " WHERE " + " AND ".join(filters)
 
     query = text(sql)
-    itineraries = db.session.execute(query, params).mappings().all()
-
-    results = []
-    for itinerary in itineraries:
-        flight1 = itinerary["flight1"]
-        flight2 = itinerary["flight2"]
-
-        # Serializza con Marshmallow
-        results.append({
-            "flight1": {
-                "id": flight1['id'],
-                "code": flight1['code'],
-                "departure": flight1['departure'],
-                "arrival": flight1['arrival'],
-                "airline": flight1['airline'],
-                "from": flight1['from'],
-                "to": flight1['to']
-            },
-            "flight2": {
-                "id": flight2['id'],
-                "code": flight2['code'],
-                "departure": flight2['departure'],
-                "arrival": flight2['arrival'],
-                "airline": flight2['airline'],
-                "from": flight2['from'],
-                "to": flight2['to']
-            }
-        })
-
-    return results
+    result = db.session.execute(query, params).mappings().all()
+    itineraries = [dict(row) for row in result]
+    return itineraries

@@ -1,5 +1,18 @@
 from app.models.user import User
 from flask import abort
+from flask_login import login_user, logout_user
+
+
+def login_user_(mail, password):
+    user = User.query.filter_by(mail=mail).first()
+    if user and user.check_password(password):
+        login_user(user)
+        return {"message": "Login successful"}
+    return {"message": "Invalid email or password"}
+
+def logout_user_():
+    logout_user()
+    return {"message": "Logged out successfully"}
 
 def get_all_users(q):
     query = User.query

@@ -1,9 +1,10 @@
 import os
 import hmac
 import hashlib
-from app.extensions import db
+from app.extensions import db, login_manager
+from flask_login import UserMixin
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mail = db.Column(db.String(120), unique=True, nullable=False)
@@ -47,6 +48,9 @@ class User(db.Model):
             100000
         )
         return hmac.compare_digest(self.digest, test_digest)
+    
+    def get_id(self):
+        return f"user:{self.id}" 
 
     def save(self):
         db.session.add(self)

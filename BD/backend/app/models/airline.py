@@ -2,8 +2,13 @@ import os
 import hmac
 import hashlib
 from app.extensions import db
+from sqlalchemy.orm import declarative_base
+from flask_login import UserMixin
+from app.extensions import login_manager
 
-class Airline(db.Model):
+Base = declarative_base()
+
+class Airline(db.Model, UserMixin):
     __tablename__ = 'airlines'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mail = db.Column(db.String(120), unique=True, nullable=False)
@@ -48,6 +53,9 @@ class Airline(db.Model):
         )
         return hmac.compare_digest(self.digest, test_digest)
     
+    def get_id(self):
+        return f"airline:{self.id}"
+
     def save(self):
         db.session.add(self)
         print("New airline created:", self)
@@ -62,3 +70,11 @@ class Airline(db.Model):
             if hasattr(self, key):
                 setattr(self, key, value)
         db.session.commit()
+
+class AirlinePublic(Base):
+    __tablename__ = 'airlines_public'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    code = db.Column(db.String(2), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    PIVA = db.Column(db.String(11), unique=True, nullable=False)
+    logo = db.Column(db.String(255), nullable=True)

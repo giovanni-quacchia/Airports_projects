@@ -1,6 +1,6 @@
 from flask import Flask
 from .routes import main_blueprint
-from .extensions import db
+from .extensions import db, login_manager
 
 from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp, itinerary_bp
 from app.error_handlers import register_error_handlers
@@ -16,6 +16,8 @@ def create_app():
     app.config.from_object('config.Config')
 
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'user_bp.login'  # endpoint per login se non autenticato
 
     register_error_handlers(app)
     register_blueprints(app)

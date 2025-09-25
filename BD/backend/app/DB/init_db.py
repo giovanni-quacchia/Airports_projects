@@ -11,11 +11,12 @@ from app.models.purchase import Purchase
 from sqlalchemy import text
 
 from .data import airports, routes, users, airlines, airplanes, routesAirplanes, flights, tickets, purchases
-from .views import create_itineraries_view, drop_itineraries_view
+from .views import create_views, drop_views, drop_materialized_views, create_materialized_views
 
 def init_db():
-    
-    drop_itineraries_view()
+
+    drop_views()
+    drop_materialized_views()
     
     db.drop_all()
     db.create_all()
@@ -65,10 +66,10 @@ def init_db():
         db.session.add(purchase)
     update_PK_increment('purchases', len(purchases) + 1)
 
-    # Create itineraries view
-    create_itineraries_view()
-
     db.session.commit()
+
+    create_views()
+    create_materialized_views()
 
     print("Database initialized with sample data.")
 
