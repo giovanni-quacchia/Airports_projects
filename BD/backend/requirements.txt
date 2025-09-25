@@ -4,3 +4,4 @@ flask-login
 python-dotenv
 psycopg2-binary # To connect to PostgreSQL with SQLAlchemy
 marshmallow
+Flask-CORS

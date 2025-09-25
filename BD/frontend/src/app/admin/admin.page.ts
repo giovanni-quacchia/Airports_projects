@@ -1,0 +1,364 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { AuthService } from '../core/auth.service';
+
+type AirlineDTO = {
+  code?: string;
+  name?: string;
+  PIVA?: string;
+};
+
+type AirlineCreateDTO = {
+  mail: string;
+  code: string;
+  name: string;
+  PIVA: string;
+  logo?: string; 
+};
+
+type UserDTO = {
+  _id?: string;
+  id?: string;
+  mail?: string;
+  roles?: string;
+};
+
+@Component({
+  standalone: true,
+  selector: 'taw-admin-page',
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="wrap">
+      <h1>Area Admin</h1>
+      <p class="muted">Solo gli utenti con ruolo <strong>admin</strong> possono accedere.</p>
+
+      <div class="grid">
+
+        <!-- Compagnie aeree -->
+        <div class="card stretch">
+          <div class="card-head">
+            <h3>Compagnie aeree</h3>
+            <div class="actions">
+              <input class="input" placeholder="Filtra…" [(ngModel)]="airlineQuery">
+              <button class="btn btn--sm" (click)="loadAirlines()" [disabled]="loadingAirlines">↻</button>
+            </div>
+          </div>
+
+          <ng-container *ngIf="loadingAirlines; else airlinesBody">
+            <p class="muted">Caricamento compagnie…</p>
+          </ng-container>
+
+          <ng-template #airlinesBody>
+            <p *ngIf="airlinesError" class="error">{{ airlinesError }}</p>
+            <p class="muted" *ngIf="!airlinesError">
+              Trovate: <strong>{{ airlinesFiltered.length }}</strong>
+            </p>
+
+            <div class="table">
+              <div class="thead thead-airlines">
+                <div>Codice</div>
+                <div>Nome</div>
+                <div>PIVA</div>
+              </div>
+              <div class="row row-airlines" *ngFor="let a of airlinesFiltered">
+                <div>{{ a.code || '—' }}</div>
+                <div>{{ a.name || '—' }}</div>
+                <div>{{ a.PIVA || '—' }}</div>
+              </div>
+              <div *ngIf="airlinesFiltered.length === 0" class="muted pad">
+                Nessuna compagnia trovata.
+              </div>
+            </div>
+
+            <div class="below-table">
+              <button class="btn btn--circle" (click)="toggleAddAirline()" [attr.aria-expanded]="newAirlineVisible">
+                {{ newAirlineVisible ? '–' : '+' }}
+              </button>
+              <span class="muted small" *ngIf="!newAirlineVisible">Aggiungi nuova compagnia</span>
+              <span class="muted small" *ngIf="newAirlineVisible">Nascondi modulo</span>
+            </div>
+
+            <!-- Form nuova compagnia -->
+            <form *ngIf="newAirlineVisible" class="add-form" (ngSubmit)="addAirline()" novalidate>
+              <div class="grid-form">
+                <label>
+                  <span>Email</span>
+                  <input class="input" type="email" name="mail" [(ngModel)]="newAirline.mail" required>
+                </label>
+                <label>
+                  <span>Codice</span>
+                  <input class="input" type="text" name="code" [(ngModel)]="newAirline.code" required>
+                </label>
+                <label>
+                  <span>Nome</span>
+                  <input class="input" type="text" name="name" [(ngModel)]="newAirline.name" required>
+                </label>
+                <label>
+                  <span>PIVA</span>
+                  <input class="input" type="text" name="PIVA" [(ngModel)]="newAirline.PIVA" required>
+                </label>
+                <label>
+                  <span>Logo (facoltativo)</span>
+                  <input class="input" type="text" name="logo" placeholder="URL o percorso" [(ngModel)]="newAirline.logo">
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn--outline" (click)="resetAddAirline()" [disabled]="creatingAirline">Annulla</button>
+                <button type="submit" class="btn" [disabled]="creatingAirline">
+                  {{ creatingAirline ? 'Salvo…' : 'Conferma' }}
+                </button>
+              </div>
+
+              <p *ngIf="newAirlineError" class="error">{{ newAirlineError }}</p>
+              <p *ngIf="newAirlineOk" class="ok">Compagnia creata correttamente.</p>
+            </form>
+          </ng-template>
+        </div>
+
+        <!-- Utenti -->
+        <div class="card stretch">
+          <div class="card-head">
+            <h3>Utenti</h3>
+            <div class="actions">
+              <input class="input" placeholder="Filtra…" [(ngModel)]="userQuery">
+              <button class="btn btn--sm" (click)="loadUsers()" [disabled]="loadingUsers">↻</button>
+            </div>
+          </div>
+
+          <ng-container *ngIf="loadingUsers; else usersBody">
+            <p class="muted">Caricamento utenti…</p>
+          </ng-container>
+
+          <ng-template #usersBody>
+            <p *ngIf="usersError" class="error">{{ usersError }}</p>
+            <p class="muted" *ngIf="!usersError">
+              Trovati: <strong>{{ usersFiltered.length }}</strong>
+            </p>
+
+            <div class="table">
+              <div class="thead thead-users">
+                <div>Email</div>
+                <div>Ruolo</div>
+                <div class="text-right">Azioni</div>
+              </div>
+              <div class="row row-users" *ngFor="let u of usersFiltered">
+                <div>
+                  {{ u.mail || '—' }}
+                  <span class="id-hint" *ngIf="getId(u)" [title]="getId(u)"> </span>
+                </div>
+                <div>{{ u.roles || '—' }}</div>
+                <div class="text-right">
+                  <button class="btn btn--danger btn--sm"
+                          title="Elimina utente"
+                          (click)="deleteUser(u)"
+                          [disabled]="deletingIds[getId(u) || '']">
+                    {{ deletingIds[getId(u) || ''] ? 'Elimino…' : 'Elimina' }}
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="usersFiltered.length === 0" class="muted pad">
+                Nessun utente trovato.
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .muted{color:#475569}
+    .small{font-size:12px;margin-left:8px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+    .card{display:block;border:1px solid #e2e8f0;border-radius:16px;padding:16px;background:#fff;text-decoration:none;color:inherit}
+    .card.stretch{grid-column:span 3}
+    .card h3{margin:0 0 8px;font-size:18px}
+    .btn{margin-top:12px;background:#0ea5e9;color:#fff;border:none;border-radius:999px;padding:8px 14px;cursor:pointer}
+    .btn--outline{background:#fff;color:#0b7285;border:1px solid #0b7285}
+    .btn--sm{margin-top:0;padding:6px 10px;border-radius:10px}
+    .btn--danger{background:#ef4444}
+    .btn--circle{width:36px;height:36px;border-radius:999px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:20px;margin-top:8px}
+    .error{color:#b42318;margin:6px 0 0}
+    .ok{color:#15803d;margin:6px 0 0}
+    .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    .actions{display:flex;align-items:center;gap:8px}
+    .input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;width:100%}
+    .table{border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-top:8px}
+
+    .thead,.row{display:grid;grid-template-columns:200px 1fr 160px 160px}
+    .thead{background:#f8fafc;font-weight:600}
+    .row > div, .thead > div{padding:8px 10px;border-bottom:1px solid #e2e8f0}
+    .row:last-child > div{border-bottom:none}
+    .text-right{text-align:right}
+    .pad{padding:10px}
+
+    .thead-airlines, .row-airlines{grid-template-columns:200px 1fr 200px}
+    .thead-users, .row-users{grid-template-columns:1fr 220px 140px}
+
+    .below-table{display:flex;align-items:center;gap:8px;margin-top:10px}
+
+    .add-form{margin-top:8px;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;background:#f9fafb}
+    .grid-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .grid-form label{display:flex;flex-direction:column;gap:6px}
+    .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr}
+      .card.stretch{grid-column:span 1}
+      .thead-users, .row-users{grid-template-columns:1fr auto}
+      .thead-users > div:nth-child(2), .row-users > div:nth-child(2){display:none}
+      .thead-airlines{grid-template-columns:1fr 1fr}
+      .row-airlines{grid-template-columns:1fr 1fr}
+      .row-airlines > div:nth-child(3){grid-column:1 / span 2; color:#64748b}
+      .grid-form{grid-template-columns:1fr}
+    }
+  `]
+})
+export class AdminPage implements OnInit {
+  base = environment.apiBase;
+  private AIRLINES_ENDPOINT = `${this.base}/airlines`;
+  private USERS_ENDPOINT = `${this.base}/users`;
+  private auth = inject(AuthService);
+
+  airlines: AirlineDTO[] = [];
+  users: UserDTO[] = [];
+
+  airlineQuery = '';
+  userQuery = '';
+
+  loadingAirlines = false;
+  loadingUsers = false;
+
+  airlinesError = '';
+  usersError = '';
+
+  deletingIds: Record<string, boolean> = {};
+
+  newAirlineVisible = false;
+  creatingAirline = false;
+  newAirlineError = '';
+  newAirlineOk = false;
+  newAirline: AirlineCreateDTO = { mail: '', code: '', name: '', PIVA: '', logo: '' };
+
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.loadAirlines();
+    this.loadUsers();
+  }
+
+  private buildHeaders(): HttpHeaders {
+    const token = this.auth.token;
+    let h = new HttpHeaders();
+    if (token) h = h.set('authorization', token); // NO Bearer
+    return h;
+  }
+
+  get airlinesFiltered(): AirlineDTO[] {
+    const q = this.airlineQuery.trim().toLowerCase();
+    if (!q) return this.airlines;
+    return this.airlines.filter(a =>
+      [a.code, a.name, a.PIVA].filter(Boolean).some(v => String(v).toLowerCase().includes(q))
+    );
+  }
+
+  get usersFiltered(): UserDTO[] {
+    const q = this.userQuery.trim().toLowerCase();
+    if (!q) return this.users;
+    return this.users.filter(u =>
+      [u.mail, u.roles].filter(Boolean).some(v => String(v).toLowerCase().includes(q))
+    );
+  }
+
+  loadAirlines(): void {
+    this.loadingAirlines = true;
+    this.airlinesError = '';
+    this.http.get<AirlineDTO[]>(this.AIRLINES_ENDPOINT).subscribe({
+      next: (res) => { this.airlines = Array.isArray(res) ? res : []; },
+      error: (err) => { this.airlinesError = err?.error?.msg || 'Errore nel caricamento delle compagnie'; },
+      complete: () => { this.loadingAirlines = false; }
+    });
+  }
+
+  loadUsers(): void {
+    this.loadingUsers = true;
+    this.usersError = '';
+    this.http.get<UserDTO[]>(this.USERS_ENDPOINT, { headers: this.buildHeaders() }).subscribe({
+      next: (res) => { this.users = Array.isArray(res) ? res : []; },
+      error: (err) => { this.usersError = err?.error?.msg || 'Errore nel caricamento degli utenti'; },
+      complete: () => { this.loadingUsers = false; }
+    });
+  }
+
+  getId(u: UserDTO): string | undefined { return u._id || u.id; }
+
+  deleteUser(u: UserDTO): void {
+    const id = this.getId(u);
+    if (!id) { alert('ID utente non disponibile'); return; }
+    const ok = confirm(`Eliminare l'utente "${u.mail ?? id}"?`);
+    if (!ok) return;
+
+    this.deletingIds[id] = true;
+    this.http.delete(`${this.USERS_ENDPOINT}/${encodeURIComponent(id)}`, {
+      headers: this.buildHeaders()
+    }).subscribe({
+      next: () => { this.users = this.users.filter(x => (this.getId(x) ?? '') !== id); },
+      error: (err) => { alert(err?.error?.msg || 'Errore durante l’eliminazione utente'); },
+      complete: () => { this.deletingIds[id] = false; }
+    });
+  }
+
+  /* --- Nuova compagnia --- */
+  toggleAddAirline(): void {
+    this.newAirlineVisible = !this.newAirlineVisible;
+    this.newAirlineError = '';
+    this.newAirlineOk = false;
+  }
+
+  resetAddAirline(): void {
+    this.newAirline = { mail: '', code: '', name: '', PIVA: '', logo: '' };
+    this.newAirlineError = '';
+    this.newAirlineOk = false;
+    this.newAirlineVisible = false;
+  }
+
+  addAirline(): void {
+    this.newAirlineError = '';
+    this.newAirlineOk = false;
+
+    const { mail, code, name, PIVA, logo } = this.newAirline;
+
+    if (!mail?.trim() || !code?.trim() || !name?.trim() || !PIVA?.trim()) {
+      this.newAirlineError = 'Compila tutti i campi obbligatori (mail, code, name, PIVA).';
+      return;
+    }
+
+    const payload: any = {
+      mail: mail.trim(),
+      code: code.trim(),
+      name: name.trim(),
+      PIVA: PIVA.trim()
+    };
+    if (logo && logo.trim()) payload.logo = logo.trim();
+
+    this.creatingAirline = true;
+
+    this.http.post(this.AIRLINES_ENDPOINT, payload, { headers: this.buildHeaders() }).subscribe({
+      next: () => {
+        this.newAirlineOk = true;
+        this.resetAddAirline();
+        this.loadAirlines();
+      },
+      error: (err) => {
+        this.newAirlineError = err?.error?.msg || 'Errore durante la creazione della compagnia.';
+      },
+      complete: () => {
+        this.creatingAirline = false;
+      }
+    });
+  }
+}

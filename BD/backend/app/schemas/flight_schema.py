@@ -24,3 +24,8 @@ class FlightSchema(Schema):
 
 class FlightQuerySchema(Schema):
     code = fields.Str()
+    from_airport = fields.Str(required=True)
+    to_airport = fields.Str(required=True)
+    from_date = fields.Str(required=True)
+    to_date = fields.Str(required=True)
+    onlyDirect = fields.Bool(load_default=False)

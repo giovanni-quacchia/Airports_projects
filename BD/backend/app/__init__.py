@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from .routes import main_blueprint
 from .extensions import db, login_manager
 
@@ -14,6 +15,7 @@ sys.stdout.reconfigure(line_buffering=True)
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
+    CORS(app)
 
     db.init_app(app)
     login_manager.init_app(app)

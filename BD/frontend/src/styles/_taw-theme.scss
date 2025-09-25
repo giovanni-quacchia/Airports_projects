@@ -1,0 +1,37 @@
+:root {
+  --primary-400: #40c3e6;
+  --primary-500: #16b1dc;
+  --primary-600: #0ea5c9;
+  --primary-700: #0b86a3;
+
+  --bg-page: #f7fafc;
+  --bg-elev: #f0f5f7;
+  --card: #ffffff;
+
+  --border: #e4eaee;
+  --text-strong: #0f172a;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.06);
+  --shadow-soft: 0 6px 16px rgba(17, 24, 39, .06);
+  --shadow-md: 0 10px 24px rgba(17, 24, 39, .10);
+
+  /* Material outline quick wins */
+  --mdc-outlined-text-field-outline-color: var(--border);
+  --mdc-outlined-text-field-hover-outline-color: var(--primary-400);
+}
+
+:root{
+  --mat-option-label-text-color: #0f172a;
+  --mat-select-panel-background-color: #fff;
+  --mat-select-panel-text-color: #0f172a;
+  --mat-autocomplete-background-color: #fff;
+}
+
+/* Button primary color fix (Material) */
+.mdc-button--raised.mat-primary,
+.mdc-button--unelevated.mat-primary {
+  background: var(--primary-600) !important;
+}
+ 
