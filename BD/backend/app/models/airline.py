@@ -7,7 +7,7 @@ from flask_login import UserMixin
 from app.extensions import login_manager
 
 Base = declarative_base()
-
+# TODO: aggiunto il role per airline e user, da mettere nello schema
 class Airline(db.Model, UserMixin):
     __tablename__ = 'airlines'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -20,6 +20,7 @@ class Airline(db.Model, UserMixin):
     PIVA = db.Column(db.String(11), unique=True, nullable=False)
     logo = db.Column(db.String(255), nullable=True)
     isFirstLogin = db.Column(db.Boolean, default=True, nullable=False)
+    role = db.Column(db.String(20), default='airline', nullable=False)  # 'airline' role
 
     def __init__(self, mail, code, name, PIVA, logo=None, isFirstLogin=True, id=None):
         if id is not None:
@@ -31,6 +32,7 @@ class Airline(db.Model, UserMixin):
         self.PIVA = PIVA
         self.logo = logo
         self.isFirstLogin = isFirstLogin
+        self.role = 'airline'
 
     def __repr__(self):
         return f"<Airline {self.mail} - Code: {self.code} - Name: {self.name}>"
@@ -72,7 +74,7 @@ class Airline(db.Model, UserMixin):
         db.session.commit()
 
 class AirlinePublic(Base):
-    __tablename__ = 'airlines_public'
+    __tablename__ = 'public_airlines'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     code = db.Column(db.String(2), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)

@@ -9,7 +9,7 @@ def create_views():
         db.session.commit()
 
 def drop_views():
-    query = text("DROP VIEW IF EXISTS airlines_public")
+    query = text("DROP VIEW IF EXISTS public_airlines")
     db.session.execute(query)
     db.session.commit()
 

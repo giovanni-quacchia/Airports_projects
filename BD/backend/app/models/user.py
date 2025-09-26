@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
     # Save salt and digest as binary to save space (hex strings take double space)
     salt = db.Column(db.LargeBinary(16), nullable=False)
     digest = db.Column(db.LargeBinary(64), nullable=False)
-    isAdmin = db.Column(db.Boolean, default=False, nullable=False)
+    role = db.Column(db.String(20), default='user', nullable=False)  # 'user' or 'admin'
     balance = db.Column(db.Float, default=0.0, nullable=False)
 
     # Constraints
@@ -25,12 +25,12 @@ class User(db.Model, UserMixin):
             self.id = id
         self.mail = mail
         self.set_password(password)
-        self.isAdmin = isAdmin
+        self.role = 'admin' if isAdmin else 'user'
         self.balance = balance
 
     def __repr__(self):
-        return f"<User {self.mail} - Admin: {self.isAdmin} - Balance: {self.balance}>"
-    
+        return f"<User {self.mail} - Role: {self.role} - Balance: {self.balance}>"
+
     def set_password(self, password: str):
         self.salt = os.urandom(16)
         self.digest = hashlib.pbkdf2_hmac(

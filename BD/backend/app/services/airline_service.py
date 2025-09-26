@@ -4,6 +4,7 @@ from flask import abort
 from sqlalchemy import or_, select
 from app.extensions import db
 from flask_login import login_user, logout_user
+from app.utils.auth_utils import get_session
 
 def login_airline_(mail, password, newPassword=None):
     airline = Airline.query.filter_by(mail=mail).first()
@@ -27,11 +28,11 @@ def logout_airline_():
 
 
 def get_all_airlines(q):
-
+    session = get_session()
     Table = Airline
     Schema = AirlineSchema
 
-    query = db.session.query(Table)
+    query = session.query(Table)
     if q:
         query = query.filter(AirlineMatch(Table, q))
     airlines = query.all()

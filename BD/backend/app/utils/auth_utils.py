@@ -1,9 +1,23 @@
 from functools import wraps
 from flask_login import current_user
-from flask import abort
+from flask import abort, g
 from app.extensions import login_manager
 from app.models.user import User
 from app.models.airline import Airline
+from config import Config
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+import os
+import secrets
+
+def create_secret_key():
+    if not os.path.exists('.env'):
+        with open('.env', 'w') as f:
+            f.write(f"SECRET_KEY='{secrets.token_hex(32)}'\n")
+        print(".env file created with a new SECRET_KEY.")
+    else:
+        print(".env file already exists.")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -13,6 +27,20 @@ def load_user(user_id):
     elif model == "airline":
         return Airline.query.get(int(real_id))
     return None
+
+def get_session():
+    return g.db_session
+
+def get_db_session(role = "anonymous"):
+    role_map = {
+        "anonymous": Config.DB_ANONYMOUS,
+        "user": Config.DB_USER,
+        "admin": Config.DB_ADMIN,
+        "airline": Config.DB_AIRLINE
+    }
+    engine = create_engine(Config.make_uri(role_map.get(role, Config.DB_ANONYMOUS)))
+    Session = sessionmaker(bind=engine)
+    return Session()
 
 def admin_required(f):
     @wraps(f)

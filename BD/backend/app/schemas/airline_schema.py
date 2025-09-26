@@ -30,6 +30,7 @@ class AirlinePublicSchema(Schema):
 
 class AirlineSchema(AirlinePublicSchema):
     mail = fields.Email(required=True)
+    isFirstLogin = fields.Boolean(dump_only=True)
 
 class AirlineUpdateSchema(AirlineSchema):
     isFirstLogin = fields.Boolean()

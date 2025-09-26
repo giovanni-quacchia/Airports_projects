@@ -18,8 +18,8 @@ def init_db():
     drop_views()
     drop_materialized_views()
     
-    db.drop_all()
-    db.create_all()
+    # db.drop_all()
+    # db.create_all()
     
     for airport_data in airports:
         airport = Airport(**airport_data)

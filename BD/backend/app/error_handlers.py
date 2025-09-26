@@ -2,6 +2,8 @@ from copy import error
 from flask import jsonify
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
+from sqlalchemy.exc import ProgrammingError
+import psycopg2
 
 # Custom error handler for flask app
 def register_error_handlers(app):   
@@ -51,3 +53,12 @@ def register_error_handlers(app):
     def handle_generic_error(error):
         print(str(error))
         return jsonify({"error": "Internal server error"}), 500
+    
+    # Handle insufficient privilege errors
+    @app.errorhandler(ProgrammingError)
+    def handle_programming_error(error):
+        # Handle insufficient privilege errors
+        if isinstance(error.orig, psycopg2.errors.InsufficientPrivilege):
+            return jsonify({"error": "Forbidden: insufficient privileges"}), 403
+       # fallback generico
+        return jsonify({"error": "Database error"}), 500
