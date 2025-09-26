@@ -14,6 +14,8 @@ from config import Config
 from app.utils.auth_utils import get_db_session
 from flask_login import current_user
 
+from app.extensions import init_session
+
 # Ensure stdout is line-buffered
 import sys
 sys.stdout.reconfigure(line_buffering=True)
@@ -29,13 +31,15 @@ def create_app():
 
     register_error_handlers(app)
     register_blueprints(app)
+    
+    init_session(create_engine(Config.make_uri(Config.DB_ANONYMOUS)))
 
-    @app.before_request
-    def set_db_session():
-        role = "anonymous"
-        if current_user.is_authenticated:
-            role = current_user.role
-        g.db_session = get_db_session(role)
+    # @app.before_request
+    # def set_db_session():
+    #     role = "anonymous"
+    #     if current_user.is_authenticated:
+    #         role = current_user.role
+    #     g.db_session = get_db_session(role)
 
     with app.app_context():
         init_db()

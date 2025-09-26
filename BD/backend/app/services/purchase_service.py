@@ -7,6 +7,7 @@ from app.extensions import db
 from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError 
 from flask_login import current_user
+from app.utils.auth_utils import get_session
 
 # TODO: stampare anche array di tickets acquistati
 """
@@ -14,15 +15,14 @@ SELECT p.*, GROUP_CONCAT(pt.ticket) AS tickets
 FROM purchases p LEFT OUTER JOIN purchasesTickets pt ON p.id = pt.purchase
 """
 def get_all_purchases():
+    session = get_session()
     query = (
         select(Purchase, func.array_agg(PurchaseTicket.ticket).label('tickets'))
         .outerjoin(PurchaseTicket, Purchase.id == PurchaseTicket.purchase) # anche acquisti senza tickets
         .group_by(Purchase.id)
     )
 
-    print(query)
-
-    results = db.session.execute(query).all()
+    results = session.execute(query).all()
 
     return [
         PurchaseSchema().dump(purchase) | {"tickets": tickets if tickets != [None] else []}
