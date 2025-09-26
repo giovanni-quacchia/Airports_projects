@@ -27,17 +27,17 @@ class RoutesAirplanes(db.Model):
     def __repr__(self):
         return f"<RoutesAirplanes route: {self.route}, airplane: {self.airplane}, startDate: {self.startDate}, endDate: {self.endDate}>"
 
-    def save(self):
-        db.session.add(self) 
+    def save(self, session):
+        session.add(self)
         print("New route-airplane association created:", self)
-        db.session.commit()
+        session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
-    def update(self, data):
+    def delete(self, session):
+        session.delete(self)
+        session.commit()
+
+    def update(self, data, session):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        db.session.commit()
+        session.commit()

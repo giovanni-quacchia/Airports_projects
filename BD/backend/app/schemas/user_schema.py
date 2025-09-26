@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields, ValidationError, validates
 
-class UserCreateSchema(Schema):
+class UserBaseSchema(Schema):
     mail = fields.Email(required=True)
     password = fields.Str(required=True)
 
@@ -14,10 +14,10 @@ class UserCreateSchema(Schema):
         # if not any(char.isalpha() for char in password):
         #     raise ValidationError("Password must contain at least one letter.")
 
-class UserUpdateSchema(Schema):
+class UserSchema(UserBaseSchema):
     mail = fields.Email()
     password = fields.Str()
-    isAdmin = fields.Boolean()
+    role = fields.Str()
     balance = fields.Float()
 
     @validates("balance")

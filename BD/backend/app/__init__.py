@@ -1,4 +1,4 @@
-from flask import Flask, g
+from flask import Flask
 from flask_cors import CORS
 from .extensions import db, login_manager
 
@@ -6,14 +6,6 @@ from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airli
 from app.error_handlers import register_error_handlers
 
 from app.DB.init_db import init_db
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from config import Config
-from app.utils.auth_utils import get_db_session
-from flask_login import current_user
-
-from app.extensions import init_session
 
 # Ensure stdout is line-buffered
 import sys
@@ -30,8 +22,6 @@ def create_app():
 
     register_error_handlers(app)
     register_blueprints(app)
-    
-    init_session(create_engine(Config.make_uri(Config.DB_ANONYMOUS)))
 
     # @app.before_request
     # def set_db_session():
@@ -43,7 +33,6 @@ def create_app():
     with app.app_context():
         init_db()
         print("Database tables created")
-        g.db_session = get_db_session("anonymous")
         print("Database session created for anonymous user")
 
     return app

@@ -2,6 +2,7 @@ from app.models.ticket import Ticket
 from app.schemas.ticket_schema import TicketSchema
 from sqlalchemy import select
 from app.extensions import db
+from flask_login import current_user
 
 def get_all_tickets(params=None):
     params = params or {}
@@ -20,7 +21,7 @@ def get_all_tickets(params=None):
         value = params.get(key)
         if value is not None:
             query = query.where(func(value))
-
+    print(str(db.engine.url))
     tickets = db.session.execute(query).scalars().all()
     return TicketSchema(many=True).dump(tickets)
 

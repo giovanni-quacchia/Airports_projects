@@ -45,47 +45,52 @@ def get_db_session(role = "anonymous"):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print(current_user)
-        if not hasattr(current_user, 'isAdmin') or not current_user.isAdmin:
+        if current_user.role != 'admin':
+            print(f"Admin required, {current_user.role} found")
             abort(403)  # Forbidden
         return f(*args, **kwargs)
     return decorated_function
 
-def user_required(f):
+def admin_or_user_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if hasattr(current_user, 'isAirline') and current_user.isAirline:
+        if current_user.role not in ['admin', 'user']:
+            print(f"Admin or User required, {current_user.role} found")
             abort(403)  # Forbidden
         return f(*args, **kwargs)
     return decorated_function
 
-def admin_or_owner_required(f):
+def admin_or_owner_user_required(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             user_id = kwargs.get('user_id')
-            print(current_user)
-            if getattr(current_user, 'isAirline', False):
+            if current_user.role not in ['admin', 'user']:
+                print(f"Admin or User required, {current_user.role} found")
                 abort(403)  # Forbidden
-            if not getattr(current_user, 'isAdmin', False) and current_user.id != user_id:
+            if current_user.role != 'admin' and current_user.id != user_id:
+                print(f"Owner User required, {current_user.id} found, {user_id} required")
                 abort(403)  # Forbidden
             return f(*args, **kwargs)
         return decorated_function
 
-def airline_required(f):
+def admin_or_airline_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not hasattr(current_user, 'isAirline') or not current_user.isAirline:
+        if current_user.role not in ['admin', 'airline']:
+            print(f"Admin or Airline required, {current_user.role} found")
             abort(403)  # Forbidden
         return f(*args, **kwargs)
     return decorated_function   
 
-def airline_or_owner_required(f):
+def admin_or_airline_owner_required(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             airline_id = kwargs.get('airline_id')
-            if not getattr(current_user, 'isAirline', False):
+            if current_user.role not in ['admin', 'airline']:
+                print(f"Admin or Airline required, {current_user.role} found")
                 abort(403)  # Forbidden
-            if current_user.id != airline_id:
+            if current_user.role != 'admin' and current_user.id != airline_id:
+                print(f"Airline Owner required, {current_user.id} found, {airline_id} required")
                 abort(403)  # Forbidden
             return f(*args, **kwargs)
         return decorated_function

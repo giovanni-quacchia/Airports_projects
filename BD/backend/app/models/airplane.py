@@ -22,17 +22,17 @@ class Airplane(db.Model):
     def __repr__(self):
         return f"<Airplane {self.id} - airline: {self.airline} >"
 
-    def save(self):
-        db.session.add(self)
+    def save(self, session):
+        session.add(self)
         print("New airplane created:", self)
-        db.session.commit()
+        session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
-    def update(self, data):
+    def delete(self, session):
+        session.delete(self)
+        session.commit()
+
+    def update(self, session, data):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        db.session.commit()
+        session.commit()

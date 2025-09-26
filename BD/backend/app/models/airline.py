@@ -4,7 +4,6 @@ import hashlib
 from app.extensions import db
 from sqlalchemy.orm import declarative_base
 from flask_login import UserMixin
-from app.extensions import login_manager
 
 Base = declarative_base()
 # TODO: aggiunto il role per airline e user, da mettere nello schema

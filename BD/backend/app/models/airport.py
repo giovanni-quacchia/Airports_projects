@@ -11,19 +11,19 @@ class Airport(db.Model):
     def __repr__(self):
         return f"<Airport {self.code} - {self.name}>"
 
-    def save(self):
-        db.session.add(self)
+    def save(self, session):
+        session.add(self)
         print("New airport created:", self)
-        db.session.commit()
+        session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
-    def update(self, data):
+    def delete(self, session):
+        session.delete(self)
+        session.commit()
+
+    def update(self, data, session):
         for key, value in data.items():
             if hasattr(self, key):
                 if key == 'code':
                     value = value.upper()
                 setattr(self, key, value)
-        db.session.commit()
+        session.commit()

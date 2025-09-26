@@ -3,12 +3,14 @@ from app.schemas.airline_schema import AirlineSchema, AirlinePublicSchema
 from flask import abort
 from sqlalchemy import or_, select
 from app.extensions import db
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
+from app.extensions import get_session
 
 from app.utils.airline_utils import get_airline_utils
 
 def login_airline_(mail, password, newPassword=None):
-    airline = Airline.query.filter_by(mail=mail).first()
+    session = get_session()
+    airline = session.query(Airline).filter_by(mail=mail).first()
 
     if not airline or not airline.check_password(password):
         abort(401, description="Invalid email or password")
@@ -18,8 +20,7 @@ def login_airline_(mail, password, newPassword=None):
             abort(400, description="First login requires a new password")
         airline.set_password(newPassword)
         airline.isFirstLogin = False
-        airline.save()
-        db.session.commit()
+        airline.save(session)
     login_user(airline)
     return {"message": "Login successful"}
 
@@ -29,7 +30,10 @@ def logout_airline_():
 
 
 def get_all_airlines(q):
-    session, Table, Schema = get_airline_utils()
+    
+    session = get_session()
+    Table, Schema = get_airline_utils()
+    
     query = session.query(Table)
     if q:
         query = query.filter(AirlineMatch(Table, q))
@@ -37,13 +41,15 @@ def get_all_airlines(q):
     return [Schema().dump(airline) for airline in airlines]
 
 def get_airline_by_id(airline_id):
-    session, Table, Schema = get_airline_utils(airline_id_requested=airline_id)
+    session = get_session()
+    Table, Schema = get_airline_utils(airline_id_requested=airline_id)
     airline = session.query(Table).get(airline_id)
     if not airline:
         abort(404)
     return Schema().dump(airline)
 
 def create_airline(data):
+    session = get_session(current_user.role)
     new_airline = Airline(
         mail=data.get('mail'),
         code=data.get('code'),
@@ -51,31 +57,22 @@ def create_airline(data):
         PIVA=data.get('PIVA'),
         logo=data.get('logo'),
     )
-    new_airline.save()
-    return get_airline_json(new_airline)
+    new_airline.save(session)
+    return AirlineSchema().dump(new_airline)
 
 def delete_airline_by_id(airline_id):
-    airline = Airline.query.get_or_404(airline_id)
-    airline.delete()
+    session = get_session(current_user.role)
+    airline = session.query(Airline).get_or_404(airline_id)
+    airline.delete(session)
     return {"message": "Airline deleted successfully"}
 
 def update_airline_by_id(airline_id, data):
-    airline = Airline.query.get_or_404(airline_id)
+    session = get_session(current_user.role)
+    airline = session.query(Airline).get_or_404(airline_id)
     if 'password' in data:
         airline.set_password(data.pop('password'))
-    airline.update(data)
-    return get_airline_json(airline)
-
-def get_airline_json(airline):
-    return {
-        "id": airline.id,
-        "mail": airline.mail,
-        "code": airline.code,
-        "name": airline.name,
-        "PIVA": airline.PIVA,
-        "logo": airline.logo,
-        "isFirstLogin": airline.isFirstLogin
-    }
+    airline.update(session, data)
+    return AirlineSchema().dump(airline)
     
 # WHERE code LIKE '%q%' OR name LIKE '%q%' ...
 def AirlineMatch(table, q):
@@ -86,6 +83,7 @@ def AirlineMatch(table, q):
     )
 
 def airline_exists(airline_id) -> bool:
-    exists_query = select(Airline.id).where(Airline.id == airline_id).exists()
-    exists_airline = db.session.execute(select(exists_query)).scalar()
+    session = get_session()
+    exists_query = select(AirlinePublic.id).where(AirlinePublic.id == airline_id).exists()
+    exists_airline = session.execute(select(exists_query)).scalar()
     return exists_airline

@@ -10,7 +10,7 @@ class PassengerSchema(Schema):
     surname = fields.Str(required=True)
     CF = fields.Str(allow_none=True)
     passportNumber = fields.Str(allow_none=True)
-    extra = fields.List(fields.Str(), missing=list)
+    extra = fields.List(fields.Str())
     seat = fields.Str(required=True)
     purchase_id = fields.Int(required=True)
 
