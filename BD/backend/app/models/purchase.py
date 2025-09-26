@@ -8,8 +8,9 @@ class Purchase(db.Model):
     date = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     quantity = db.Column(db.Integer, nullable=False)   # number of passengers TODO: forse si potrebbe anche togliere se i passeggeri sono creati al momento dell'acquisto
     
-    # TODO: trigger only before update: check new.quantity >= passengers
-    # TODO: trigger before insert/update: check user balance >= total_cost
+    # L'utente non può aggiornare un acquisto, perché il prezzo dei biglietti potrebbe cambiare
+    # TODO: trigger before insert check user balance >= total_cost
+    # l'utente dovrebbe chiedere all'admin di cancellare un acquisto
 
     # Constraints
     __table_args__ = (

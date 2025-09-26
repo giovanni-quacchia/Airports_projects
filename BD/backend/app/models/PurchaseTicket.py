@@ -1,7 +1,7 @@
 from app.extensions import db
 
 class PurchaseTicket(db.Model):
-    __tablename__ = 'purchasesTickets'
+    __tablename__ = 'purchases_tickets'
     purchase = db.Column(db.Integer, primary_key=True)
     ticket = db.Column(db.Integer, primary_key=True)
     """

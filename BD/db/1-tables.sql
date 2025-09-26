@@ -77,7 +77,7 @@ CREATE TABLE public.purchases (
     quantity INT NOT NULL CHECK (quantity > 0)
 );
 
-CREATE TABLE public."purchasesTickets" (
+CREATE TABLE public.purchases_tickets (
     purchase INT NOT NULL REFERENCES public.purchases(id) ON UPDATE CASCADE ON DELETE CASCADE,
     ticket INT NOT NULL REFERENCES public.tickets(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     PRIMARY KEY (purchase, ticket)

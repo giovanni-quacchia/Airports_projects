@@ -4,7 +4,8 @@ from flask import abort
 from sqlalchemy import or_, select
 from app.extensions import db
 from flask_login import login_user, logout_user
-from app.utils.auth_utils import get_session
+
+from app.utils.airline_utils import get_airline_utils
 
 def login_airline_(mail, password, newPassword=None):
     airline = Airline.query.filter_by(mail=mail).first()
@@ -28,10 +29,7 @@ def logout_airline_():
 
 
 def get_all_airlines(q):
-    session = get_session()
-    Table = Airline
-    Schema = AirlineSchema
-
+    session, Table, Schema = get_airline_utils()
     query = session.query(Table)
     if q:
         query = query.filter(AirlineMatch(Table, q))
@@ -39,10 +37,11 @@ def get_all_airlines(q):
     return [Schema().dump(airline) for airline in airlines]
 
 def get_airline_by_id(airline_id):
-    airline = Airline.query.get(airline_id)
+    session, Table, Schema = get_airline_utils(airline_id_requested=airline_id)
+    airline = session.query(Table).get(airline_id)
     if not airline:
         abort(404)
-    return get_airline_json(airline)
+    return Schema().dump(airline)
 
 def create_airline(data):
     new_airline = Airline(

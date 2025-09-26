@@ -5,7 +5,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
 
     DB_BASE_URI = os.getenv("DB_BASE_URI", "postgresql://")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_HOST = os.getenv("DB_HOST", "db")
     DB_PORT = os.getenv("DB_PORT", "5432")
     DB_NAME = os.getenv("DB_DBNAME", "flights_db")
 
