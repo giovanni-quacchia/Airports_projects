@@ -1,50 +1,104 @@
 from app.models.ticket import Ticket
+from app.models.flight import Flight
 from app.schemas.ticket_schema import TicketSchema
-from sqlalchemy import select
-from app.extensions import db
+from app.extensions import get_session
+from flask import abort
 from flask_login import current_user
+from sqlalchemy import asc, desc
 
-def get_all_tickets(params=None):
-    params = params or {}
+def get_all_tickets(type=None, min_price=None, max_price=None, min_quantity=None, max_quantity=None, sort_by=None, order='asc'):
 
-    # Define filters with lambdas
-    filters = {
-        "type": lambda v: Ticket.type == v,
-        "min_price": lambda v: Ticket.price >= v,
-        "max_price": lambda v: Ticket.price <= v,
-        "min_quantity": lambda v: Ticket.quantity >= v,
-        "max_quantity": lambda v: Ticket.quantity <= v,
-    }
+    session = get_session()
+    query = session.query(Ticket)
 
-    query = select(Ticket)
-    for key, func in filters.items():
-        value = params.get(key)
-        if value is not None:
-            query = query.where(func(value))
-    print(str(db.engine.url))
-    tickets = db.session.execute(query).scalars().all()
-    return TicketSchema(many=True).dump(tickets)
+    if type:
+        query = query.where(Ticket.type == type)
+    if min_price:
+        query = query.where(Ticket.price >= min_price)
+    if max_price:
+        query = query.where(Ticket.price <= max_price)
+    if min_quantity:
+        query = query.where(Ticket.quantity >= min_quantity)
+    if max_quantity:
+        query = query.where(Ticket.quantity <= max_quantity)
+    if sort_by:
+        query = query.order_by(asc(sort_by) if order == 'asc' else desc(sort_by))
+
+    res = query.all()
+    return TicketSchema(many=True).dump(res)
 
 def get_ticket_by_id(ticket_id):
-    ticket = Ticket.query.get_or_404(ticket_id, description=f"Ticket with id {ticket_id} not found")
+    session = get_session()
+    ticket = session.query(Ticket).get(ticket_id)
+    if not ticket:
+        abort(404, description=f"Ticket with id {ticket_id} not found")
     return TicketSchema().dump(ticket)
 
 def create_ticket(data):
-    new_ticket = Ticket(
-        type=data['type'],
-        price=data['price'],
-        quantity=data['quantity'],
-        flight=data['flight']
-    )
-    new_ticket.save()
-    return TicketSchema().dump(new_ticket)
+    try:
+        session = get_session()
+        with session.begin():
+
+            # check admin or (current_user.role == 'airline' and flight.airline == current_user.id)
+            if current_user.role == 'airline':
+                flight = session.query(Flight).get(data['flight'])
+                if not flight or flight.airline != current_user.id:
+                    abort(403, description="Forbidden: You don't have access to this resource")
+
+            new_ticket = Ticket(
+                type=data['type'],
+                price=data['price'],
+                quantity=data['quantity'],
+                flight=data['flight']
+            )
+
+            new_ticket.save(session)
+            return TicketSchema().dump(new_ticket)
+        
+    except Exception as e:
+        # rollback automatico
+        raise e
 
 def delete_ticket_by_id(ticket_id):
-    ticket = Ticket.query.get_or_404(ticket_id, description=f"Ticket with id {ticket_id} not found")
-    ticket.delete()
-    return {"message": "Ticket deleted successfully"}
+    try:
+        session = get_session()
+        ticket = session.query(Ticket).get(ticket_id)
+        if not ticket:
+            abort(404, description=f"Ticket not found")
+        # check admin or (current_user.role == 'airline' and flight.airline == current_user.id)
+        if current_user.role == 'airline':
+            flight = session.query(Flight).get(ticket.flight)
+            if not flight or flight.airline != current_user.id:
+                abort(403, description="Forbidden: You don't have access to this resource")
+
+        ticket.delete(session)
+        return {"message": "Ticket deleted successfully"}
+    except Exception as e:
+        # rollback automatico
+        raise e
+
+    except Exception as e:
+        # rollback automatico
+        raise e
 
 def update_ticket_by_id(ticket_id, data):
-    ticket = Ticket.query.get_or_404(ticket_id, description=f"Ticket with id {ticket_id} not found")
-    ticket.update(data)
-    return TicketSchema().dump(ticket)
+    try:
+        session = get_session()
+        ticket = session.query(Ticket).get(ticket_id)
+        if not ticket:
+            abort(404, description=f"Ticket not found")
+        
+        # airline can't set new flight of different airline
+        
+        if current_user.role == 'airline':
+            if data.get('flight'):
+                flight = session.query(Flight).get(data['flight'])
+                if not flight or flight.airline != current_user.id:
+                    abort(403, description="Forbidden: You don't have access to this resource")
+
+
+        ticket.update(data, session)
+        return TicketSchema().dump(ticket)
+    except Exception as e:
+        # rollback automatico
+        raise e

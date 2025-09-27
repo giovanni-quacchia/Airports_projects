@@ -3,6 +3,9 @@ from app.services.ticket_service import get_all_tickets, get_ticket_by_id, creat
 from app.schemas.ticket_schema import TicketSchema, TicketQuerySchema
 from app.extensions import db
 
+from flask_login import login_required
+from app.utils.auth_utils import admin_required, admin_or_airline_required
+
 ticket_bp = Blueprint('ticket_bp', __name__)
 ticket_schema = TicketSchema()
 ticket_query_schema = TicketQuerySchema()
@@ -11,7 +14,7 @@ ticket_query_schema = TicketQuerySchema()
 @ticket_bp.route('/', methods=['GET'])
 def get_tickets():
     params = ticket_query_schema.load(request.args)
-    results = get_all_tickets(params)
+    results = get_all_tickets(**params)
     return jsonify(results), 200
 
 # Get ticket by ID
@@ -22,6 +25,8 @@ def get_ticket(ticket_id):
 
 # Create ticket
 @ticket_bp.route('/', methods=['POST'])
+@login_required
+@admin_or_airline_required
 def new_ticket():
     data = ticket_schema.load(request.get_json())
     ticket = create_ticket(data)
@@ -29,12 +34,16 @@ def new_ticket():
 
 # Delete ticket
 @ticket_bp.route('/<int:ticket_id>', methods=['DELETE'])
+@login_required
+@admin_required
 def delete_ticket(ticket_id):
     result = delete_ticket_by_id(ticket_id)
     return jsonify(result), 200
 
 # Update ticket
 @ticket_bp.route('/<int:ticket_id>', methods=['PUT'])
+@login_required
+@admin_or_airline_required
 def update_ticket(ticket_id):
     data = ticket_schema.load(request.get_json(), partial=True)
     ticket = update_ticket_by_id(ticket_id, data)

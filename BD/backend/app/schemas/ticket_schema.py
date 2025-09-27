@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, ValidationError, validates
+from marshmallow import Schema, fields, ValidationError, validates, validates_schema
 
 # --- Funzioni di validazione riutilizzabili ---
 def validate_non_negative_price(value):
@@ -41,6 +41,23 @@ class TicketQuerySchema(Schema):
     max_price = fields.Float(required=False)
     min_quantity = fields.Int(required=False)
     max_quantity = fields.Int(required=False)
+    sort_by = fields.Str(required=False)
+    order = fields.Str(required=False)
+
+    @validates("sort_by")
+    def check_sort_by(self, value, **kwargs):
+        if value not in ['price', 'quantity']:
+            raise ValidationError("sort_by must be either 'price' or 'quantity'.")
+
+    @validates("order")
+    def check_order(self, value, **kwargs):
+        if value not in ['asc', 'desc']:
+            raise ValidationError("order must be either 'asc' or 'desc'.")
+
+    @validates_schema
+    def check_sorting_fields(self, data, **kwargs):
+        if ('order' in data and 'sort_by' not in data):
+            raise ValidationError("Both sort_by and order must be provided together.")
 
     @validates("min_price")
     def check_min_price(self, value, **kwargs):

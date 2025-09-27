@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from .extensions import db, login_manager
 
-from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp, itinerary_bp, passenger_bp
+from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp, itinerary_bp, passenger_bp, seat_bp
 from app.error_handlers import register_error_handlers
 
 from app.DB.init_db import init_db
@@ -22,13 +22,6 @@ def create_app():
 
     register_error_handlers(app)
     register_blueprints(app)
-
-    # @app.before_request
-    # def set_db_session():
-    #     role = "anonymous"
-    #     if current_user.is_authenticated:
-    #         role = current_user.role
-    #     g.db_session = get_db_session(role)
 
     with app.app_context():
         init_db()
@@ -50,3 +43,4 @@ def register_blueprints(app):
     app.register_blueprint(ticket_bp, url_prefix='/api/tickets')
     app.register_blueprint(itinerary_bp, url_prefix='/api/itineraries')
     app.register_blueprint(passenger_bp, url_prefix='/api/passengers')
+    app.register_blueprint(seat_bp, url_prefix='/api/seats')

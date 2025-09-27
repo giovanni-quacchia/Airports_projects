@@ -23,21 +23,19 @@ GRANT airline TO app_airline;
 
 -- privilegi per admin: tutte le operazioni CRUD su tutte le tabelle
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin; -- utile anche per .flush (caricare id su un nuovo oggetto aggiunto in una transazione, ma non ancora committato)
 
 -- privilegi per l'utente guest
-GRANT SELECT ON public_airlines, airlines, airplanes, flights, routes, airports, tickets, users, itineraries TO anonymous;
+GRANT SELECT ON public_airlines, airlines, airplanes, flights, routes, airports, tickets, users, itineraries, public_seats TO anonymous;
 GRANT INSERT ON users TO anonymous;
 
--- TODO: aggiungere seats
-
 -- privilegi per l'utente user
--- TODO: add purchases
-GRANT SELECT, INSERT ON purchases, purchases_tickets TO user_authenticated;
+GRANT SELECT, INSERT ON purchases, purchases_tickets, passengers, seats TO user_authenticated;
+GRANT UPDATE ON passengers, purchases, seats TO user_authenticated;
 GRANT UPDATE, DELETE ON users TO user_authenticated;
--- TODO: aggiungere anche passengers, seats
+GRANT USAGE ON SEQUENCE purchases_id_seq, passengers_id_seq TO user_authenticated; -- per consentire .flush in una transazione
 
 -- privilegi per l'utente airline
-GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes TO airline;
+GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes, passengers, seats TO airline;
 GRANT INSERT ON routes TO airline;
 GRANT INSERT, UPDATE ON airplanes, flights, tickets TO airline;
--- TODO: aggiungere anche passengers, seats

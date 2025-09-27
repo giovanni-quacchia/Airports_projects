@@ -10,3 +10,4 @@ from .flight import flight_bp
 from .ticket import ticket_bp
 from .itinerary import itinerary_bp
 from .passenger import passenger_bp
+from .seat import seat_bp

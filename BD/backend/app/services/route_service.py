@@ -5,8 +5,11 @@ from app.models.route import Route
 from app.models.airport import Airport
 from app.extensions import db
 from app.services.airport_service import AirportsMatch
+from app.extensions import get_session
 
 def get_all_routes(from_airport=None, to_airport=None):
+
+    session = get_session()
     
     FromAirport = aliased(Airport)
     ToAirport = aliased(Airport)
@@ -18,28 +21,32 @@ def get_all_routes(from_airport=None, to_airport=None):
     if to_airport:
         query = query.where(AirportsMatch(ToAirport, to_airport))
 
-    routes = db.session.execute(query).all()
+    routes = session.execute(query).all()
 
     return [get_route_json(route) for route in routes]
 
 def get_route_by_id(route_id):
+    
+    session = get_session()
+
     FromAirport = aliased(Airport)
     ToAirport = aliased(Airport)
     
     query = query_get_routes(FromAirport, ToAirport).where(Route.id == route_id)
 
-    route = db.session.execute(query).one_or_none()
+    route = session.execute(query).one_or_none()
     if not route:
         abort(404)
 
     return get_route_json(route)
 
 def create_route(data):
+    session = get_session()
     new_route = Route(
         from_airport=data.get('from_airport'),
         to_airport=data.get('to_airport')
     )
-    new_route.save()
+    new_route.save(session)
     return {
         "id": new_route.id,
         "from_airport": new_route.from_airport,
@@ -47,13 +54,19 @@ def create_route(data):
     }
 
 def delete_route_by_id(route_id):
-    route = Route.query.get_or_404(route_id)
-    route.delete()
+    session = get_session()
+    route = session.query(Route).get(route_id)
+    if not route:
+        abort(404, description="Route not found")
+    route.delete(session)
     return {"message": "Route deleted successfully"}
 
 def update_route_by_id(route_id, data):
-    route = Route.query.get_or_404(route_id)
-    route.update(data)
+    session = get_session()
+    route = session.query(Route).get(route_id)
+    if not route:
+        abort(404, description="Route not found")
+    route.update(data, session)
     return {
         "id": route.id,
         "from_airport": route.from_airport,

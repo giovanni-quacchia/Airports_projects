@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify, request
 from app.services.route_service import get_all_routes, create_route, get_route_by_id, delete_route_by_id, update_route_by_id
 from app.services.airplane_service import get_airplanes_by_routeId
 from app.schemas.route_schema import RouteSchema, RouteQuerySchema
-from app.extensions import db
 
 from flask_login import login_required
 from app.utils.auth_utils import admin_required, admin_or_airline_required

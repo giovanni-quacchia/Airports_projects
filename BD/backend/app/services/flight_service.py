@@ -7,6 +7,7 @@ from app.models.airport import Airport
 from app.schemas.flight_schema import FlightSchema
 from app.extensions import db
 from app.services.airline_service import airline_exists
+from datetime import timedelta
 
 from app.extensions import get_session
 from flask_login import current_user
@@ -18,7 +19,7 @@ def get_all_flights(from_airport=None, to_airport=None, from_date=None, to_date=
     session = get_session()
     
     query = (
-        select(Flight)
+        session.query(Flight)
         .join(Route, Flight.route == Route.id)
         .join(FromAirport, Route.from_airport == FromAirport.id)
         .join(ToAirport, Route.to_airport == ToAirport.id)
@@ -33,10 +34,11 @@ def get_all_flights(from_airport=None, to_airport=None, from_date=None, to_date=
     if from_date:
         query = query.where(Flight.departure >= from_date)
     if to_date:
+        to_date += timedelta(hours=23, minutes=59, seconds=59)
         query = query.where(Flight.arrival <= to_date)
 
-    flights = session.execute(query).scalars().all()
-    return FlightSchema(many=True).dump(flights)
+    res = query.all()
+    return FlightSchema(many=True).dump(res)
 
 def get_flights_by_airlineId(airline_id):
     
@@ -83,11 +85,9 @@ def delete_flight_by_id(flight_id):
             # Check if admin or airline owner
             if current_user.role != "admin" and flight.airline != current_user.id:
                 abort(403, description="Forbidden: You don't have access to this resource")
-                
-            # TODO: check associated tickets or other
             
-            flight.delete(session)
-            session.commit()
+            flight.delete(session, commit=False)
+            return {"message": "Flight deleted"}
     except Exception as e:
         # rollback automatico
         raise e
@@ -111,7 +111,7 @@ def update_flight_by_id(flight_id, data):
             if current_user.role == "airline" and "airline" in data and data["airline"] != current_user.id:
                 abort(403, description="Forbidden: You cannot change the airline field")    
                 
-            flight.update(data, session)
+            flight.update(data)
             return FlightSchema().dump(flight)
     except Exception as e:
         # rollback automatico

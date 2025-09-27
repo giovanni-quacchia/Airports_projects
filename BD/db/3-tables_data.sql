@@ -167,7 +167,26 @@ INSERT INTO purchases (id, "user", total_cost, date, quantity) VALUES
 -- =====================
 INSERT INTO purchases_tickets (purchase, ticket) VALUES
 (1, 1), -- purchase 1 -> ticket 1
-(1, 2); -- purchase 1 -> ticket 2
+(1, 2), -- purchase 1 -> ticket 2
+(2, 5); -- purchase 2 -> ticket 5
+
+-- =====================
+-- PASSENGERS
+-- =====================
+INSERT INTO passengers (id, name, surname, "CF", "passportNumber", purchase) VALUES
+(1, 'Mario', 'Rossi', 'RSSMRA80A01H501X', NULL, 1),
+(2, 'Luigi', 'Bianchi', NULL, 'P1234567', 1),
+(3, 'Anna', 'Verdi', 'VRDANN90B02H501Y', NULL, 2);
+
+-- =====================
+-- SEATS
+-- =====================
+INSERT INTO seats (passenger, ticket, seat, extra) VALUES
+(1, 1, 'A1', ARRAY['LARGER SEAT']::extra_types[]),
+(2, 1, 'A2', ARRAY['PRIORITY']::extra_types[]),
+(3, 5, 'B1', ARRAY['EXTRA BAG']::extra_types[]),
+(1, 2, 'C1', ARRAY['LARGER SEAT']::extra_types[]),
+(2, 2, 'C2', ARRAY['PRIORITY']::extra_types[]);
 
 -- =====================
 -- AGGIORNA LE SEQUENCE (PK)
@@ -182,3 +201,4 @@ SELECT setval('routes_airplanes_id_seq', COALESCE((SELECT MAX(id) FROM routes_ai
 SELECT setval('flights_id_seq', COALESCE((SELECT MAX(id) FROM flights), 0));
 SELECT setval('tickets_id_seq', COALESCE((SELECT MAX(id) FROM tickets), 0));
 SELECT setval('purchases_id_seq', COALESCE((SELECT MAX(id) FROM purchases), 0));
+SELECT setval('passengers_id_seq', COALESCE((SELECT MAX(id) FROM passengers), 0));

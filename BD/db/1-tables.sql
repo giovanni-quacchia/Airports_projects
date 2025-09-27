@@ -90,3 +90,34 @@ CREATE TABLE public.routes_airplanes (
     "startDate" TIMESTAMP NOT NULL,
     "endDate" TIMESTAMP NOT NULL CHECK ("endDate" > "startDate")
 );
+
+CREATE TABLE public.passengers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
+    "CF" VARCHAR(32),
+    "passportNumber" VARCHAR(32),
+    purchase INTEGER NOT NULL,
+
+    CONSTRAINT fk_purchase_passenger
+        FOREIGN KEY (purchase) REFERENCES public.purchases(id) ON UPDATE CASCADE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+
+    CONSTRAINT check_CF_or_passport_not_null
+        CHECK ("CF" IS NOT NULL OR "passportNumber" IS NOT NULL)
+);
+
+CREATE TYPE extra_types AS ENUM ('LARGER SEAT', 'PRIORITY', 'EXTRA BAG');
+
+CREATE TABLE public.seats (
+    passenger INT,
+    ticket INT,
+    seat VARCHAR(5) NOT NULL,
+    extra extra_types[] NOT NULL DEFAULT '{}',
+
+    PRIMARY KEY (passenger, ticket),
+
+    CONSTRAINT fk_passenger_seat
+        FOREIGN KEY (passenger) REFERENCES public.passengers(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT fk_ticket_seat
+        FOREIGN KEY (ticket) REFERENCES public.tickets(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+);

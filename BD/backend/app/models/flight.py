@@ -1,5 +1,6 @@
 from app.extensions import db
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.dialects.postgresql import JSONB
 
 Base = declarative_base()
 
@@ -19,9 +20,9 @@ class Flight(db.Model):
     # Constraints
     __table_args__ = (
         # FK
-        db.ForeignKeyConstraint(['route'], ['routes.id'], name='fk_route', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
-        db.ForeignKeyConstraint(['airline'], ['airlines.id'], name='fk_airline', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
-        db.ForeignKeyConstraint(['airplane'], ['airplanes.id'], name='fk_airplane', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
+        db.ForeignKeyConstraint(['route'], ['routes.id'], name='fk_route_flight', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
+        db.ForeignKeyConstraint(['airline'], ['airlines.id'], name='fk_airline_flight', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
+        db.ForeignKeyConstraint(['airplane'], ['airplanes.id'], name='fk_airplane_flight', onupdate='CASCADE', ondelete='RESTRICT', deferrable=True, initially='DEFERRED'),
 
         # CHECK
         db.CheckConstraint('duration > 0', name='check_duration_positive'),
@@ -39,21 +40,23 @@ class Flight(db.Model):
         print("New flight created:", self)
         session.commit()
 
-    def delete(self, session):
+    def delete(self, session, commit=True):
         session.delete(self)
-        session.commit()
+        if commit:
+            session.commit()
 
-    def update(self, data, session):
+    def update(self, data, session=None):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        session.commit()
+        if session:
+            session.commit()
 
-# TODO: slqalchemy ORM richiedeva una primary key per mappare la view
+# sqlalchemy ORM richiedeva una primary key per mappare la view
 class Itinerary(Base):
     __tablename__ = 'itineraries'
     id = db.Column(db.Integer, primary_key=True)
-    flight1 = db.Column(db.JSON, nullable=False)
-    flight2 = db.Column(db.JSON, nullable=True)
+    flight1 = db.Column(JSONB, nullable=False)
+    flight2 = db.Column(JSONB, nullable=True)
     tot_duration = db.Column(db.Interval, nullable=False)
     stop_time = db.Column(db.Interval, nullable=True)

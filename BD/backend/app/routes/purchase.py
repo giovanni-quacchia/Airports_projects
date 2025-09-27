@@ -26,6 +26,51 @@ def get_purchase(purchase_id):
     return jsonify(result), 200
 
 # Create purchase
+"""
+{
+    user, 
+    tickets: [id, id, ...] # list of unique ticket IDs
+    passengers: [
+        {
+            name, surname, CF, passportNumber,
+            seats: [{
+                ticket, seat, extra                     # all tickets different
+            }]
+        }
+    ]
+}
+
+TEST
+
+{
+    "user":3, // budget iniziale 200
+    "tickets": [1], // quantity iniziale 50, price 150
+    "quantity": 1
+}
+
+{
+    "user":2, // budget iniziale 10000
+    "tickets": [1], // quantity iniziale 50, price 150
+    "quantity": 1,
+    "passengers":[
+        {
+            "name": "Mario",
+            "surname": "Rossi",
+            "CF": "MRARSS80A01H501U",
+            "passportNumber": "X1234567",   
+            "seats": [
+                {
+                    "ticket": 2, # error qui, ticket non valido per il volo
+                    "seat": "A3",
+                    "extra": ["PRIORITY"]
+                }
+            ]
+        }
+    ]
+}
+
+
+"""
 @purchase_bp.route('/', methods=['POST'])
 @login_required
 @admin_or_user_required

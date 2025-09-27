@@ -1,5 +1,5 @@
 from app.schemas.flight_schema import FlightQuerySchema
-from marshmallow import Schema, fields, ValidationError, validates, pre_load
+from marshmallow import Schema, fields
 from datetime import datetime
 
 class ItineraryFlight(Schema):
