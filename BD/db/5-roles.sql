@@ -25,16 +25,19 @@ GRANT airline TO app_airline;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 
 -- privilegi per l'utente guest
-GRANT SELECT ON public_airlines, airplanes, flights, routes, airports, tickets TO anonymous;
+GRANT SELECT ON public_airlines, airlines, airplanes, flights, routes, airports, tickets, users, itineraries TO anonymous;
+GRANT INSERT ON users TO anonymous;
+
+-- TODO: aggiungere seats
 
 -- privilegi per l'utente user
 -- TODO: add purchases
-GRANT SELECT, INSERT ON purchases, purchases_tickets, users TO user_authenticated;
+GRANT SELECT, INSERT ON purchases, purchases_tickets TO user_authenticated;
 GRANT UPDATE, DELETE ON users TO user_authenticated;
 -- TODO: aggiungere anche passengers, seats
 
 -- privilegi per l'utente airline
-GRANT SELECT, INSERT, UPDATE ON airlines TO airline;
+GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes TO airline;
 GRANT INSERT ON routes TO airline;
-GRANT INSERT, UPDATE, DELETE ON airplanes, flights, tickets TO airline;
+GRANT INSERT, UPDATE ON airplanes, flights, tickets TO airline;
 -- TODO: aggiungere anche passengers, seats

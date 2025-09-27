@@ -4,6 +4,8 @@ from app.services.airline_service import get_all_airlines, create_airline, get_a
 from app.services.airplane_service import get_airplanes_by_airlineId
 from app.services.flight_service import get_flights_by_airlineId
 from app.schemas.airline_schema import AirlineSchema, AirlineUpdateSchema, AirlineQuerySchema, AirlineLoginSchema
+from flask_login import login_required
+from app.utils.auth_utils import admin_or_airline_required, admin_or_airline_owner_required, admin_required
 
 airline_bp = Blueprint('airline_bp', __name__)
 airline_create_schema = AirlineSchema()
@@ -44,7 +46,7 @@ def get_airplanes_by_airline(airline_id):
     results = get_airplanes_by_airlineId(airline_id)
     return jsonify(results), 200
 
-# Get flights by airline ID TODO
+# Get flights by airline ID TODO:
 @airline_bp.route('/<int:airline_id>/flights', methods=['GET'])
 def get_flights_by_airline(airline_id):
     results = get_flights_by_airlineId(airline_id)
@@ -52,12 +54,16 @@ def get_flights_by_airline(airline_id):
 
 # Create airline
 @airline_bp.route('/', methods=['POST'])
+@login_required
+@admin_required
 def new_airline():
     data = airline_create_schema.load(request.get_json())
     airline = create_airline(data)
     return jsonify(airline), 201
 
 # Delete airline
+@login_required
+@admin_required
 @airline_bp.route('/<int:airline_id>', methods=['DELETE'])
 def delete_airline(airline_id):
     result = delete_airline_by_id(airline_id)
@@ -66,6 +72,8 @@ def delete_airline(airline_id):
 # Update airline
 # TODO: trigger beforeupdate code, update flights code ???
 @airline_bp.route('/<int:airline_id>', methods=['PUT'])
+@login_required
+@admin_or_airline_owner_required
 def update_airline(airline_id):
     data = airline_update_schema.load(request.get_json(), partial=True)
     airline = update_airline_by_id(airline_id, data)

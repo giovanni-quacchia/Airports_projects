@@ -4,11 +4,13 @@ from werkzeug.exceptions import NotFound, BadRequest
 
 from app.models.passenger import Passenger, apply_sorting
 from app.extensions import db
-from app.schemas.passenger_schemas import (
+from app.schemas.passenger_schema import (
     PassengerSchema, PassengerUpdateSchema, PassengerQuerySchema
 )
 
 passenger_bp = Blueprint("passenger_bp", __name__)
+
+# TODO: logica delle query in service, qui fai come negli altri routes
 
 # --- helper ruolo admin (come nel tuo Express router per GET)
 def require_admin():

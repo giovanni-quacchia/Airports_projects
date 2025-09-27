@@ -6,6 +6,9 @@ airplane_bp = Blueprint('airplane_bp', __name__)
 airplane_schema = AirplaneSchema()
 airplane_query_schema = AirplaneQuerySchema()
 
+from flask_login import login_required
+from app.utils.auth_utils import admin_required, admin_or_airline_owner_required, admin_or_airline_required
+
 # Get all airplanes
 @airplane_bp.route('/', methods=['GET'])
 def get_airplanes():
@@ -21,6 +24,8 @@ def get_airplane(airplane_id):
 
 # Create airplane
 @airplane_bp.route('/', methods=['POST'])
+@login_required
+@admin_or_airline_required
 def new_airplane():
     data = airplane_schema.load(request.get_json())
     airplane = create_airplane(data)
@@ -28,12 +33,16 @@ def new_airplane():
 
 # Delete airplane
 @airplane_bp.route('/<int:airplane_id>', methods=['DELETE'])
+@login_required
+@admin_or_airline_required
 def delete_airplane(airplane_id):
     result = delete_airplane_by_id(airplane_id)
     return jsonify(result), 200
 
 # Update airplane
 @airplane_bp.route('/<int:airplane_id>', methods=['PUT'])
+@login_required
+@admin_or_airline_required
 def update_airplane(airplane_id):
     data = airplane_schema.load(request.get_json(), partial=True)
     airplane = update_airplane_by_id(airplane_id, data)

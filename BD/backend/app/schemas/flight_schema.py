@@ -22,10 +22,11 @@ class FlightSchema(Schema):
         if not number_part.isdigit():
             raise ValidationError("The remaining characters must be numeric.")
 
+# TODO: from to sono i code aeroporti
 class FlightQuerySchema(Schema):
     code = fields.Str()
-    from_airport = fields.Str(required=True)
-    to_airport = fields.Str(required=True)
-    from_date = fields.Str(required=True)
-    to_date = fields.Str(required=True)
-    onlyDirect = fields.Bool(load_default=False)
+    from_airport = fields.Str()
+    to_airport = fields.Str()
+    from_date = fields.Str()
+    to_date = fields.Str()
+    

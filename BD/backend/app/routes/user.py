@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required
 from app.services.user_service import get_all_users, create_user, get_user_by_id, delete_user_by_id, update_user_by_id, login_user_, logout_user_
-from app.schemas.user_schema import UserCreateSchema, UserUpdateSchema, UserQuerySchema
-from app.utils.auth_utils import admin_required, admin_or_owner_required
+from app.schemas.user_schema import UserBaseSchema, UserSchema, UserQuerySchema
+from app.utils.auth_utils import admin_required, admin_or_owner_user_required
 
 user_bp = Blueprint('user_bp', __name__)
-user_create_schema = UserCreateSchema()
-user_update_schema = UserUpdateSchema()
+user_create_schema = UserBaseSchema()
+user_update_schema = UserSchema()
 user_query_schema = UserQuerySchema()
 
 # login
@@ -35,7 +35,7 @@ def get_users():
 # Get user by ID
 @user_bp.route('/<int:user_id>', methods=['GET'])
 @login_required
-@admin_or_owner_required
+@admin_or_owner_user_required
 def get_user(user_id):
     result = get_user_by_id(user_id)
     return jsonify(result), 200
@@ -52,7 +52,7 @@ def new_user():
 # Delete user
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
 @login_required
-@admin_or_owner_required
+@admin_or_owner_user_required
 def delete_user(user_id):
     result = delete_user_by_id(user_id)
     return jsonify(result), 200
@@ -60,7 +60,7 @@ def delete_user(user_id):
 # Update user
 @user_bp.route('/<int:user_id>', methods=['PUT'])
 @login_required
-@admin_or_owner_required
+@admin_or_owner_user_required
 def update_user(user_id):
     data = user_update_schema.load(request.get_json(), partial=True)
     user = update_user_by_id(user_id, data)

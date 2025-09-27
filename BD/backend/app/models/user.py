@@ -52,17 +52,17 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return f"user:{self.id}" 
 
-    def save(self):
-        db.session.add(self)
+    def save(self, session):
+        session.add(self)
         print("New user created:", self)
-        db.session.commit()
+        session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+    def delete(self, session):
+        session.delete(self)
+        session.commit()
     
-    def update(self, data):
+    def update(self, session, data):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        db.session.commit()
+        session.commit()

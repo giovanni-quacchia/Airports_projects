@@ -1,7 +1,10 @@
 from sqlalchemy import text
-from app.extensions import db
+from app.extensions import get_session
 
+# TODO: da sistemare, manca la parametrizzazione ???
 def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_date=None, onlyDirect=False):
+
+    session = get_session()
 
     sql = "SELECT * FROM itineraries"
     params = {}

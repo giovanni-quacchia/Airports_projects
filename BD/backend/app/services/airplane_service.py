@@ -1,14 +1,16 @@
 from app.models.airplane import Airplane
 from app.models.RoutesAirplanes import RoutesAirplanes
-from sqlalchemy import select, desc, func
-from app.extensions import db
+from sqlalchemy import select, func
 from flask import abort
 from app.services.route_service import route_exists
 from app.schemas.airplane_schema import AirplaneSchema
+from app.extensions import get_session
 
+from flask_login import current_user
 
 def get_all_airplanes(model=None):
-    query = Airplane.query
+    session = get_session()
+    query = session.query(Airplane)
 
     if model:
         query = query.filter(Airplane.model.ilike(f'%{model}%'))
@@ -42,6 +44,8 @@ def get_airplanes_by_routeId(route_id):
     if(not route_exists(route_id)):
         abort(404, description=f"Route with ID {route_id} does not exist.")
 
+    session = get_session(current_user.role)
+
     # Trova tutti gli aerei con relativo periodo associato
     query = (
         select(
@@ -58,7 +62,7 @@ def get_airplanes_by_routeId(route_id):
         .group_by(Airplane.id)
     )
 
-    results = db.session.execute(query).all()
+    results = session.execute(query).all()
 
     return [
         AirplaneSchema().dump(airplane) | {"periods": periods}
@@ -66,25 +70,67 @@ def get_airplanes_by_routeId(route_id):
     ]
 
 def get_airplane_by_id(airplane_id):
-    airplane = Airplane.query.get_or_404(airplane_id)
+    session = get_session()
+    airplane = session.query(Airplane).get(airplane_id)
+    if not airplane:
+        abort(404, description="Airplane not found")
     return AirplaneSchema().dump(airplane)
 
 def create_airplane(data):
+    session = get_session(current_user.role)
     new_airplane = Airplane(
         model=data['model'],
         letters=data['letters'],
         rows=data['rows'],
         airline=data['airline']
     )
-    new_airplane.save()
+    new_airplane.save(session)
     return AirplaneSchema().dump(new_airplane)
 
 def delete_airplane_by_id(airplane_id):
-    airplane = Airplane.query.get_or_404(airplane_id)
-    airplane.delete()
-    return {"message": "Airplane deleted successfully"}
+    try:
+        session = get_session(current_user.role)
+        with session.begin():
+            
+            # Find airplane
+            airplane = find_airplane_by_id(session, airplane_id)
+            
+            # Check if admin or airline owner
+            if current_user.role != "admin" and airplane.airline != current_user.id:
+                abort(403, description="Forbidden: You don't have access to this resource")
+                
+            # Associated routes are ondelete=cascade
+            
+            airplane.delete(session)
+            
+            return {"message": "Airplane deleted successfully"}
+        
+    except Exception as e:
+        # rollback automatico
+        raise e
 
 def update_airplane_by_id(airplane_id, data):
-    airplane = Airplane.query.get_or_404(airplane_id)
-    airplane.update(data)
-    return AirplaneSchema().dump(airplane)
+    try:
+        session = get_session(current_user.role)
+        with session.begin():
+            
+            # Find airplane
+            airplane = find_airplane_by_id(session, airplane_id)
+            
+            # Check if admin or airline owner
+            if current_user.role != "admin" and airplane.airline != current_user.id:
+                abort(403, description="Forbidden: You don't have access to this resource")
+                
+            airplane.update(data, session)
+
+            return AirplaneSchema().dump(airplane)
+
+    except Exception as e:
+        # rollback automatico
+        raise e
+
+def find_airplane_by_id(session, id):
+    airplane = session.query(Airplane).get(id)
+    if not airplane:
+        abort(404, description="Airplane not found")
+    return airplane

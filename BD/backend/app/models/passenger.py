@@ -33,10 +33,13 @@ class Passenger(db.Model):
 
     purchase_id = db.Column(
         db.Integer,
-        db.ForeignKey('purchases.id', ondelete='CASCADE'),
+        db.ForeignKey('purchases.id', ondelete='RESTRICT'),
         nullable=False
     )
-    purchase = relationship("Purchase", backref=db.backref("passengers", lazy=True))
+    # RELATIONSHIP non servono 
+    # TODO: constraint FK (come negli altri model)
+    # TODO: seat ed extra sono in un altro model (vedi schema db)
+    # TODO: altri vincoli: unique CF, passportNumber ?, mettere anche onupdate
 
     def __init__(
         self,
@@ -80,6 +83,7 @@ class Passenger(db.Model):
         self._validate_model()
         db.session.commit()
 
+    # TODO: validate model non serve c'è già marshmallow
     # ---------- Validazioni di modello (cross-field)
     def _validate_model(self):
         # name/surname
@@ -109,7 +113,7 @@ class Passenger(db.Model):
         if not isinstance(self.purchase_id, int):
             raise BadRequest("purchase (id) is required")
 
-
+# TODO: vista? c'è gia seats public, dati passengers li lascierei nascosti?
 # Tabella “pubblica” (senza dati sensibili)
 class PassengerPublic(Base):
     __tablename__ = 'public_passengers'
@@ -122,7 +126,7 @@ class PassengerPublic(Base):
 
 
 # ---------- Funzioni di validazione stile Mongoose ----------
-
+# TODO: anche qua i validate non servono c'è marshamallow
 def _require_object(data: Any):
     if not isinstance(data, dict):
         raise BadRequest("Object expected")
@@ -241,6 +245,7 @@ def validate_search(data: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+# TODO: piuttosto meglio ordinare nella query
 # ---------- Helper: applicare l’ordinamento ad una query SQLAlchemy ----------
 def apply_sorting(query, sortBy: Optional[str], order: Optional[str]):
     if not sortBy:
