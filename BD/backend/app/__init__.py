@@ -33,7 +33,6 @@ def create_app():
     with app.app_context():
         init_db()
         print("Database tables created")
-        print("Database session created for anonymous user")
 
     return app
     

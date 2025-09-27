@@ -51,6 +51,15 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def user_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.role != 'user':
+            print(f"User required, {current_user.role} found")
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function
+
 def admin_or_user_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -72,6 +81,15 @@ def admin_or_owner_user_required(f):
                 abort(403)  # Forbidden
             return f(*args, **kwargs)
         return decorated_function
+
+def airline_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.role != 'airline':
+            print(f"Airline required, {current_user.role} found")
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function
 
 def admin_or_airline_required(f):
     @wraps(f)

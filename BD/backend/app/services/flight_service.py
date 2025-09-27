@@ -50,11 +50,14 @@ def get_flights_by_airlineId(airline_id):
     return FlightSchema(many=True, exclude=["airline"]).dump(flights)
 
 def get_flight_by_id(flight_id):
-    flight = Flight.query.get_or_404(flight_id)
+    session = get_session()
+    flight = session.query(Flight).get(flight_id)
+    if not flight:
+        abort(404, description="Flight not found")
     return FlightSchema().dump(flight)
 
 def create_flight(data):
-    session = get_session(current_user.role)
+    session = get_session()
     new_flight = Flight(
         code=data.get('code'),
         route=data.get('route'),
@@ -69,7 +72,7 @@ def create_flight(data):
 
 def delete_flight_by_id(flight_id):
     try:
-        session = get_session(current_user.role)
+        session = get_session()
         with session.begin():
             
             # Find flight
@@ -92,7 +95,7 @@ def delete_flight_by_id(flight_id):
 # TODO: airplane checked by trigger
 def update_flight_by_id(flight_id, data):
     try:
-        session = get_session(current_user.role)
+        session = get_session()
         with session.begin():
             
             # Find flight
@@ -108,8 +111,7 @@ def update_flight_by_id(flight_id, data):
             if current_user.role == "airline" and "airline" in data and data["airline"] != current_user.id:
                 abort(403, description="Forbidden: You cannot change the airline field")    
                 
-            flight.update(data)
-            session.commit()
+            flight.update(data, session)
             return FlightSchema().dump(flight)
     except Exception as e:
         # rollback automatico

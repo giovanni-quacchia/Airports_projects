@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from config import Config
 
+from flask_login import current_user
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 
@@ -17,5 +19,6 @@ ENGINES = {
 # sessionmaker per creare sessioni singleton
 SESSIONS = {role: scoped_session(sessionmaker(bind=engine)) for role, engine in ENGINES.items()}
 
-def get_session(role="guest"):
-    return SESSIONS.get(role, SESSIONS["guest"])
+def get_session():
+    role = getattr(current_user, 'role', 'guest')
+    return SESSIONS.get(role)

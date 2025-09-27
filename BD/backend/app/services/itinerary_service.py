@@ -1,23 +1,30 @@
 from sqlalchemy import text
 from app.extensions import get_session
+from app.models.flight import Itinerary
+from app.schemas.itinerary_schema import ItinerarySchema
 
-# TODO: da sistemare, manca la parametrizzazione ???
 def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_date=None, onlyDirect=False):
 
     session = get_session()
 
-    sql = "SELECT * FROM itineraries"
-    params = {}
-    filters = []
+    query = session.query(Itinerary)
+    res = query.all()
 
     if to_date:
         to_date += " 23:59:59"
 
     if onlyDirect:
-        filters.append("flight2 IS NULL")
+        query = query.where(Itinerary.flight2._is_(None))
+
     if from_airport:
-        filters.append("flight1 ->> 'from' = :from_airport")
-        params['from_airport'] = from_airport
+        query = query.where(Itinerary.flight1['from_'].astext == from_airport)
+
+    if to_airport:
+        query = query.where(
+            (Itinerary.flight1['to_'].astext == to_airport and Itinerary.flight2._is_(None)) | 
+            ((Itinerary.flight2 != None) & (Itinerary.flight2['to_'].astext == to_airport))
+        )
+
     if to_airport:
         filters.append("((flight1 ->> 'to' = :to_airport AND flight2 IS NULL) OR flight2 ->> 'to' = :to_airport)")
         params['to_airport'] = to_airport
@@ -33,7 +40,6 @@ def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_d
     if filters:
         sql += " WHERE " + " AND ".join(filters)
 
-    query = text(sql)
-    result = db.session.execute(query, params).mappings().all()
-    itineraries = [dict(row) for row in result]
-    return itineraries
+
+    result = session.execute(query, params).mappings().all()
+    return ItinerarySchema(many=True).dump(res)

@@ -44,7 +44,7 @@ def get_airplanes_by_routeId(route_id):
     if(not route_exists(route_id)):
         abort(404, description=f"Route with ID {route_id} does not exist.")
 
-    session = get_session(current_user.role)
+    session = get_session()
 
     # Trova tutti gli aerei con relativo periodo associato
     query = (
@@ -77,7 +77,7 @@ def get_airplane_by_id(airplane_id):
     return AirplaneSchema().dump(airplane)
 
 def create_airplane(data):
-    session = get_session(current_user.role)
+    session = get_session()
     new_airplane = Airplane(
         model=data['model'],
         letters=data['letters'],
@@ -89,7 +89,7 @@ def create_airplane(data):
 
 def delete_airplane_by_id(airplane_id):
     try:
-        session = get_session(current_user.role)
+        session = get_session()
         with session.begin():
             
             # Find airplane
@@ -111,7 +111,7 @@ def delete_airplane_by_id(airplane_id):
 
 def update_airplane_by_id(airplane_id, data):
     try:
-        session = get_session(current_user.role)
+        session = get_session()
         with session.begin():
             
             # Find airplane

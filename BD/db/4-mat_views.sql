@@ -1,16 +1,18 @@
 CREATE MATERIALIZED VIEW itineraries AS
 SELECT
+    f.id AS id,
     json_build_object(
         'id', f.id,
-        'duration', f.duration::text,
-        'from', from_.code,
-        'to', to_.code,
+        'code', f.code,
+        'duration', f.duration,
+        'from_', from_.code,
+        'to_', to_.code,
         'departure', f.departure,
         'arrival', f.arrival
     ) AS flight1,
     NULL::json AS flight2,
-    f.duration::text AS tot_duration,
-    NULL::text AS stop_time
+    f.duration AS tot_duration,
+    NULL::interval AS stop_time
 FROM flights f
 JOIN routes r ON f.route = r.id
 JOIN airports from_ ON r.from_airport = from_.id
@@ -19,24 +21,27 @@ JOIN airports to_ ON r.to_airport = to_.id
 UNION ALL
 
 SELECT
+    f1.id * 100000 + f2.id AS id,
     json_build_object(
         'id', f1.id,
-        'duration', f1.duration::text,
-        'from', flight1_from_.code,
-        'to', flight1_to_.code,
+        'code', f1.code,
+        'duration', f1.duration,
+        'from_', flight1_from_.code,
+        'to_', flight1_to_.code,
         'departure', f1.departure,
         'arrival', f1.arrival
     ) AS flight1,
     json_build_object(
         'id', f2.id,
-        'duration', f2.duration::text,
-        'from', flight2_from_.code,
-        'to', flight2_to_.code,
+        'code', f2.code,
+        'duration', f2.duration,
+        'from_', flight2_from_.code,
+        'to_', flight2_to_.code,
         'departure', f2.departure,
         'arrival', f2.arrival
     ) AS flight2,
-    (f1.duration + f2.duration)::text AS tot_duration,
-    (f2.departure - f1.arrival)::text AS stop_time
+    (f1.duration + f2.duration) AS tot_duration,
+    (f2.departure - f1.arrival) AS stop_time
 FROM flights f1
 JOIN routes r1 ON f1.route = r1.id
 JOIN routes r2 ON r2.from_airport = r1.to_airport

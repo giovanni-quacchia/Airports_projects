@@ -54,13 +54,12 @@ class Flight(db.Model):
             if hasattr(self, key):
                 setattr(self, key, value)
         session.commit()
-        
+
+# TODO: slqalchemy ORM richiedeva una primary key per mappare la view
 class Itinerary(Base):
     __tablename__ = 'itineraries'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    flight1 = db.Column(db.JSON, nullable=False)  # JSON representation of the first flight
-    flight2 = db.Column(db.JSON, nullable=True)   # JSON representation of the second flight (if any)
-    total_duration = db.Column(db.Integer, nullable=False)  # total duration in minutes
-    
-    def __repr__(self):
-        return f"<Itinerary {self.id}, Flight1: {self.flight1}, Flight2: {self.flight2}, Total Duration: {self.total_duration}>"
+    id = db.Column(db.Integer, primary_key=True)
+    flight1 = db.Column(db.JSON, nullable=False)
+    flight2 = db.Column(db.JSON, nullable=True)
+    tot_duration = db.Column(db.Interval, nullable=False)
+    stop_time = db.Column(db.Interval, nullable=True)

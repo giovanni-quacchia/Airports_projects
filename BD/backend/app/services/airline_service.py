@@ -1,9 +1,8 @@
 from app.models.airline import Airline, AirlinePublic
-from app.schemas.airline_schema import AirlineSchema, AirlinePublicSchema
+from app.schemas.airline_schema import AirlineSchema
 from flask import abort
 from sqlalchemy import or_, select
-from app.extensions import db
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user
 from app.extensions import get_session
 
 from app.utils.airline_utils import get_airline_utils
@@ -49,7 +48,7 @@ def get_airline_by_id(airline_id):
     return Schema().dump(airline)
 
 def create_airline(data):
-    session = get_session(current_user.role)
+    session = get_session()
     new_airline = Airline(
         mail=data.get('mail'),
         code=data.get('code'),
@@ -61,14 +60,18 @@ def create_airline(data):
     return AirlineSchema().dump(new_airline)
 
 def delete_airline_by_id(airline_id):
-    session = get_session(current_user.role)
-    airline = session.query(Airline).get_or_404(airline_id)
+    session = get_session()
+    airline = session.query(Airline).get(airline_id)
+    if not airline:
+        abort(404, description="Airline not found")
     airline.delete(session)
     return {"message": "Airline deleted successfully"}
 
 def update_airline_by_id(airline_id, data):
-    session = get_session(current_user.role)
-    airline = session.query(Airline).get_or_404(airline_id)
+    session = get_session()
+    airline = session.query(Airline).get(airline_id)
+    if not airline:
+        abort(404, description="Airline not found")
     if 'password' in data:
         airline.set_password(data.pop('password'))
     airline.update(session, data)

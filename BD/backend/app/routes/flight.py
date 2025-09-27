@@ -21,26 +21,26 @@ def get_flight(flight_id):
     return jsonify(result), 200
 
 # Create flight
+@flight_bp.route('/', methods=['POST'])
 @login_required
 @admin_or_airline_required
-@flight_bp.route('/', methods=['POST'])
 def new_flight():
     data = FlightSchema().load(request.get_json())
     flight = create_flight(data)
     return jsonify(flight), 201
 
 # Delete flight
+@flight_bp.route('/<int:flight_id>', methods=['DELETE'])
 @login_required
 @admin_or_airline_required
-@flight_bp.route('/<int:flight_id>', methods=['DELETE'])
 def delete_flight(flight_id):
     result = delete_flight_by_id(flight_id)
     return jsonify(result), 200
 
 # Update flight
+@flight_bp.route('/<int:flight_id>', methods=['PUT'])
 @login_required
 @admin_or_airline_required
-@flight_bp.route('/<int:flight_id>', methods=['PUT'])
 def update_flight(flight_id):
     data = FlightSchema().load(request.get_json(), partial=True)
     flight = update_flight_by_id(flight_id, data)

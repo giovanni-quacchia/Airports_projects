@@ -5,7 +5,7 @@ from app.services.airplane_service import get_airplanes_by_airlineId
 from app.services.flight_service import get_flights_by_airlineId
 from app.schemas.airline_schema import AirlineSchema, AirlineUpdateSchema, AirlineQuerySchema, AirlineLoginSchema
 from flask_login import login_required
-from app.utils.auth_utils import admin_or_airline_required, admin_or_airline_owner_required, admin_required
+from app.utils.auth_utils import airline_required, admin_or_airline_owner_required, admin_required
 
 airline_bp = Blueprint('airline_bp', __name__)
 airline_create_schema = AirlineSchema()
@@ -23,6 +23,7 @@ def login():
 # logout
 @airline_bp.route('/logout', methods=['POST'])
 @login_required
+@airline_required
 def logout():
     result = logout_airline_()
     return jsonify(result), 200
@@ -46,7 +47,7 @@ def get_airplanes_by_airline(airline_id):
     results = get_airplanes_by_airlineId(airline_id)
     return jsonify(results), 200
 
-# Get flights by airline ID TODO:
+# Get flights by airline ID
 @airline_bp.route('/<int:airline_id>/flights', methods=['GET'])
 def get_flights_by_airline(airline_id):
     results = get_flights_by_airlineId(airline_id)

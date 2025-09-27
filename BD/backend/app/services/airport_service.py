@@ -24,7 +24,7 @@ def get_airport_by_id(airport_id):
     return AirportSchema().dump(airport)
 
 def create_airport(data):
-    session = get_session(current_user.role)
+    session = get_session()
     new_airport = Airport(
         code=data.get('code'),
         name=data['name'],
@@ -35,7 +35,7 @@ def create_airport(data):
     return AirportSchema().dump(new_airport)
     
 def delete_airport_by_id(airport_id):
-    session = get_session(current_user.role)
+    session = get_session()
     airport = session.query(Airport).get(airport_id)
     if not airport:
         abort(404, description="Airport not found")
