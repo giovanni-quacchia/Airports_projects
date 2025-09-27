@@ -16,12 +16,6 @@ class Flight(db.Model):
     airline = db.Column(db.Integer, nullable=False)
     airplane = db.Column(db.Integer, nullable=False)
     
-    # TODO: trigger check airplane.airline == airline
-    # TODO: trigger check airplane.route == route per periodo
-    # TODO: trigger if (route, code) exists, then same code for same route
-    
-    # TODO: problema del deferrable solo su rotta
-    
     # Constraints
     __table_args__ = (
         # FK
