@@ -12,7 +12,7 @@ export class FlightSearchService {
   // autocomplete aeroporti (nome "canonico")
   getAirports(q: string): Observable<AirportDTO[]> {
     const params = new HttpParams().set('q', q || '');
-    return this.http.get<AirportDTO[]>(`${this.base}/airports`, { params });
+    return this.http.get<AirportDTO[]>(`${this.base}/airports/`, { params });
   }
   // alias per compatibilità con il componente che chiama "airports"
   airports(q: string) { return this.getAirports(q); }
