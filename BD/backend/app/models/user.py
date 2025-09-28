@@ -1,8 +1,8 @@
 import os
 import hmac
 import hashlib
-from app.extensions import db, login_manager
-from flask_login import UserMixin, current_user
+from app.extensions import db
+from flask_login import UserMixin
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'

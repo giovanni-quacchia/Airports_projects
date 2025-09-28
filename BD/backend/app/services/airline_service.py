@@ -10,18 +10,16 @@ from app.utils.airline_utils import get_airline_utils
 def login_airline_(mail, password, newPassword=None):
     session = get_session()
     airline = session.query(Airline).filter_by(mail=mail).first()
-
     if not airline or not airline.check_password(password):
         abort(401, description="Invalid email or password")
-
     if airline.isFirstLogin:
-        if newPassword is None:
+        if not newPassword:
             abort(400, description="First login requires a new password")
         airline.set_password(newPassword)
         airline.isFirstLogin = False
-        airline.save(session)
+        airline.update({'isFirstLogin': False}, session)
     login_user(airline)
-    return {"msg": "Login successful"}
+    return {"msg": "Login successful", "airline": AirlineSchema().dump(airline)}
 
 def logout_airline_():
     logout_user()

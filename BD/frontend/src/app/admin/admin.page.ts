@@ -287,7 +287,7 @@ export class AdminPage implements OnInit {
   loadUsers(): void {
     this.loadingUsers = true;
     this.usersError = '';
-    this.http.get<UserDTO[]>(this.USERS_ENDPOINT, { headers: this.buildHeaders() }).subscribe({
+    this.http.get<UserDTO[]>(this.USERS_ENDPOINT, { withCredentials: true }).subscribe({
       next: (res) => { this.users = Array.isArray(res) ? res : []; },
       error: (err) => { this.usersError = err?.error?.msg || 'Errore nel caricamento degli utenti'; },
       complete: () => { this.loadingUsers = false; }
@@ -304,7 +304,7 @@ export class AdminPage implements OnInit {
 
     this.deletingIds[id] = true;
     this.http.delete(`${this.USERS_ENDPOINT}/${encodeURIComponent(id)}`, {
-      headers: this.buildHeaders()
+      withCredentials: true,
     }).subscribe({
       next: () => { this.users = this.users.filter(x => (this.getId(x) ?? '') !== id); },
       error: (err) => { alert(err?.error?.msg || 'Errore durante l’eliminazione utente'); },
@@ -347,7 +347,7 @@ export class AdminPage implements OnInit {
 
     this.creatingAirline = true;
 
-    this.http.post(this.AIRLINES_ENDPOINT, payload, { headers: this.buildHeaders() }).subscribe({
+    this.http.post(this.AIRLINES_ENDPOINT + "/", payload, {withCredentials: true}).subscribe({
       next: () => {
         this.newAirlineOk = true;
         this.resetAddAirline();

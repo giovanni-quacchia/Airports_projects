@@ -6,7 +6,6 @@ from sqlalchemy.orm import declarative_base
 from flask_login import UserMixin
 
 Base = declarative_base()
-# TODO: aggiunto il role per airline e user, da mettere nello schema
 class Airline(db.Model, UserMixin):
     __tablename__ = 'airlines'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -57,20 +56,23 @@ class Airline(db.Model, UserMixin):
     def get_id(self):
         return f"airline:{self.id}"
 
-    def save(self):
-        db.session.add(self)
+    def save(self, session, commit=True):
+        session.add(self)
         print("New airline created:", self)
-        db.session.commit()
+        if commit:
+            session.commit()
 
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
-    
-    def update(self, data):
+    def delete(self, session, commit=True):
+        session.delete(self)
+        if commit:
+            session.commit()
+
+    def update(self, data, session, commit=True):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        db.session.commit()
+        if commit:
+            session.commit()
 
 class AirlinePublic(Base):
     __tablename__ = 'public_airlines'

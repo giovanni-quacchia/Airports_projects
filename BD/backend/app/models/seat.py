@@ -16,8 +16,6 @@ class Seat(db.Model):
         default=[]
     )
 
-    # TODO: trigger unique seat per flight
-
     # Constraints
     __table_args__ = (
         # FK

@@ -28,7 +28,7 @@ GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin; -- utile
 -- privilegi per l'utente guest
 GRANT SELECT ON public_airlines, airlines, airplanes, flights, routes, airports, tickets, users, itineraries, public_seats TO anonymous;
 GRANT INSERT ON users TO anonymous;
--- GRANT USAGE, SELECT, UPDATE ON SEQUENCE users_id_seq TO anonymous; -- per PK increment
+GRANT UPDATE ON airlines TO anonymous; -- guest fa login come airline e aggiorna la password
 GRANT USAGE ON SEQUENCE users_id_seq TO anonymous; -- per PK increment
 
 -- privilegi per l'utente user
@@ -41,6 +41,7 @@ GRANT UPDATE ON tickets TO user_authenticated; -- per l'acquisto del biglietto (
 
 -- privilegi per l'utente airline
 GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes, passengers, seats TO airline;
+GRANT SELECT ON purchases_tickets, purchases TO airline; -- per visualizzare le statistiche sui passeggeri
 GRANT INSERT ON routes TO airline;
 GRANT INSERT, UPDATE ON airplanes, flights, tickets TO airline;
 GRANT USAGE ON SEQUENCE airlines_id_seq, routes_airplanes_id_seq, passengers_id_seq, routes_id_seq, airplanes_id_seq, flights_id_seq, tickets_id_seq TO airline; -- per PK increment

@@ -1,11 +1,14 @@
 from app.models.airplane import Airplane
 from app.models.flight import Flight
+from app.models.route import Route
+from app.models.airport import Airport
 from app.models.RoutesAirplanes import RoutesAirplanes
 from sqlalchemy import select, func
 from flask import abort
 from app.services.route_service import route_exists
 from app.schemas.airplane_schema import AirplaneSchema
 from app.extensions import get_session
+from sqlalchemy.orm import aliased
 
 from flask_login import current_user
 
@@ -20,10 +23,54 @@ def get_all_airplanes(model=None):
 
     return [AirplaneSchema().dump(airplane) for airplane in airplanes]
 
+"""
+SELECT
+    a.*,
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            
+            'startDate', ra.startDate,
+            'endDate', ra.endDate
+        )
+    ) AS periods
+FROM Airplane a
+LEFT JOIN RoutesAirplanes ra ON a.id = ra.airplane -- anche aeroplani senza rotta associata
+LEFT JOIN Route r ON ra.route = r.id
+LEFT JOIN Airport AirportFrom ON r.from_airport = AirportFrom.id
+LEFT JOIN Airport AirportTo ON r.to_airport = AirportTo.id
+WHERE a.airline =: airline_id
+GROUP BY a.id, a.model;
+"""
 def get_airplanes_by_airlineId(airline_id):
     session = get_session()
-    airplanes = session.query(Airplane).filter_by(airline=airline_id).all()
-    return [AirplaneSchema().dump(airplane) for airplane in airplanes]
+    
+    FromAirport, ToAirport = aliased(Airport), aliased(Airport)
+    
+    query = (
+        select(
+            Airplane, 
+            func.json_agg(
+                func.json_build_object(
+                    'from_airport', FromAirport.code,
+                    'to_airport', ToAirport.code,
+                    'startDate', RoutesAirplanes.startDate,
+                    'endDate', RoutesAirplanes.endDate
+                )
+            )
+        )
+        .join(RoutesAirplanes, Airplane.id == RoutesAirplanes.airplane, isouter=True)  # anche aeroplani senza rotta associata
+        .join(Route, RoutesAirplanes.route == Route.id, isouter=True)
+        .join(FromAirport, Route.from_airport == FromAirport.id, isouter=True)
+        .join(ToAirport, Route.to_airport == ToAirport.id, isouter=True)
+        .where(Airplane.airline == airline_id)
+        .group_by(Airplane.id)
+    )
+    
+    results = session.execute(query).all()
+    return [
+        AirplaneSchema().dump(airplane) | {"periods": periods if periods[0]['startDate'] is not None else []}
+        for airplane, periods in results
+    ]
 
 def get_airplane_for_flight(flight_id):
     session = get_session()
@@ -52,10 +99,9 @@ SELECT
         )
     ) AS periods
 FROM Airplane a
-JOIN RoutesAirplanes ra ON a.id = ra.airplane
+JOIN RoutesAirplanes ra ON a.id = ra.airplane 
 WHERE ra.route = ?
 GROUP BY a.id, a.model;
-
 """
 def get_airplanes_by_routeId(route_id):
 
@@ -100,7 +146,7 @@ def create_airplane(data):
         model=data['model'],
         letters=data['letters'],
         rows=data['rows'],
-        airline=data['airline']
+        airline=current_user.id
     )
     new_airplane.save(session)
     return AirplaneSchema().dump(new_airplane)

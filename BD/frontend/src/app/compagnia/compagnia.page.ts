@@ -6,10 +6,10 @@ import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
 import { finalize } from 'rxjs/operators';
 
-type Airport = { _id?: string, name?: string; city?: string; code?: string; country?: string };
-type RouteDTO = { _id?: string; from: Airport; to: Airport, numPassengers?: number };
+type Airport = { id?: string, name?: string; city?: string; code?: string; country?: string };
+type RouteDTO = { id?: string; from_airport: Airport; to_airport: Airport, numPassengers?: number };
 type AirplaneDTO = {
-  _id?: string;
+  id?: string;
   code: string;
   model: string;
   airline: string;
@@ -18,9 +18,10 @@ type AirplaneDTO = {
   route?: RouteDTO | string;
   startDate?: string;
   endDate?: string;
+  periods: { from_airport: string; to_airport: string; startDate: string; endDate: string }[] | null;
 };
 type FlightDTO = {
-  _id?: string;
+  id?: string;
   code: string;
   departure: string;
   arrival: string;
@@ -30,16 +31,18 @@ type FlightDTO = {
   airplane: AirplaneDTO | string;
   numPassengers?: number;
   totRevenue?: number;
+  from_airport?: string;
+  to_airport?: string;
 };
 type AirportDTO = {
-  _id: string;
+  id: string;
   code: string;
   name?: string;
   city?: string;
   country?: string;
 };
 type TicketDTO = {
-  _id?: string;
+  id?: string;
   type: string;
   price: number;
   quantity: number;
@@ -86,8 +89,8 @@ type TicketDTO = {
                 <div *ngIf="showOnlyMyRoutes">Passeggeri</div>
               </div>
               <div class="row" [ngClass]="showOnlyMyRoutes ? 'row-my-routes' : 'row-routes'" *ngFor="let r of routesFiltered">
-                <div>{{ fmtAirport(r.from) }}</div>
-                <div>{{ fmtAirport(r.to) }}</div>
+                <div>{{ fmtAirport(r.from_airport) }}</div>
+                <div>{{ fmtAirport(r.to_airport) }}</div>
                 <div *ngIf="showOnlyMyRoutes">{{ r.numPassengers || 0 }}</div>
               </div>
               <div *ngIf="routesFiltered.length===0" class="muted pad">Nessuna rotta.</div>
@@ -103,7 +106,7 @@ type TicketDTO = {
                 <fieldset class="subcard">
                 <legend>From</legend>
                   <select class="input" [(ngModel)]="newRoute.from" name="from" required>
-                    <option *ngFor="let a of airports" [value]="a._id">
+                    <option *ngFor="let a of airports" [value]="a.id">
                       {{ a.city }} ({{ a.code }}) - {{ a.name }}
                     </option>
                   </select>
@@ -112,7 +115,7 @@ type TicketDTO = {
               <fieldset class="subcard">
                 <legend>To</legend>
                   <select class="input" [(ngModel)]="newRoute.to" name="to" required>
-                    <option *ngFor="let a of airports" [value]="a._id">
+                    <option *ngFor="let a of airports" [value]="a.id">
                       {{ a.city }} ({{ a.code }}) - {{ a.name }}
                     </option>
                   </select>
@@ -146,14 +149,23 @@ type TicketDTO = {
 
             <div class="table">
               <div class="thead thead-airplanes">
-                <div>Code</div><div>Model</div><div>Route</div><div>Periodo</div>
+                <div>Id</div><div>Model</div><div>Route</div><div>Periodo</div>
               </div>
               <div class="row row-airplanes" *ngFor="let a of airplanesFiltered">
-                <div>{{ a.code }}</div>
-                <div>{{ a.model }}</div>
-                <div>{{ fmtRoute(a.route, true) }}</div>
-                <div>{{ formatDatetime(a.startDate) || '—' }} → {{ formatDatetime(a.endDate) || '—' }}</div>
+                <ng-container *ngFor="let p of a.periods">
+                  <div>{{ a.id }}</div>
+                  <div>{{ a.model }}</div>
+                  <div>{{ p.from_airport }} → {{ p.to_airport }}</div>
+                  <div>{{ formatDate(p.startDate) || '—' }} → {{ formatDate(p.endDate) || '—' }}</div>
+                </ng-container>
+                <ng-container *ngIf="a.periods && a.periods.length === 0">
+                  <div>{{ a.id }}</div>
+                  <div>{{ a.model }}</div>
+                  <div>—</div>
+                  <div>—</div>
+                </ng-container>
               </div>
+
               <div *ngIf="airplanesFiltered.length===0" class="muted pad">Nessun aeroplano.</div>
             </div>
 
@@ -164,18 +176,18 @@ type TicketDTO = {
 
             <form *ngIf="showAddAirplane" class="add-form" (ngSubmit)="addAirplane()" novalidate>
               <div class="grid-form">
-                <input class="input" placeholder="Code" [(ngModel)]="newAirplane.code" name="apcode" required>
+                <!-- <input class="input" placeholder="Code" [(ngModel)]="newAirplane.code" name="apcode" required> -->
                 <input class="input" placeholder="Model" [(ngModel)]="newAirplane.model" name="apmodel" required>
-                <select class="input" [(ngModel)]="newAirplaneRouteRef" name="aproute" required>
+                <!-- <select class="input" [(ngModel)]="newAirplaneRouteRef" name="aproute" required>
                   <option value="">Seleziona una rotta</option>
                   <option *ngFor="let route of routes" [value]="route._id">
                     {{ fmtRoute(route, true) }}
                   </option>
-                </select>                
+                </select>                 -->
                 <input class="input" placeholder="Rows (es. 30)" type="number" [(ngModel)]="newAirplane.rows" name="aprows" required>
                 <input class="input" placeholder="Letters (es. ABCDEF)" [(ngModel)]="newAirplane.letters" name="apletters" required>
-                <input class="input" type="date" placeholder="Start date" [(ngModel)]="newAirplane.startDate" name="apstart">
-                <input class="input" type="date" placeholder="End date" [(ngModel)]="newAirplane.endDate" name="apend">
+                <!-- <input class="input" type="date" placeholder="Start date" [(ngModel)]="newAirplane.startDate" name="apstart">
+                <input class="input" type="date" placeholder="End date" [(ngModel)]="newAirplane.endDate" name="apend"> -->
               </div>
               <div class="form-actions">
                 <button type="button" class="btn btn--outline" (click)="resetAirplane()">Annulla</button>
@@ -209,8 +221,8 @@ type TicketDTO = {
               </div>
               <div class="row row-flights" *ngFor="let f of flightsFiltered">
                 <div>{{ f.code }}</div>
-                <div>{{ fmtRoute(f.route, true) }}</div>
-                <div>{{ fmtAirplane(f.airplane) }}</div>
+                <div>{{ f.from_airport }} - {{ f.to_airport }}</div>
+                <div>{{ f.airplane }}</div>
                 <div>{{ formatDatetime(f.departure) }}</div>
                 <div>{{ formatDatetime(f.arrival) }}</div>
                 <div>{{ f.duration }} min</div>
@@ -231,14 +243,14 @@ type TicketDTO = {
                 
                 <select class="input" [(ngModel)]="newFlightRouteRef" name="flroute" required>
                   <option value="">Seleziona una rotta</option>
-                  <option *ngFor="let route of routes" [value]="route._id">
+                  <option *ngFor="let route of routes" [value]="route.id">
                     {{ fmtRoute(route, true) }}
                   </option>
                 </select>
                 
                 <select class="input" [(ngModel)]="newFlightAirplaneRef" name="flairplane" required>
                   <option value="">Seleziona un aeroplano</option>
-                  <option *ngFor="let airplane of airplanes" [value]="airplane._id">
+                  <option *ngFor="let airplane of airplanes" [value]="airplane.id">
                     {{ airplane.code }} ({{ airplane.model }})
                   </option>
                 </select>
@@ -256,7 +268,7 @@ type TicketDTO = {
         </div>
 
         <!-- TICKETS -->
-        <div class="card stretch">
+        <!-- <div class="card stretch">
           <div class="card-head">
             <h3>Tickets</h3>
             <div class="actions">
@@ -298,7 +310,7 @@ type TicketDTO = {
               <div *ngIf="ticketsFiltered.length===0" class="muted pad">Nessun ticket.</div>
             </div>
           </ng-template>
-        </div>
+        </div> -->
       </div>
     </div>
   `,
@@ -354,7 +366,7 @@ export class CompagniaPage implements OnInit {
   private ROUTES_ENDPOINT = `${this.base}/routes`;
   private AIRPLANES_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/airplanes`;
   private FLIGHTS_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/flights`;
-  private AIRPORTS_ENDPOINT = `${this.base}/airports`;
+  private AIRPORTS_ENDPOINT = `${this.base}/airports/`;
   private TICKETS_ENDPOINT = `${this.base}/airlines/${this.auth.currentUser?.id}/tickets`;
 
   constructor(private http: HttpClient) {}
@@ -376,7 +388,7 @@ export class CompagniaPage implements OnInit {
   newRoute: { from: string; to: string } = { from: '', to: '' };
 
   showAddAirplane = false; creatingAirplane = false; createAirplaneError = '';
-  newAirplane: AirplaneDTO = { code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' };
+  newAirplane: AirplaneDTO = { periods: [{ from_airport: '', to_airport: '', startDate: '', endDate: '' }], code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' };
   newAirplaneRouteRef = '';
 
   showAddFlight = false; creatingFlight = false; createFlightError = '';
@@ -402,7 +414,7 @@ export class CompagniaPage implements OnInit {
   fmtAirport(a?: Airport | string, short = false): string {
     if (!a) return '—';
     if (typeof a === 'string') {
-      const ap = this.airports.find(x => x._id === a);
+      const ap = this.airports.find(x => x.id === a);
       if (!ap) return a;
       a = ap;
     }
@@ -414,10 +426,10 @@ export class CompagniaPage implements OnInit {
   fmtRoute(r: any, short = false): string {
     if (!r) return '—';
     if (typeof r === 'string') {
-      const route = this.routes.find(x => x._id === r);
-      return route ? `${this.fmtAirport(route.from)} → ${this.fmtAirport(route.to)}` : r;
+      const route = this.routes.find((x:any) => x.id === r);
+      return route ? `${this.fmtAirport(route.from_airport)} → ${this.fmtAirport(route.to_airport)}` : r;
     }
-    return `${this.fmtAirport(r.from, short)} → ${this.fmtAirport(r.to, short)}`;
+    return `${this.fmtAirport(r.from_airport, short)} → ${this.fmtAirport(r.to_airport, short)}`;
   }
 
   fmtAirplane(a: any): string {
@@ -437,10 +449,19 @@ export class CompagniaPage implements OnInit {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   }
 
+  formatDate(ts: string | undefined): string {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
   fmtFlight(f: any): string {
     if (!f) return '—';
     if (typeof f === 'string') {
-      const fl = this.flights.find(x => x._id === f);
+      const fl = this.flights.find(x => x.id === f);
       if (fl) {
         return `${fl.code} (${this.formatDatetime(fl.departure)} → ${this.formatDatetime(fl.arrival)})`;
       }
@@ -461,7 +482,7 @@ export class CompagniaPage implements OnInit {
     const q = this.airplaneQuery.trim().toLowerCase();
     if (!q) return this.airplanes;
     return this.airplanes.filter(a =>
-      [a.code, a.model, a.airline, this.fmtRoute(a.route)].filter(Boolean)
+      [a.id, a.model, a.airline, this.fmtRoute(a.route)].filter(Boolean)
         .some(v => String(v).toLowerCase().includes(q))
     );
   }
@@ -485,7 +506,7 @@ export class CompagniaPage implements OnInit {
   /* === Load === */
   loadRoutes() {
     this.loadingRoutes = true; this.routesError = '';
-    this.http.get<RouteDTO[]>(`${this.base}` + `${this.showOnlyMyRoutes ? `/airlines/${this.auth.currentUser?.id}` : ""}` + "/routes", { headers: this.headers() }).subscribe({
+    this.http.get<any[]>(`${this.base}` + `${this.showOnlyMyRoutes ? `/airlines/${this.auth.currentUser?.id}` : ""}` + "/routes", {withCredentials: true}).subscribe({
       next: res => this.routes = Array.isArray(res) ? res : [],
       error: err => this.routesError = err?.error?.msg || 'Errore caricamento rotte',
       complete: () => this.loadingRoutes = false
@@ -493,7 +514,7 @@ export class CompagniaPage implements OnInit {
   }
   loadAirplanes() {
     this.loadingAirplanes = true; this.airplanesError = '';
-    this.http.get<AirplaneDTO[]>(this.AIRPLANES_ENDPOINT, { headers: this.headers() }).subscribe({
+    this.http.get<AirplaneDTO[]>(this.AIRPLANES_ENDPOINT, { withCredentials: true }).subscribe({
       next: res => this.airplanes = Array.isArray(res) ? res : [],
       error: err => this.airplanesError = err?.error?.msg || 'Errore caricamento aeroplani',
       complete: () => this.loadingAirplanes = false
@@ -501,7 +522,7 @@ export class CompagniaPage implements OnInit {
   }
   loadFlights() {
     this.loadingFlights = true; this.flightsError = '';
-    this.http.get<FlightDTO[]>(this.FLIGHTS_ENDPOINT + "?statistics=true", { headers: this.headers() }).subscribe({
+    this.http.get<FlightDTO[]>(this.FLIGHTS_ENDPOINT + "?statistics=true", {withCredentials: true}).subscribe({
       next: res => this.flights = Array.isArray(res) ? res : [],
       error: err => this.flightsError = err?.error?.msg || 'Errore caricamento voli',
       complete: () => this.loadingFlights = false
@@ -509,28 +530,28 @@ export class CompagniaPage implements OnInit {
   }
   loadAirports() {
     this.loadingAiports = true; this.airportsError = '';
-    this.http.get<AirportDTO[]>(this.AIRPORTS_ENDPOINT, { headers: this.headers() }).subscribe({
+    this.http.get<AirportDTO[]>(this.AIRPORTS_ENDPOINT, {withCredentials: true}).subscribe({
       next: res => this.airports = Array.isArray(res) ? res : [],
       error: err => this.airportsError = err?.error?.msg || 'Errore caricamento aeroporti',
     });
   }
   loadTickets() {
-    this.loadingTickets = true; this.ticketsError = '';
-    this.http.get<TicketDTO[]>(this.TICKETS_ENDPOINT, { headers: this.headers() }).subscribe({
-      next: res => this.tickets = Array.isArray(res) ? res : [],
-      error: err => this.ticketsError = err?.error?.msg || 'Errore caricamento tickets',
-      complete: () => this.loadingTickets = false
-    });
+    // this.loadingTickets = true; this.ticketsError = '';
+    // this.http.get<TicketDTO[]>(this.TICKETS_ENDPOINT, {withCredentials: true}).subscribe({
+    //   next: res => this.tickets = Array.isArray(res) ? res : [],
+    //   error: err => this.ticketsError = err?.error?.msg || 'Errore caricamento tickets',
+    //   complete: () => this.loadingTickets = false
+    // });
   }
 
   /* === Create / Reset === */
   resetRoute() { this.newRoute = { from: '', to: '' }; this.createRouteError = ''; this.showAddRoute = false; }
   addRoute() {
     this.createRouteError = '';
-    const payload = { from: this.newRoute.from, to: this.newRoute.to };
-    if (!payload.from || !payload.to) { this.createRouteError = 'Seleziona From e To.'; return; }
+    const payload = { from_airport: this.newRoute.from, to_airport: this.newRoute.to };
+    if (!payload.from_airport || !payload.to_airport) { this.createRouteError = 'Seleziona From e To.'; return; }
     this.creatingRoute = true;
-    this.http.post<RouteDTO>(this.ROUTES_ENDPOINT, payload, { headers: this.headers() })
+    this.http.post<any>(this.ROUTES_ENDPOINT + "/", payload, {withCredentials: true})
       .pipe(finalize(() => this.creatingRoute = false))
       .subscribe({
         next: () => { this.resetRoute(); this.loadRoutes(); },
@@ -539,17 +560,17 @@ export class CompagniaPage implements OnInit {
   }
   toggleMyRoutes() { this.showOnlyMyRoutes = !this.showOnlyMyRoutes; this.loadRoutes(); }
 
-  resetAirplane(){ this.newAirplane = { code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' }; this.newAirplaneRouteRef=''; this.createAirplaneError=''; this.showAddAirplane=false; }
+  resetAirplane(){ this.newAirplane = { periods: [{from_airport: '', to_airport: '', startDate: '', endDate: ''}], code:'', model:'', airline:this.auth.currentUser?.id, rows:0, letters:'' }; this.newAirplaneRouteRef=''; this.createAirplaneError=''; this.showAddAirplane=false; }
   addAirplane(){
     this.createAirplaneError = '';
-    const payload: any = { ...this.newAirplane };
+    const payload: any = { model: this.newAirplane.model, rows: this.newAirplane.rows, letters: this.newAirplane.letters };
     if (this.newAirplaneRouteRef) payload.route = this.newAirplaneRouteRef;
-    if (!payload.code || !payload.model || !payload.rows || !payload.letters){
-      this.createAirplaneError = 'Compila code, model, rows, letters';
+    if (!payload.model || !payload.rows || !payload.letters){
+      this.createAirplaneError = 'Compila model, rows, letters';
       return;
     }
     this.creatingAirplane = true;
-    this.http.post(`${this.base}/airplanes`, payload, { headers: this.headers() })
+    this.http.post(`${this.base}/airplanes/`, payload, {withCredentials: true})
     .pipe(finalize(() => this.creatingAirplane = false))
     .subscribe({
       next: () => { this.resetAirplane(); this.loadAirplanes(); },
@@ -575,7 +596,7 @@ export class CompagniaPage implements OnInit {
       return;
     }
     this.creatingFlight = true;
-    this.http.post(`${this.base}/flights`, payload, { headers: this.headers() })
+    this.http.post(`${this.base}/flights/`, payload, {withCredentials: true})
     .pipe(finalize(() => this.creatingFlight = false))
     .subscribe({
       next: () => { this.resetFlight(); this.loadFlights(); },
@@ -588,7 +609,7 @@ export class CompagniaPage implements OnInit {
   updateTicket(ticket: any) {
     if (!ticket._id) return;
     // ticket.flight has {_id, airline, airplane, ...} i just need the id
-    this.http.put(`${this.base}/tickets/${ticket._id}`, {...ticket, flight: ticket?.flight?._id}, { headers: this.headers() })
+    this.http.put(`${this.base}/tickets/${ticket._id}`, {...ticket, flight: ticket?.flight?._id}, {withCredentials: true})
       .subscribe({
         next: () => console.log("Ticket aggiornato", ticket),
         error: err => alert(err?.error?.msg || 'Errore aggiornamento ticket')
