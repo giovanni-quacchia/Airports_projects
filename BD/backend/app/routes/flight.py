@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.flight_service import get_all_flights, get_flight_by_id, create_flight, delete_flight_by_id, update_flight_by_id
+from app.services.ticket_service import get_tickets_for_flight
 from app.schemas.flight_schema import FlightSchema, FlightQuerySchema
 
 from flask_login import login_required
@@ -18,6 +19,12 @@ def get_flights():
 @flight_bp.route('/<int:flight_id>', methods=['GET'])
 def get_flight(flight_id):
     result = get_flight_by_id(flight_id)
+    return jsonify(result), 200
+
+# Get tickets by flight ID
+@flight_bp.route('/<int:flight_id>/tickets', methods=['GET'])
+def get_tickets_by_flight(flight_id):
+    result = get_tickets_for_flight(flight_id)
     return jsonify(result), 200
 
 # Create flight

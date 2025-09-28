@@ -1,10 +1,10 @@
 from flask import abort
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import aliased
 from app.models.flight import Flight
 from app.models.route import Route
 from app.models.airport import Airport
-from app.schemas.flight_schema import FlightSchema
+from app.schemas.flight_schema import FlightSchema, FlightGetSchema
 from app.extensions import db
 from app.services.airline_service import airline_exists
 from datetime import timedelta
@@ -47,16 +47,43 @@ def get_flights_by_airlineId(airline_id):
     if(not airline_exists(airline_id)):
         abort(404)
 
-    flights = session.query(Flight).where(Flight.airline == airline_id)
+    flights = (
+        session.query(Flight)
+        .where(Flight.airline == airline_id)
+    )
 
     return FlightSchema(many=True, exclude=["airline"]).dump(flights)
 
 def get_flight_by_id(flight_id):
     session = get_session()
-    flight = session.query(Flight).get(flight_id)
+
+    FromAirport, ToAirport = aliased(Airport), aliased(Airport)
+
+    query = (
+        session.query(
+            Flight.id,
+            Flight.code,
+            Flight.airline,
+            Flight.airplane,
+            Flight.departure,
+            Flight.arrival,
+            Flight.duration,
+            func.json_build_object(
+                'from', FromAirport.code,
+                'to', ToAirport.code
+            ).label('route')
+        )
+        .join(Route, Flight.route == Route.id)
+        .join(FromAirport, Route.from_airport == FromAirport.id)
+        .join(ToAirport, Route.to_airport == ToAirport.id)
+        .where(Flight.id == flight_id)
+    )
+
+    flight = query.first()
+
     if not flight:
         abort(404, description="Flight not found")
-    return FlightSchema().dump(flight)
+    return FlightGetSchema().dump(flight)
 
 def create_flight(data):
     session = get_session()

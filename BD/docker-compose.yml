@@ -42,6 +42,22 @@ services:
       - ./backend:/app
     networks:
       - bd-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bd_frontend
+    ports:
+      - 4200:4200
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app         # Mount source code
+      - /app/node_modules       # Keep node_modules inside container
+    environment:
+      - NODE_ENV=development    # log + dettagliato (dev environment)
+    networks:
+      - bd-network
 
 networks:
   bd-network:

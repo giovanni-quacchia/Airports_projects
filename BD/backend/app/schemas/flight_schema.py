@@ -1,25 +1,33 @@
 import re
 from marshmallow import Schema, fields, ValidationError, validates, validates_schema
-from datetime import datetime
 
-class FlightSchema(Schema):
+class FlightBaseSchema(Schema):
     id = fields.Int(dump_only=True)
     code = fields.Str(required=True)
     
     departure = fields.DateTime(required=True)
     arrival = fields.DateTime(required=True)
     duration = fields.Int(required=True)
-    
-    route = fields.Int(required=True)
-    airline = fields.Int(required=True)
-    airplane = fields.Int(required=True)
-    
+
     @validates('code')
     def validate_code(self, value, **kwargs):
         if not re.fullmatch(r'[A-Z]{2}\d+', value):
             raise ValidationError(
                 "Code must start with 2 uppercase letters followed by 1 or more digits."
             )
+
+class FlightSchema(FlightBaseSchema):
+    route = fields.Int(required=True)
+    airline = fields.Int(required=True)
+    airplane = fields.Int(required=True)
+
+class FlightGetSchema(FlightBaseSchema):
+    route = fields.Dict(
+        keys=fields.Str(),
+        values=fields.Str()
+    )
+    airline = fields.Int(required=True)
+    airplane = fields.Int(required=True)
 
 class FlightQuerySchema(Schema):
     code = fields.Str()

@@ -34,6 +34,11 @@ def get_ticket_by_id(ticket_id):
         abort(404, description=f"Ticket with id {ticket_id} not found")
     return TicketSchema().dump(ticket)
 
+def get_tickets_for_flight(flight_id):
+    session = get_session()
+    tickets = session.query(Ticket).where(Ticket.flight == flight_id).all()
+    return TicketSchema(many=True).dump(tickets)
+
 def create_ticket(data):
     try:
         session = get_session()
