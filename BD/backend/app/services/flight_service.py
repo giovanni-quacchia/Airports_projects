@@ -1,13 +1,13 @@
 from flask import abort
-from sqlalchemy import select, func
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from app.models.flight import Flight
 from app.models.route import Route
 from app.models.airport import Airport
 from app.schemas.flight_schema import FlightSchema, FlightGetSchema
-from app.extensions import db
 from app.services.airline_service import airline_exists
 from datetime import timedelta
+from sqlalchemy.dialects.postgresql import JSONB
 
 from app.extensions import get_session
 from flask_login import current_user
@@ -69,8 +69,20 @@ def get_flight_by_id(flight_id):
             Flight.arrival,
             Flight.duration,
             func.json_build_object(
-                'from', FromAirport.code,
-                'to', ToAirport.code
+                'from_airport', func.json_build_object(
+                    'id', FromAirport.id,
+                    'name', FromAirport.name,
+                    'code', FromAirport.code,
+                    'city', FromAirport.city,
+                    'country', FromAirport.country
+                ),
+                'to_airport', func.json_build_object(
+                    'id', ToAirport.id,
+                    'name', ToAirport.name,
+                    'code', ToAirport.code,
+                    'city', ToAirport.city,
+                    'country', ToAirport.country
+                )
             ).label('route')
         )
         .join(Route, Flight.route == Route.id)

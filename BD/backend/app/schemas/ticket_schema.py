@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields, ValidationError, validates, validates_schema
+from app.schemas.flight_schema import FlightGetSchema
 
 # --- Funzioni di validazione riutilizzabili ---
 def validate_non_negative_price(value):
@@ -15,9 +16,8 @@ def validate_ticket_type(value):
         raise ValidationError(f"type must be one of {valid_types}.")
 
 # --- Schemi ---
-class TicketSchema(Schema):
+class TicketBaseSchema(Schema):
     id = fields.Int(dump_only=True)
-    flight = fields.Int(required=True)
     type = fields.Str(required=True)
     price = fields.Float(required=True)
     quantity = fields.Int(required=True)
@@ -33,6 +33,18 @@ class TicketSchema(Schema):
     @validates("type")
     def check_type(self, value, **kwargs):
         validate_ticket_type(value)
+
+class TicketSchema(TicketBaseSchema):
+    flight = fields.Int(required=True)
+    
+class TicketGetSchema(TicketBaseSchema):
+    flight = fields.Int(required=True)
+    airline = fields.Int(required=True)
+    flight_code = fields.Str(required=True)
+    departure = fields.DateTime(required=True)
+    arrival = fields.DateTime(required=True)
+    from_airport = fields.Str(required=True)
+    to_airport = fields.Str(required=True)
 
 
 class TicketQuerySchema(Schema):

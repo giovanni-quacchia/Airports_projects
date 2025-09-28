@@ -10,7 +10,7 @@ def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_d
     query = session.query(Itinerary)
 
     if onlyDirect:
-        query = query.where(Itinerary.flight2._is_(None))
+        query = query.where(Itinerary.flight2.is_(None))
 
     if from_airport:
         query = query.where(Itinerary.flight1['from_'].astext == from_airport)

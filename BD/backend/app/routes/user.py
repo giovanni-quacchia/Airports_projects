@@ -42,8 +42,6 @@ def get_user(user_id):
 
 # Create user
 @user_bp.route('/', methods=['POST'])
-@login_required
-@admin_required
 def new_user():
     data = user_create_schema.load(request.get_json())
     user = create_user(data)

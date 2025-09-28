@@ -2,7 +2,7 @@ import os
 import hmac
 import hashlib
 from app.extensions import db, login_manager
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -52,17 +52,20 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return f"user:{self.id}" 
 
-    def save(self, session):
+    def save(self, session, commit=True):
         session.add(self)
         print("New user created:", self)
-        session.commit()
+        if commit:
+            session.commit()
 
-    def delete(self, session):
+    def delete(self, session, commit=True):
         session.delete(self)
-        session.commit()
+        if commit:
+            session.commit()
     
-    def update(self, session, data):
+    def update(self, session, data, commit=True):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-        session.commit()
+        if commit:
+            session.commit()

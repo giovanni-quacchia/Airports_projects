@@ -1,4 +1,5 @@
 from app.models.airplane import Airplane
+from app.models.flight import Flight
 from app.models.RoutesAirplanes import RoutesAirplanes
 from sqlalchemy import select, func
 from flask import abort
@@ -20,9 +21,26 @@ def get_all_airplanes(model=None):
     return [AirplaneSchema().dump(airplane) for airplane in airplanes]
 
 def get_airplanes_by_airlineId(airline_id):
-    airplanes = Airplane.query.filter_by(airline=airline_id).all()
+    session = get_session()
+    airplanes = session.query(Airplane).filter_by(airline=airline_id).all()
     return [AirplaneSchema().dump(airplane) for airplane in airplanes]
 
+def get_airplane_for_flight(flight_id):
+    session = get_session()
+
+    # Query to find the airplane associated with the given flight ID
+    query = (
+        select(Airplane)
+        .join(Flight, Airplane.id == Flight.airplane)
+        .where(Flight.id == flight_id)
+    )
+
+    airplane = session.execute(query).scalar_one_or_none()
+
+    if not airplane:
+        abort(404, description="Airplane not found for the given flight ID")
+
+    return AirplaneSchema().dump(airplane)
 
 """
 SELECT

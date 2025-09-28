@@ -14,7 +14,9 @@ sys.stdout.reconfigure(line_buffering=True)
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
-    CORS(app)
+    # Abilita CORS solo per localhost:4200 su tutte le rotte e metodi
+    CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}}, supports_credentials=True)
+
 
     db.init_app(app)
     login_manager.init_app(app)

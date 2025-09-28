@@ -197,7 +197,7 @@ export class SeatSelectionPage implements OnInit {
   fetchSegmentData(seg: Segment) {
     // 1) posti già occupati (backend manda { _id, seat } o { ID, Seat })
     this.http.get<Array<{ _id?: any; seat?: string; Seat?: string }>>(
-      `${this.apiBase}/flights/${seg.flightId}/passengers`,
+      `${this.apiBase}/flights/${seg.flightId}/seats`,
       { headers: this.buildHeaders() }
     ).subscribe({
       next: (res) => {
@@ -218,11 +218,11 @@ export class SeatSelectionPage implements OnInit {
     });
 
     // 2) layout sedili
-    this.http.get<any>(`${this.apiBase}/flights/${seg.flightId}`, { headers: this.buildHeaders() })
+    this.http.get<any>(`${this.apiBase}/flights/${seg.flightId}/airplane`, { headers: this.buildHeaders() })
       .subscribe({
         next: res => {
-          const letters = Number(res?.airplane?.letters);
-          const rows    = Number(res?.airplane?.rows);
+          const letters = Number(res?.letters);
+          const rows    = Number(res?.rows);
           this.layoutBySegment[seg.key] = this.buildLayout(letters, rows);
         },
         error: err => {

@@ -38,7 +38,7 @@ export class FlightSearchService {
     console.log('[tickets] params →', body);
     const params = new HttpParams()
       .set('type', String(body.cabin ?? ''))
-      .set('minQuantity', String(body.pax ?? 1));
+      .set('min_quantity', String(body.pax ?? 1));
     return this.http.get<TicketDTO[]>(`${this.base}/flights/${body.id}/tickets`, { params });
   }
 }

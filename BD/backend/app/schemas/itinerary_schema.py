@@ -1,10 +1,10 @@
 from app.schemas.flight_schema import FlightQuerySchema
 from marshmallow import Schema, fields
-from datetime import datetime
 
 class ItineraryFlight(Schema):
     id = fields.Int(required=True)
     code = fields.Str(required=True)
+    airline = fields.Str(required=True)
     departure = fields.Str(required=True)
     arrival = fields.Str(required=True)
     duration = fields.Integer(required=True)

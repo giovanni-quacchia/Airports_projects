@@ -21,11 +21,11 @@ def login_airline_(mail, password, newPassword=None):
         airline.isFirstLogin = False
         airline.save(session)
     login_user(airline)
-    return {"message": "Login successful"}
+    return {"msg": "Login successful"}
 
 def logout_airline_():
     logout_user()
-    return {"message": "Logged out successfully"}
+    return {"msg": "Logged out successfully"}
 
 
 def get_all_airlines(q):
@@ -65,7 +65,7 @@ def delete_airline_by_id(airline_id):
     if not airline:
         abort(404, description="Airline not found")
     airline.delete(session)
-    return {"message": "Airline deleted successfully"}
+    return {"msg": "Airline deleted successfully"}
 
 def update_airline_by_id(airline_id, data):
     session = get_session()

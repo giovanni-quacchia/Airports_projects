@@ -32,7 +32,7 @@ import { AuthService } from '../core/auth.service';
 
         <mat-form-field appearance="outline">
           <mat-label>Password</mat-label>
-          <input matInput [(ngModel)]="form.password" name="password" [type]="hide ? 'password':'text'" required minlength="6">
+          <input matInput [(ngModel)]="form.password" name="password" [type]="hide ? 'password':'text'" required minlength="3">
           <button mat-icon-button matSuffix type="button" (click)="hide = !hide" aria-label="Mostra/Nascondi password">
             <mat-icon>{{ hide ? 'visibility' : 'visibility_off' }}</mat-icon>
           </button>
