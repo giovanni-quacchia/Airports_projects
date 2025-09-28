@@ -11,13 +11,13 @@ def login_user_(mail, password):
 
     if user and user.check_password(password):
         login_user(user)
-        return {"message": "Login successful"}
+        return {"msg": "Login successful", "user": UserSchema().dump(user)}
     else:
         abort(401, description="Invalid email or password")
 
 def logout_user_():
     logout_user()
-    return {"message": "Logged out successfully"}
+    return {"msg": "Logged out successfully"}
 
 def get_all_users(q):
     
@@ -42,16 +42,23 @@ def get_user_by_id(user_id):
 
 def create_user(data):
 
-    session = get_session()
+    try:
+        session = get_session()
+        with session.begin():
+            existing_user = session.query(User).filter_by(mail=data.get('mail')).first()
+            if existing_user:
+                raise ValueError("User with this email already exists")
+            # Create new user
+            new_user = User(
+                mail=data.get('mail'),
+                password=data.get('password'),
+            )
 
-    new_user = User(
-        mail=data.get('mail'),
-        password=data.get('password'),
-    )
-
-    new_user.save(session)
-
-    return UserSchema().dump(new_user)
+            new_user.save(session, commit=False)
+            return UserSchema().dump(new_user)
+    except Exception as e:
+        # rollback automatico
+        raise e
 
 def delete_user_by_id(user_id):
 
@@ -62,7 +69,7 @@ def delete_user_by_id(user_id):
         abort(404, description="User not found")
 
     user.delete(session)
-    return {"message": "User deleted successfully"}
+    return {"msg": "User deleted successfully"}
 
 def update_user_by_id(user_id, data):
 

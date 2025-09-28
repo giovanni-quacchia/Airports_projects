@@ -19,10 +19,11 @@ services:
       - bd-network
     # Al primo avvio, il database aspetta qualche secondo per finire di configurarsi
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d flights_db"]
+      # controlla che il db sia pronto e che l'utente guest esista
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flights_db && psql -U postgres -d flights_db -tAc \"SELECT 1 FROM pg_roles WHERE rolname='guest'\" | grep -q 1"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
   backend:
     build:
       context: ./backend

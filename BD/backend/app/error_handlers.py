@@ -23,42 +23,46 @@ def register_error_handlers(app):
                 else:
                     errors.append(f"Field '{field}' with value '{value}' not valid: {err}")
 
-        return jsonify({"errors": errors}), 400
+        return jsonify({"msg": errors}), 400
     
     # Handle DB integrity errors
     @app.errorhandler(IntegrityError)
     def handle_integrity_error(error):
         # Duplicate error
-        print(str(error.orig))
         if 'duplicate key value violates unique constraint' in str(error.orig):
-            return jsonify({"error": "Duplicate entry"}), 409
+            return jsonify({"msg": "Duplicate entry"}), 409
         # check_different_airports error
         elif 'check_different_airports' in str(error.orig):
-            return jsonify({"error": "from_airport and to_airport must be different"}), 400
-        return jsonify({"error": "Database integrity error"}), 400
+            return jsonify({"msg": "from_airport and to_airport must be different"}), 400
+        return jsonify({"msg": "Database integrity error"}), 400
     
     # Handle ValueError exceptions
     @app.errorhandler(ValueError)
     def handle_value_error(error):
-        return jsonify({"error": str(error)}), 400
+        return jsonify({"msg": str(error)}), 400
+    
+    # Unauthorized access: 401
+    @app.errorhandler(401)
+    def handle_401(error):
+        return jsonify({"msg": error.description or "Unauthorized"}), 401
 
     # Resource not found: 404
     @app.errorhandler(404)
     def handle_404(error):
         print(error)
-        return jsonify({"error": error.description or "Resource not found"}), 404
+        return jsonify({"msg": error.description or "Resource not found"}), 404
     
     # Generic server error: 500
     @app.errorhandler(500)
     def handle_generic_error(error):
         print(str(error))
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"msg": "Internal server error"}), 500
     
     # Handle insufficient privilege errors
     @app.errorhandler(ProgrammingError)
     def handle_programming_error(error):
         # Handle insufficient privilege errors
         if isinstance(error.orig, psycopg2.errors.InsufficientPrivilege):
-            return jsonify({"error": "Forbidden: insufficient privileges"}), 403
+            return jsonify({"msg": "Forbidden: insufficient privileges"}), 403
        # fallback generico
-        return jsonify({"error": "Database error"}), 500
+        return jsonify({"msg": "Database error"}), 500

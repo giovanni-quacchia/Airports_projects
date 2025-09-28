@@ -76,11 +76,11 @@ def create_purchase(data):
             # Update total cost of the purchase and user balance
             new_purchase.total_cost = total_cost
             user.balance -= total_cost
-
+            
             # aggiungere passeggeri e posti
             add_passengers(session, data.get('passengers', []), new_purchase.id)
             # commit automatico
-
+            
         return PurchaseSchema().dump(new_purchase)
             
     except Exception as e:

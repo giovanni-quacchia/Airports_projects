@@ -28,14 +28,19 @@ GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin; -- utile
 -- privilegi per l'utente guest
 GRANT SELECT ON public_airlines, airlines, airplanes, flights, routes, airports, tickets, users, itineraries, public_seats TO anonymous;
 GRANT INSERT ON users TO anonymous;
+-- GRANT USAGE, SELECT, UPDATE ON SEQUENCE users_id_seq TO anonymous; -- per PK increment
+GRANT USAGE ON SEQUENCE users_id_seq TO anonymous; -- per PK increment
 
 -- privilegi per l'utente user
 GRANT SELECT, INSERT ON purchases, purchases_tickets, passengers, seats TO user_authenticated;
 GRANT UPDATE ON passengers, purchases, seats TO user_authenticated;
 GRANT UPDATE, DELETE ON users TO user_authenticated;
-GRANT USAGE ON SEQUENCE purchases_id_seq, passengers_id_seq TO user_authenticated; -- per consentire .flush in una transazione
+GRANT USAGE ON SEQUENCE purchases_id_seq, passengers_id_seq TO user_authenticated; -- per PK increment
+
+GRANT UPDATE ON tickets TO user_authenticated; -- per l'acquisto del biglietto (decrementa quantity)
 
 -- privilegi per l'utente airline
 GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes, passengers, seats TO airline;
 GRANT INSERT ON routes TO airline;
 GRANT INSERT, UPDATE ON airplanes, flights, tickets TO airline;
+GRANT USAGE ON SEQUENCE airlines_id_seq, routes_airplanes_id_seq, passengers_id_seq, routes_id_seq, airplanes_id_seq, flights_id_seq, tickets_id_seq TO airline; -- per PK increment

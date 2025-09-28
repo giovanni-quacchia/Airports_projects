@@ -18,6 +18,17 @@ def get_all_seats():
     res = query.all()
     return Schema(many=True).dump(res)
 
+def get_seats_by_flight_id(flight_id):
+    session = get_session()
+    Table, Schema = (Seat, SeatSchema) if (current_user.is_authenticated and current_user.role == 'admin') else (SeatPublic, SeatPublicSchema)
+
+    query = (
+        session.query(Table)
+        .join(Ticket, Table.ticket == Ticket.id)
+        .where(Ticket.flight == flight_id))
+    res = query.all()
+    return Schema(many=True).dump(res)
+
 def get_seat_by_id(sid):
     try:
         session = get_session()

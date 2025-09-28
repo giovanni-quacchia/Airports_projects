@@ -3,6 +3,7 @@ from flask_login import login_required
 from app.services.user_service import get_all_users, create_user, get_user_by_id, delete_user_by_id, update_user_by_id, login_user_, logout_user_
 from app.schemas.user_schema import UserBaseSchema, UserSchema, UserQuerySchema
 from app.utils.auth_utils import admin_required, admin_or_owner_user_required
+from flask_cors import cross_origin
 
 user_bp = Blueprint('user_bp', __name__)
 user_create_schema = UserBaseSchema()
@@ -42,8 +43,6 @@ def get_user(user_id):
 
 # Create user
 @user_bp.route('/', methods=['POST'])
-@login_required
-@admin_required
 def new_user():
     data = user_create_schema.load(request.get_json())
     user = create_user(data)

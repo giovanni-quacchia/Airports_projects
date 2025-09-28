@@ -1,12 +1,13 @@
 import re
 from marshmallow import Schema, fields, ValidationError, validates, validates_schema
+from app.schemas.route_schema import RouteGetSchema
 
 class FlightBaseSchema(Schema):
     id = fields.Int(dump_only=True)
     code = fields.Str(required=True)
     
-    departure = fields.DateTime(required=True)
-    arrival = fields.DateTime(required=True)
+    departure = fields.Str(required=True)
+    arrival = fields.Str(required=True)
     duration = fields.Int(required=True)
 
     @validates('code')
@@ -22,10 +23,7 @@ class FlightSchema(FlightBaseSchema):
     airplane = fields.Int(required=True)
 
 class FlightGetSchema(FlightBaseSchema):
-    route = fields.Dict(
-        keys=fields.Str(),
-        values=fields.Str()
-    )
+    route = fields.Nested(RouteGetSchema)
     airline = fields.Int(required=True)
     airplane = fields.Int(required=True)
 

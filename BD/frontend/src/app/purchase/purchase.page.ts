@@ -6,9 +6,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
-import { Observable, of, firstValueFrom } from 'rxjs';
-import { timeout, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { timeout } from 'rxjs/operators';
 
 type SegmentKey = 'flight1' | 'flight2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
@@ -39,7 +38,7 @@ type PurchaseResponse = { id?: string; [k: string]: any };
 
       <ng-container *ngIf="flight; else missing">
         <section class="card">
-          <h2>{{ airlineName }} — {{ flightCode }}</h2>
+          <h2>{{ airlineName }}</h2>
 
           <p *ngIf="legs.length <= 1">
             {{ originCode }} → {{ destinationCode }}<br>
@@ -51,7 +50,7 @@ type PurchaseResponse = { id?: string; [k: string]: any };
           <div *ngIf="legs.length > 1" class="itinerary">
             <div *ngFor="let l of legs; let i = index" class="leg">
               <div class="leg__route">
-                {{ l.from }} → {{ l.to }} <span class="muted">({{ l.code }})</span>
+                {{ l.from_ }} → {{ l.to_ }} <span class="muted">({{ l.code }})</span>
               </div>
               <div class="leg__meta">
                 Partenza: {{ l.depart | date:'short' }} ·
@@ -253,6 +252,19 @@ export class PurchasePage implements OnInit {
     this.persistPassengers();
   }
 
+  // Mappa dei posti selezionati per segmento → viene caricata da localStorage
+  private get selectedSeatsBySegment(): SeatsBySegment {
+    return this.parse<SeatsBySegment>(localStorage.getItem('lastSelectedSeatsBySegment')) ?? {};
+  }
+
+  // Ritorna la lista di extra del passeggero (normalizzati)
+  private getExtrasFor(index: number): string[] {
+    const ctrl = this.ctrlAt(index, 'extras');
+    if (!ctrl) return [];
+    const raw = Array.isArray(ctrl.value) ? ctrl.value : [];
+    return this.normalizeExtras(raw);
+  }
+
   private persistPassengers() {
     const arr = (this.passengers.value ?? []).map((p: any) => ({
       ...p,
@@ -282,7 +294,7 @@ export class PurchasePage implements OnInit {
 
   private segments(): FlightBase[] {
     if (!this.flight) return [];
-    const arr: FlightBase[] = [this.flight];
+    const arr: FlightBase[] = [];
     if (this.flight.flight1) arr.push(this.flight.flight1);
     if (this.flight.flight2) arr.push(this.flight.flight2);
     return arr;
@@ -290,16 +302,39 @@ export class PurchasePage implements OnInit {
   private firstSeg(): FlightBase | null { const s = this.segments(); return s[0] ?? null; }
   private lastSeg(): FlightBase  | null { const s = this.segments(); return s[s.length-1] ?? null; }
 
-  get airlineName(): string { return this.flight?.airline?.name || this.flight?.airline?.code || 'Compagnia'; }
-  get flightCode(): string { return this.flight?.code || this.firstSeg()?.code || ''; }
+  get airlineName(){
+    if (!this.flight) return 'Compagnia';
+    const names: string[] = [];
+    if (this.flight.flight1?.airline || this.flight.flight1?.airline?.code) {
+      names.push(this.flight.flight1.airline as string || this.flight.flight1.airline.code!);
+    }
+    if (this.flight.flight2?.airline || this.flight.flight2?.airline?.code) {
+      names.push(this.flight.flight2.airline as string || this.flight.flight2.airline.code!);
+    }
+
+    if (names.length == 2 && names[0] === names[1]) {
+      return names[0];
+    }
+    return names.join(' — ') || 'Compagnia';
+  } 
+
+get flightCode(): string {
+  if (!this.flight) return '';
+  // Prende tutti i segmenti e concatena i codici separati da " — "
+  return this.segments()
+    .map(s => s.code || '')
+    .filter(Boolean) // elimina eventuali stringhe vuote
+    .join(' — ');
+}
+
 
   get originCode(): string {
-    const first = this.firstSeg();
-    return first?.route?.from?.code || this.flight?.route?.from?.code || (this.flight as any)?.from || '';
+    const first:any = this.firstSeg();
+    return first?.from_ || ''
   }
   get destinationCode(): string {
-    const last = this.lastSeg();
-    return last?.route?.to?.code || this.flight?.route?.to?.code || (this.flight as any)?.to || (this.flight as any)?.destination?.code || '';
+    const last:any = this.lastSeg();
+    return last?.to_ || ''
   }
 
   get departTime(): string | Date | null { return this.firstSeg()?.departure || this.flight?.departure || null; }
@@ -316,59 +351,68 @@ export class PurchasePage implements OnInit {
     return 0;
   }
 
-  get legs(): Array<{ code: string; from: string; to: string; depart: string | Date | null; arrive: string | Date | null; duration: number | null; }> {
-    const segs = this.segments();
-    return segs.map((s, i) => {
-      const from = i === 0
-        ? (this.originCode || s?.route?.from?.code || '')
-        : (s?.route?.from?.code || segs[i - 1]?.route?.to?.code || '');
-      const to = i < segs.length - 1
-        ? (segs[i + 1]?.route?.from?.code || s?.route?.to?.code || '')
-        : (this.destinationCode || s?.route?.to?.code || '');
-      return {
-        code: s?.code || '',
-        from,
-        to,
-        depart: s?.departure ?? null,
-        arrive: s?.arrival ?? null,
-        duration: typeof s?.duration === 'number' ? s.duration : null,
-      };
-    });
-  }
+get legs(): Array<any> {
+  if (!this.flight) return [];
 
-  private normalizeForPurchase(f: any): FlightResult {
-    const segs: FlightBase[] = [];
-    if (f) {
-      segs.push(f);
-      if (f.stop1) segs.push(f.stop1);
-      if (f.stop2) segs.push(f.stop2);
-    }
-    const first = segs[0] ?? f;
-    const last  = segs[segs.length - 1] ?? f;
+  const segs = [this.flight.flight1, this.flight.flight2].filter(Boolean) as FlightBase[];
+  return segs.map((s:any) => ({
+    code: s.code || '',
+    from_: s.from_ || s.route?.from?.code || '',
+    to_: s.to_ || s.route?.to?.code || '',
+    depart: s.departure ?? null,
+    arrive: s.arrival ?? null,
+    duration: typeof s.duration === 'number' ? s.duration : null
+  }));
+}
 
-    const route = {
-      from: first?.route?.from ?? f?.route?.from ?? null,
-      to:   last?.route?.to   ?? f?.route?.to   ?? null,
-    };
+private normalizeForPurchase(f: any): FlightResult {
+  if (!f) return null as any;
 
-    const departure = f?.departure ?? first?.departure ?? null;
-    const arrival   = f?.finalArrival ?? f?.arrival ?? last?.arrival ?? null;
+  // Creiamo array dei segmenti
+  const segs: FlightBase[] = [];
+  if (f.flight1) segs.push({
+    ...f.flight1,
+    departure: f.flight1.departure ? new Date(f.flight1.departure) : null,
+    arrival: f.flight1.arrival ? new Date(f.flight1.arrival) : null,
+  });
+  if (f.flight2) segs.push({
+    ...f.flight2,
+    departure: f.flight2.departure ? new Date(f.flight2.departure) : null,
+    arrival: f.flight2.arrival ? new Date(f.flight2.arrival) : null,
+  });
 
-    let totDuration: number;
-    if (typeof f?.totDuration === 'number') totDuration = f.totDuration;
-    else {
-      const sum = segs.reduce((acc, s) => acc + (typeof s?.duration === 'number' ? s.duration : 0), 0);
-      if (sum > 0) totDuration = sum;
-      else if (departure && arrival) totDuration = Math.round((new Date(arrival).getTime() - new Date(departure).getTime())/60000);
-      else totDuration = 0;
-    }
+  const first:any = segs[0] ?? null;
+  const last:any  = segs[segs.length - 1] ?? null;
 
-    return {
-      ...f,
-      route, departure, arrival, totDuration,
-      matchedTicketsBySegment: f?.matchedTicketsBySegment ?? f?.ticketsBySegment ?? {}
-    } as FlightResult;
-  }
+  const route = {
+    from: first?.from_ || first?.route?.from || null,
+    to: last?.to_ || last?.route?.to || null,
+    code: first?.code ?? last?.code ?? ''
+  };
+
+  const departure = first?.departure ?? null;
+  const arrival   = last?.arrival ?? null;
+
+  const totDuration = typeof f.tot_duration === 'number'
+      ? f.tot_duration
+      : segs.reduce((sum, s) => sum + (s.duration ?? 0), 0);
+
+  const ticketsBySegment: Partial<Record<SegmentKey, TicketDTO[]>> = {};
+  if (f.flight1?.tickets) ticketsBySegment['flight1'] = f.flight1.tickets;
+  if (f.flight2?.tickets) ticketsBySegment['flight2'] = f.flight2.tickets;
+
+  return {
+    ...f,
+    flight1: segs[0] ?? undefined,
+    flight2: segs[1] ?? undefined,
+    route,
+    departure,
+    arrival,
+    totDuration,
+    ticketsBySegment
+  } as FlightResult;
+}
+
 
   private ticketsFor(key: SegmentKey): TicketDTO[] {
     const src = this.flight?.matchedTicketsBySegment ?? this.flight?.ticketsBySegment ?? {};
@@ -406,66 +450,65 @@ async onPay() {
   const REQUEST_TIMEOUT_MS = 15000;
 
   try {
-    const keys: SegmentKey[] = [ ...(this.flight.flight1 ? ['flight1'] as const : []), ...(this.flight.flight2 ? ['flight2'] as const : [])];
+    const keys: SegmentKey[] = [
+      ...(this.flight.flight1 ? ['flight1'] as const : []),
+      ...(this.flight.flight2 ? ['flight2'] as const : [])
+    ];
 
-    const purchasePayloads = keys
-      .map(k => {
-        const t = this.minTicket(k);
-        const ticket = (t?.id) as string | undefined;
-        return ticket ? { user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length } : null;
-      })
-      .filter(Boolean) as Array<{ user: any; ticket: string; quantity: number }>;
+    // --- ricava ticket IDs
+    const tickets = keys
+      .map(k => this.minTicket(k)?.id as string | undefined)
+      .filter(Boolean) as string[];
 
-    if (!purchasePayloads.length) {
+    if (!tickets.length) {
       this.error = 'Nessun biglietto disponibile per l’itinerario.';
       this.loading = false;
       return;
     }
 
-    // Controlla se e' gia ' stato fatto l'acquisto, ma ci sono stati degli errori nella creazione dei passeggeri
-    if(this.purchases.length <= 0){
-      for (let i = 0; i < purchasePayloads.length; i++) {
-        const p = purchasePayloads[i];
-        try {
-          const obs = this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() })
-                        .pipe(timeout(REQUEST_TIMEOUT_MS));
-          const res = await firstValueFrom(obs);
-          this.purchases.push(res);
+    // --- costruisci passengers[]
+    const passengersPayload = (this.passengers.value as any[]).map((p, idx) => {
 
-        } catch (err: any) {
-          console.log(err)
-          this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
-          throw err;
-        }
-      }
-    }
-    
+      const seats = keys.map(k => ({
+        ticket: this.minTicket(k)?.id,
+        seat: this.selectedSeatsBySegment[k]?.[idx] || null,
+        extra: this.getExtrasFor(idx)
+      })).filter(s => s.ticket);
 
-    const purchaseIds = this.purchases.map((r:any) => (r?.id ?? r?._id)).filter(Boolean);
-    if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
-    console.log('[onPay] purchaseIds:', purchaseIds);
+      return {
+        name: p.firstName,
+        surname: p.lastName,
+        CF: p.cf,
+        passportNumber: p.passportNumber,
+        seats
+      };
+    });
 
-    for (let pIndex = 0; pIndex < purchaseIds.length; pIndex++) {
-      const purchaseId = purchaseIds[pIndex];
-      for (let i = 0; i < this.passengers.length; i++) {
-        const payload = this.buildPassengerPayload(i, purchaseId);
-        try {
-          const obs = this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() })
-                               .pipe(timeout(REQUEST_TIMEOUT_MS));
-          const res = await firstValueFrom(obs);
-          console.log(`[onPay] /passengers response passenger #${i}:`, res);
-        } catch (err: any) {
-          this.error = (err?.error?.msg) || err?.msg || `Errore invio passeggero ${i + 1}`;
-          throw err;
-        }
-      }
-    }
-    // update saldo
+
+    const payload = {
+      user: this.auth.currentUser.id || this.extractUserId(),
+      tickets,
+      passengers: passengersPayload,
+      quantity: this.passengers.length,
+    };
+
+    console.log('[onPay] sending payload:', payload);
+
+    // --- unica chiamata a /purchases
+    const obs = this.http.post(`${api}/purchases/`, payload, {withCredentials: true})
+                         .pipe(timeout(REQUEST_TIMEOUT_MS));
+    const res = await firstValueFrom(obs);
+
+    console.log('[onPay] response:', res);
+
+    // aggiorna saldo
     this.auth.putCurrentBalance();
     alert('Acquisto completato! Controlla la tua email per la conferma.');
     this.router.navigate(['/search']);
+
   } catch (e: any) {
-    this.error = this.error || (e?.error?.message) || e?.message || 'Pagamento non riuscito';
+    console.error('[onPay] error', e);
+    this.error = (e?.error?.msg) || e?.msg || 'Pagamento non riuscito';
   } finally {
     setTimeout(() => {
       this.loading = false;
@@ -473,6 +516,7 @@ async onPay() {
     }, 0);
   }
 }
+
 
   private buildPassengerPayload(index: number, purchaseId: string) {
     const v = (this.passengers.at(index)?.value || {}) as any;

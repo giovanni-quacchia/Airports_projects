@@ -136,7 +136,14 @@ export class LoginComponent {
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: () => this.router.navigate(['/search']),
-        error: (err) => this.errorMsg = err?.error?.msg || 'Accesso non riuscito'
+        error: (err) => {
+          const msg = err?.error?.msg;
+          if (Array.isArray(msg)) {
+            this.errorMsg = msg[0]; // prende solo il primo messaggio
+          } else {
+            this.errorMsg = msg || 'Accesso non riuscito';
+          }
+        }
       });
   }
 }

@@ -148,7 +148,11 @@ INSERT INTO tickets (id, type, price, quantity, flight) VALUES
 (11, 'FIRST_CLASS', 950.0, 8,  10),  -- AF808 LHR-->CDG
 (12, 'ECONOMY',     400.0, 70, 18),  -- EK400 GRU-->JFK
 (13, 'BUSINESS',    900.0, 25, 18),  -- EK400 GRU-->JFK
-(14, 'FIRST_CLASS', 1500.0,10, 18);  -- EK400 GRU-->JFK
+(14, 'FIRST_CLASS', 1500.0,10, 18),  -- EK400 GRU-->JFK
+(15, 'ECONOMY', 500.0, 30, 14),      -- AA100 JFK -> LAX
+(16, 'BUSINESS', 900.0, 25, 14),     -- AA100 JFK -> LAX
+(17, 'ECONOMY', 400.0, 20, 15),      -- AA101 LAX -> ORD
+(18, 'BUSINESS', 800.0, 15, 15);      -- AA101 LAX -> ORD
 
 -- Errori da testare
 -- (15, 'ECONOMY', 120.0, -5, 1),  -- quantity negativa
@@ -166,9 +170,9 @@ INSERT INTO purchases (id, "user", total_cost, date, quantity) VALUES
 -- PURCHASES_TICKETS
 -- =====================
 INSERT INTO purchases_tickets (purchase, ticket) VALUES
-(1, 1), -- purchase 1 -> ticket 1
-(1, 2), -- purchase 1 -> ticket 2
-(2, 5); -- purchase 2 -> ticket 5
+(1, 15), -- purchase 1 -> ticket 15: JFK->LAX ECONOMY
+(1, 17), -- purchase 1 -> ticket 17: LAX->ORD ECONOMY
+(2, 5); -- purchase 2 -> ticket 5: FCO->VCE BUSINESS
 
 -- =====================
 -- PASSENGERS
@@ -182,11 +186,11 @@ INSERT INTO passengers (id, name, surname, "CF", "passportNumber", purchase) VAL
 -- SEATS
 -- =====================
 INSERT INTO seats (passenger, ticket, seat, extra) VALUES
-(1, 1, 'A1', ARRAY['LARGER SEAT']::extra_types[]),
-(2, 1, 'A2', ARRAY['PRIORITY']::extra_types[]),
+(1, 15, 'A1', ARRAY['LARGER SEAT']::extra_types[]), -- Mario Rossi su volo JFK->LAX ECONOMY 
+(2, 15, 'A2', ARRAY['PRIORITY']::extra_types[]),    -- Luigi Bianchi su volo JFK->LAX ECONOMY
 (3, 5, 'B1', ARRAY['EXTRA BAG']::extra_types[]),
-(1, 2, 'C1', ARRAY['LARGER SEAT']::extra_types[]),
-(2, 2, 'C2', ARRAY['PRIORITY']::extra_types[]);
+(1, 17, 'C1', ARRAY['LARGER SEAT']::extra_types[]), -- Mario Rossi su volo LAX->ORD ECONOMY
+(2, 17, 'C2', ARRAY['PRIORITY']::extra_types[]);    -- Luigi Bianchi su volo LAX->ORD ECONOMY
 
 -- =====================
 -- AGGIORNA LE SEQUENCE (PK)

@@ -5,7 +5,6 @@ import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { map, tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
 
 
 export interface LoginResponse { token: string; user: any; }
@@ -25,12 +24,12 @@ export class AuthService {
   // ---------- API ----------
   login(email: string, password: string) {
     const body = { mail: email, password };
-    return this.http.post<LoginResponse>(`${this.base}/sessions`, body)
+    return this.http.post(`${this.base}/login`, body, {withCredentials: true})
       .pipe(
-        tap(res => {
+        tap((res:any) => {
           this.setSession(
             res.token,
-            this.decodeToken(res.token) || { email, isAdmin: email === 'admin@gmail.com' }
+            { email: res.user.mail, isAdmin: res.user.role === 'admin', balance: res.user.balance, id: res.user.id}
           );
         })
       );
@@ -38,21 +37,21 @@ export class AuthService {
 
   loginCompagnia(email: string, password: string, newPassword = '') {
     const body = { mail: email, password, newPassword };
-    return this.http.post<LoginResponse>(`${environment.apiBase}/airlines/sessions`, body)
+    return this.http.post(`${environment.apiBase}/airlines/login`, body, {withCredentials: true})
       .pipe(
-        tap(res => {
+        tap((res:any) => {
           this.setSession(
             res.token,
-            this.decodeToken(res.token) || { email, isAdmin: email === 'admin@gmail.com' }
+            { email: res.airline.mail, isAdmin: false, id: res.airline.id, isAirline: true}
           );
         })
       );
   }
 
   register(email: string, password: string, name?: string) {
-    const body = { mail: email, password, name };
+    const body = { mail: email, password };
     const role = email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user';
-    return this.http.post<LoginResponse>(`${this.base}`, body)
+    return this.http.post<LoginResponse>(`${this.base}/`, body, {withCredentials: true})
       .pipe(
         tap(res => {
           this.setSession(res.token, { email, role });
@@ -86,6 +85,7 @@ export class AuthService {
       localStorage.removeItem(this.USER_KEY);
       window.location.href = '/';
     } catch {}
+    this.http.post(`${this.base}/users/logout`, {}).subscribe();
   }
 
   get token(): string | null {
@@ -102,10 +102,10 @@ export class AuthService {
 
   // Get current balance
   putCurrentBalance() {
-    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}`, { headers: this.buildHeaders() })
+    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}/`)
       .subscribe(res => {
         const user: any = res;
-        localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user._id}));
+        localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user.id}));
       });
   }
 
