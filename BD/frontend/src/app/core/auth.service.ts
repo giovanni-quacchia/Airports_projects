@@ -24,7 +24,7 @@ export class AuthService {
   // ---------- API ----------
   login(email: string, password: string) {
     const body = { mail: email, password };
-    return this.http.post(`${this.base}/login`, body)
+    return this.http.post(`${this.base}/login`, body, {withCredentials: true})
       .pipe(
         tap((res:any) => {
           this.setSession(
@@ -37,7 +37,7 @@ export class AuthService {
 
   loginCompagnia(email: string, password: string, newPassword = '') {
     const body = { mail: email, password, newPassword };
-    return this.http.post(`${environment.apiBase}/airlines/login`, body)
+    return this.http.post(`${environment.apiBase}/airlines/login`, body, {withCredentials: true})
       .pipe(
         tap((res:any) => {
           this.setSession(
@@ -85,6 +85,7 @@ export class AuthService {
       localStorage.removeItem(this.USER_KEY);
       window.location.href = '/';
     } catch {}
+    this.http.post(`${this.base}/users/logout`, {}).subscribe();
   }
 
   get token(): string | null {
@@ -101,10 +102,10 @@ export class AuthService {
 
   // Get current balance
   putCurrentBalance() {
-    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}`, { headers: this.buildHeaders() })
+    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}/`)
       .subscribe(res => {
         const user: any = res;
-        localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user._id}));
+        localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user.id}));
       });
   }
 

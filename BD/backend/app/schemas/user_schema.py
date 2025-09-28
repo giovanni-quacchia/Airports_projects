@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, ValidationError, validates
 
 class UserBaseSchema(Schema):
+    id = fields.Int(dump_only=True)
     mail = fields.Email(required=True)
     password = fields.Str(required=True)
 

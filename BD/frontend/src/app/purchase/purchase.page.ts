@@ -252,6 +252,19 @@ export class PurchasePage implements OnInit {
     this.persistPassengers();
   }
 
+  // Mappa dei posti selezionati per segmento → viene caricata da localStorage
+  private get selectedSeatsBySegment(): SeatsBySegment {
+    return this.parse<SeatsBySegment>(localStorage.getItem('lastSelectedSeatsBySegment')) ?? {};
+  }
+
+  // Ritorna la lista di extra del passeggero (normalizzati)
+  private getExtrasFor(index: number): string[] {
+    const ctrl = this.ctrlAt(index, 'extras');
+    if (!ctrl) return [];
+    const raw = Array.isArray(ctrl.value) ? ctrl.value : [];
+    return this.normalizeExtras(raw);
+  }
+
   private persistPassengers() {
     const arr = (this.passengers.value ?? []).map((p: any) => ({
       ...p,
@@ -437,66 +450,65 @@ async onPay() {
   const REQUEST_TIMEOUT_MS = 15000;
 
   try {
-    const keys: SegmentKey[] = [ ...(this.flight.flight1 ? ['flight1'] as const : []), ...(this.flight.flight2 ? ['flight2'] as const : [])];
+    const keys: SegmentKey[] = [
+      ...(this.flight.flight1 ? ['flight1'] as const : []),
+      ...(this.flight.flight2 ? ['flight2'] as const : [])
+    ];
 
-    const purchasePayloads = keys
-      .map(k => {
-        const t = this.minTicket(k);
-        const ticket = (t?.id) as string | undefined;
-        return ticket ? { user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length } : null;
-      })
-      .filter(Boolean) as Array<{ user: any; ticket: string; quantity: number }>;
+    // --- ricava ticket IDs
+    const tickets = keys
+      .map(k => this.minTicket(k)?.id as string | undefined)
+      .filter(Boolean) as string[];
 
-    if (!purchasePayloads.length) {
+    if (!tickets.length) {
       this.error = 'Nessun biglietto disponibile per l’itinerario.';
       this.loading = false;
       return;
     }
 
-    // Controlla se e' gia ' stato fatto l'acquisto, ma ci sono stati degli errori nella creazione dei passeggeri
-    if(this.purchases.length <= 0){
-      for (let i = 0; i < purchasePayloads.length; i++) {
-        const p = purchasePayloads[i];
-        try {
-          const obs = this.http.post<PurchaseResponse>(`${api}/purchases`, p, { headers: this.buildHeaders() })
-                        .pipe(timeout(REQUEST_TIMEOUT_MS));
-          const res = await firstValueFrom(obs);
-          this.purchases.push(res);
+    // --- costruisci passengers[]
+    const passengersPayload = (this.passengers.value as any[]).map((p, idx) => {
 
-        } catch (err: any) {
-          console.log(err)
-          this.error = err?.error?.msg || `Errore durante l'acquisto (${i + 1})`;
-          throw err;
-        }
-      }
-    }
-    
+      const seats = keys.map(k => ({
+        ticket: this.minTicket(k)?.id,
+        seat: this.selectedSeatsBySegment[k]?.[idx] || null,
+        extra: this.getExtrasFor(idx)
+      })).filter(s => s.ticket);
 
-    const purchaseIds = this.purchases.map((r:any) => (r?.id ?? r?._id)).filter(Boolean);
-    if (!purchaseIds.length) throw new Error('Acquisto non riuscito: id acquisto mancante.');
-    console.log('[onPay] purchaseIds:', purchaseIds);
+      return {
+        name: p.firstName,
+        surname: p.lastName,
+        CF: p.cf,
+        passportNumber: p.passportNumber,
+        seats
+      };
+    });
 
-    for (let pIndex = 0; pIndex < purchaseIds.length; pIndex++) {
-      const purchaseId = purchaseIds[pIndex];
-      for (let i = 0; i < this.passengers.length; i++) {
-        const payload = this.buildPassengerPayload(i, purchaseId);
-        try {
-          const obs = this.http.post(`${api}/passengers`, payload, { headers: this.buildHeaders() })
-                               .pipe(timeout(REQUEST_TIMEOUT_MS));
-          const res = await firstValueFrom(obs);
-          console.log(`[onPay] /passengers response passenger #${i}:`, res);
-        } catch (err: any) {
-          this.error = (err?.error?.msg) || err?.msg || `Errore invio passeggero ${i + 1}`;
-          throw err;
-        }
-      }
-    }
-    // update saldo
+
+    const payload = {
+      user: this.auth.currentUser.id || this.extractUserId(),
+      tickets,
+      passengers: passengersPayload,
+      quantity: this.passengers.length,
+    };
+
+    console.log('[onPay] sending payload:', payload);
+
+    // --- unica chiamata a /purchases
+    const obs = this.http.post(`${api}/purchases/`, payload, {withCredentials: true})
+                         .pipe(timeout(REQUEST_TIMEOUT_MS));
+    const res = await firstValueFrom(obs);
+
+    console.log('[onPay] response:', res);
+
+    // aggiorna saldo
     this.auth.putCurrentBalance();
     alert('Acquisto completato! Controlla la tua email per la conferma.');
     this.router.navigate(['/search']);
+
   } catch (e: any) {
-    this.error = this.error || (e?.error?.message) || e?.message || 'Pagamento non riuscito';
+    console.error('[onPay] error', e);
+    this.error = (e?.error?.msg) || e?.msg || 'Pagamento non riuscito';
   } finally {
     setTimeout(() => {
       this.loading = false;
@@ -504,6 +516,7 @@ async onPay() {
     }, 0);
   }
 }
+
 
   private buildPassengerPayload(index: number, purchaseId: string) {
     const v = (this.passengers.at(index)?.value || {}) as any;

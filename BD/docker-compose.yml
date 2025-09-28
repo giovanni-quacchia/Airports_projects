@@ -23,7 +23,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d flights_db && psql -U postgres -d flights_db -tAc \"SELECT 1 FROM pg_roles WHERE rolname='guest'\" | grep -q 1"]
       interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 10
   backend:
     build:
       context: ./backend

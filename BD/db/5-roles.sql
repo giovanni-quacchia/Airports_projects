@@ -37,6 +37,8 @@ GRANT UPDATE ON passengers, purchases, seats TO user_authenticated;
 GRANT UPDATE, DELETE ON users TO user_authenticated;
 GRANT USAGE ON SEQUENCE purchases_id_seq, passengers_id_seq TO user_authenticated; -- per PK increment
 
+GRANT UPDATE ON tickets TO user_authenticated; -- per l'acquisto del biglietto (decrementa quantity)
+
 -- privilegi per l'utente airline
 GRANT SELECT, INSERT, UPDATE ON airlines, routes_airplanes, passengers, seats TO airline;
 GRANT INSERT ON routes TO airline;
