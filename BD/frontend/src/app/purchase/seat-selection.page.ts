@@ -6,7 +6,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
 
-type SegmentKey = 'main' | 'stop1' | 'stop2';
+type SegmentKey = 'flight1' | 'flight2';
 type SeatsBySegment = Partial<Record<SegmentKey, (string | null)[]>>;
 type Segment = { key: SegmentKey; flightId: string; code: string };
 
@@ -135,7 +135,7 @@ export class SeatSelectionPage implements OnInit {
   passengers: any[] = [];
 
   segments: Segment[] = [];
-  currentSegment: SegmentKey = 'main';
+  currentSegment: SegmentKey = 'flight1';
   currentPassengerIndex = 0;
 
   // posti occupati per segmento
@@ -155,9 +155,8 @@ export class SeatSelectionPage implements OnInit {
     this.passengers = state?.passengers ?? this.parse(localStorage.getItem('lastPassengers')) ?? [];
 
     // mappa segmenti
-    if (this.flight?._id) this.segments.push({ key: 'main', flightId: this.flight._id, code: this.flight.code });
-    if (this.flight?.stop1?._id) this.segments.push({ key: 'stop1', flightId: this.flight.stop1._id, code: this.flight.stop1.code });
-    if (this.flight?.stop2?._id) this.segments.push({ key: 'stop2', flightId: this.flight.stop2._id, code: this.flight.stop2.code });
+    if (this.flight?.flight1?.id) this.segments.push({ key: 'flight1', flightId: this.flight.flight1.id, code: this.flight.flight1.code });
+    if (this.flight?.flight2?.id) this.segments.push({ key: 'flight2', flightId: this.flight.flight2.id, code: this.flight.flight2.code });
 
     // ripristina selezioni per segmento
     const savedMap = this.parse<SeatsBySegment>(localStorage.getItem('lastSelectedSeatsBySegment')) ?? {};

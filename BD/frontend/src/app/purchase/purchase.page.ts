@@ -10,23 +10,23 @@ import { Observable, of, firstValueFrom } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
-type SegmentKey = 'main' | 'stop1' | 'stop2';
+type SegmentKey = 'flight1' | 'flight2';
 interface AirportDTO { code: string; city?: string; name?: string; country?: string; }
 interface FlightBase {
-  _id: string; code: string;
+  id: string; code: string;
   departure?: string | Date; arrival?: string | Date; duration?: number;
-  route?: { from?: AirportDTO; to?: AirportDTO };
+  route?: { from?: AirportDTO; to?: AirportDTO; code?: string };
   airline?: { name?: string; code?: string; logo?: string };
 }
 type SeatsBySegment = Partial<Record<SegmentKey, (string | null)[]>>;
-interface TicketDTO { id?: string; _id?: string; type?: string; quantity?: number; price?: number; }
+interface TicketDTO { id?: string; type?: string; quantity?: number; price?: number; }
 interface FlightResult extends FlightBase {
-  stop1?: FlightBase; stop2?: FlightBase;
+  flight1?: FlightBase; flight2?: FlightBase;
   totDuration?: number; finalArrival?: string | Date;
   matchedTicketsBySegment?: Partial<Record<SegmentKey, TicketDTO[]>>;
   ticketsBySegment?: Partial<Record<SegmentKey, TicketDTO[]>>;
 }
-type PurchaseResponse = { id?: string; _id?: string; [k: string]: any };
+type PurchaseResponse = { id?: string; [k: string]: any };
 
 @Component({
   standalone: true,
@@ -189,9 +189,8 @@ export class PurchasePage implements OnInit {
     this.flight = raw ? this.normalizeForPurchase(raw) : this.parse(localStorage.getItem('lastFlight'));
 
     if (this.flight) {
-      this.segmentsMeta = [{ key: 'main', code: this.flight.code }];
-      if (this.flight.stop1) this.segmentsMeta.push({ key: 'stop1', code: this.flight.stop1.code });
-      if (this.flight.stop2) this.segmentsMeta.push({ key: 'stop2', code: this.flight.stop2.code });
+      if (this.flight.flight1) this.segmentsMeta.push({ key: 'flight1', code: this.flight.flight1.code });
+      if (this.flight.flight2) this.segmentsMeta.push({ key: 'flight2', code: this.flight.flight2.code });
     }
 
     const savedPassengers = this.parse(localStorage.getItem('lastPassengers'));
@@ -266,7 +265,7 @@ export class PurchasePage implements OnInit {
   private getSeatsBySegment(): SeatsBySegment {
     return (this.parse<SeatsBySegment>(localStorage.getItem('lastSelectedSeatsBySegment')) ?? {}) as SeatsBySegment;
   }
-  private seatForPassenger(index: number, key: SegmentKey = 'main'): string | null {
+  private seatForPassenger(index: number, key: SegmentKey): string | null {
     const map = this.getSeatsBySegment();
     const arr = map?.[key] ?? [];
     return (arr[index] ?? null) as string | null;
@@ -284,8 +283,8 @@ export class PurchasePage implements OnInit {
   private segments(): FlightBase[] {
     if (!this.flight) return [];
     const arr: FlightBase[] = [this.flight];
-    if (this.flight.stop1) arr.push(this.flight.stop1);
-    if (this.flight.stop2) arr.push(this.flight.stop2);
+    if (this.flight.flight1) arr.push(this.flight.flight1);
+    if (this.flight.flight2) arr.push(this.flight.flight2);
     return arr;
   }
   private firstSeg(): FlightBase | null { const s = this.segments(); return s[0] ?? null; }
@@ -382,7 +381,7 @@ export class PurchasePage implements OnInit {
   }
   get computedPrice(): number | null {
     if (!this.flight) return null;
-    const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+    const keys: SegmentKey[] = [ ...(this.flight.flight1 ? ['flight1'] as const : []), ...(this.flight.flight2 ? ['flight2'] as const : [])];
     let total = 0;
     for (const k of keys) {
       const m = this.minTicket(k)?.price;
@@ -407,12 +406,12 @@ async onPay() {
   const REQUEST_TIMEOUT_MS = 15000;
 
   try {
-    const keys: SegmentKey[] = ['main', ...(this.flight.stop1 ? ['stop1'] as const : []), ...(this.flight.stop2 ? ['stop2'] as const : [])];
+    const keys: SegmentKey[] = [ ...(this.flight.flight1 ? ['flight1'] as const : []), ...(this.flight.flight2 ? ['flight2'] as const : [])];
 
     const purchasePayloads = keys
       .map(k => {
         const t = this.minTicket(k);
-        const ticket = (t?.id || t?._id) as string | undefined;
+        const ticket = (t?.id) as string | undefined;
         return ticket ? { user: this.auth.decodeToken(this.auth.token || '')?.id, ticket, quantity: this.passengers.length } : null;
       })
       .filter(Boolean) as Array<{ user: any; ticket: string; quantity: number }>;
@@ -483,7 +482,7 @@ async onPay() {
       CF:              v.cf || undefined,
       passportNumber:  v.passportNumber || undefined,
       extra:           v.extras || [],
-      seat:            this.seatForPassenger(index, 'main'),
+      seat:            this.seatForPassenger(index, 'flight1') || undefined,
       purchase:        purchaseId
     };
   }

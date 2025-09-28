@@ -7,14 +7,14 @@ export function toCabin(v: any): Cabin {
 }
 
 export interface AirlineDTO {
-  _id?: string;
+  id?: string;
   code?: string;
   name?: string;
   logo?: string;
 }
 
 export interface AirportDTO {
-  _id?: string;
+  id?: string;
   code: string;
   city?: string;
   country?: string;
@@ -22,28 +22,25 @@ export interface AirportDTO {
 }
 
 export interface FlightBase {
-  _id: string;
+  id: string;
   code: string;
   arrival?: string;
   departure?: string;
   duration?: number;
   airline?: AirlineDTO;
-  route?: {
-    from?: AirportDTO;
-    to?: AirportDTO;
-  };
+  route?: { from?: AirportDTO; to?: AirportDTO; code?: string };
 }
 
 export interface Itinerary extends FlightBase {
-  stop1?: FlightBase;
-  stop2?: FlightBase;
+  flight1?: FlightBase;
+  flight2?: FlightBase;
   numStops?: number;
   finalArrival?: string;
   totDuration?: number;
 }
 
 export interface FlightSearchParams {
-  _id?: string;
+  id?: string;
   from: string;
   to: string;
   departDate: string;
@@ -60,10 +57,10 @@ export interface TicketDTO {
   available?: number;
   price?: number;
   flight?: FlightBase;
-  _id?: string;
+  id?: string;
 }
 
-export type SegmentKey = 'main' | 'stop1' | 'stop2';
+export type SegmentKey = 'flight1' | 'flight2';
 export type TicketsBySegment = Partial<Record<SegmentKey, TicketDTO[]>>;
 
 export interface FlightResult extends Itinerary {

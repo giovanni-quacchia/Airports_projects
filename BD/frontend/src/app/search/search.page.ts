@@ -31,7 +31,7 @@ export class SearchPage {
 
   onSearch(ev: any) {
     const q: FlightSearchParams = {
-      _id: ev._id, // ignorato se non c'è
+      id: ev.id, // ignorato se non c'è
       from: ev.from,
       to: ev.to,
       departDate: ev.departDate,
@@ -53,14 +53,13 @@ export class SearchPage {
           itins.map((itin) => {
             // segmenti presenti, chiavi come letterali
             const segments: { key: SegmentKey; id: string }[] = [
-              { key: 'main' as const, id: itin._id },
-              ...(itin.stop1 ? [{ key: 'stop1' as const, id: itin.stop1._id }] : []),
-              ...(itin.stop2 ? [{ key: 'stop2' as const, id: itin.stop2._id }] : []),
+              ...(itin.flight1 ? [{ key: 'flight1' as const, id: itin.flight1.id }] : []),
+              ...(itin.flight2 ? [{ key: 'flight2' as const, id: itin.flight2.id }] : []),
             ];
 
             return forkJoin(
               segments.map(seg =>
-                this.flightService.searchTickets({ ...q, _id: seg.id }).pipe(
+                this.flightService.searchTickets({ ...q, id: seg.id }).pipe(
                   map((tickets: TicketDTO[]) => ({
                     key: seg.key,
                     tickets: (tickets || []).map(normalizeTicket),
@@ -90,17 +89,15 @@ export class SearchPage {
         const filtered = itinsWithTickets
           .filter(itin => {
             const presentSegs: SegmentKey[] = [
-              'main',
-              ...(itin.stop1 ? (['stop1'] as const) : []),
-              ...(itin.stop2 ? (['stop2'] as const) : []),
+              ...(itin.flight1 ? (['flight1'] as const) : []),
+              ...(itin.flight2 ? (['flight2'] as const) : []),
             ];
             return presentSegs.every(k => (itin.ticketsBySegment?.[k] ?? []).some(matchesTicket));
           })
           .map(itin => {
             const matched: Record<SegmentKey, TicketDTO[] | undefined> = {
-              main: (itin.ticketsBySegment?.main ?? []).filter(matchesTicket),
-              stop1: itin.stop1 ? (itin.ticketsBySegment?.stop1 ?? []).filter(matchesTicket) : undefined,
-              stop2: itin.stop2 ? (itin.ticketsBySegment?.stop2 ?? []).filter(matchesTicket) : undefined,
+              flight1: itin.flight1 ? (itin.ticketsBySegment?.flight1 ?? []).filter(matchesTicket) : undefined,
+              flight2: itin.flight2 ? (itin.ticketsBySegment?.flight2 ?? []).filter(matchesTicket) : undefined,
             };
             return { ...itin, matchedTicketsBySegment: matched } as FlightResult;
           });
