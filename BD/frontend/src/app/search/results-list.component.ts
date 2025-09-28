@@ -109,22 +109,11 @@ export class DurationPipe implements PipeTransform {
 
           <div class="seg-tickets" [ngSwitch]="i">
 
-          
-
-            <!-- First flight -->
-            <ng-container *ngSwitchCase="0">
-              <ng-container *ngIf="hasTickets(r,'main')">
-                  <ng-container *ngIf="lowestTicket(r,'main') as t">
-                    <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
-                    <small class="seg-qty">{{ t.quantity }} posti</small>
-                  </ng-container>
-              </ng-container>
-            </ng-container>
 
             <!-- Stop1 -->
             <ng-container *ngSwitchCase="1">
-              <ng-container *ngIf="hasTickets(r,'stop1')">
-                  <ng-container *ngIf="lowestTicket(r,'stop1') as t">
+              <ng-container *ngIf="hasTickets(r,'flight1')">
+                  <ng-container *ngIf="lowestTicket(r,'flight1') as t">
                     <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
                     <small class="seg-qty">{{ t.quantity }} posti</small>
                   </ng-container>
@@ -133,8 +122,8 @@ export class DurationPipe implements PipeTransform {
 
             <!-- Stop2 -->
             <ng-container *ngSwitchCase="2">
-              <ng-container *ngIf="hasTickets(r,'stop2')">
-                  <ng-container *ngIf="lowestTicket(r,'stop2') as t">
+              <ng-container *ngIf="hasTickets(r,'flight2')">
+                  <ng-container *ngIf="lowestTicket(r,'flight2') as t">
                     <span class="seg-price">€ {{ t.price || 0 | number:'1.0-0' }}</span>
                     <small class="seg-qty">{{ t.quantity }} posti</small>
                   </ng-container>
@@ -240,7 +229,7 @@ export class ResultsListComponent {
   @Input() query: FlightSearchParams | null = null;
   private readonly FALLBACK_LOGO = '';
   private base = environment.apiBase;
-  private readonly SEG_KEYS = ['main','stop1','stop2'] as const;
+  private readonly SEG_KEYS = ['flight1','flight2'] as const;
 
   constructor(private http: HttpClient) {}
 
@@ -307,9 +296,9 @@ export class ResultsListComponent {
 
   segmentsOf(r: any): any[] {
     const segs = [r];
-    if (r.stop1) segs.push(r.stop1);
-    if (r.stop2) segs.push(r.stop2);
-    if (r.stop3) segs.push(r.stop3);
+    if (r.flight1) segs.push(r.flight1);
+    if (r.flight2) segs.push(r.flight2);
+    if (r.flight3) segs.push(r.flight3);
     return segs;
   }
 
@@ -332,19 +321,19 @@ export class ResultsListComponent {
     }
   }
 
-  tickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO[] {
+  tickets(r: FlightResult, key: 'flight1'|'flight2'): TicketDTO[] {
     return (r?.matchedTicketsBySegment?.[key] ?? []) as TicketDTO[];
   }
-  hasTickets(r: FlightResult, key: 'main'|'stop1'|'stop2'): boolean {
+  hasTickets(r: FlightResult, key: 'flight1'|'flight2'): boolean {
     return this.tickets(r, key).length > 0;
   }
 
-  lowestTicket(r: FlightResult, key: 'main'|'stop1'|'stop2'): TicketDTO | null {
+  lowestTicket(r: FlightResult, key: 'flight1'|'flight2'): TicketDTO | null {
     const list = this.tickets(r, key);
     if (!list.length) return null;
     return [...list].sort((a,b) => (a.price ?? Infinity) - (b.price ?? Infinity))[0] || null;
   }
-  private lowestPrice(r: FlightResult, key: 'main'|'stop1'|'stop2'): number|null {
+  private lowestPrice(r: FlightResult, key:'flight1'|'flight2'): number|null {
     const t = this.lowestTicket(r, key);
     return typeof t?.price === 'number' ? t!.price! : null;
   }
@@ -364,8 +353,8 @@ export class ResultsListComponent {
   buildPurchaseFlight(r: FlightResult): FlightResult {
     const segs: any[] = [];
     segs.push(r);
-    if (r.stop1) segs.push(r.stop1);
-    if (r.stop2) segs.push(r.stop2);
+    if (r.flight1) segs.push(r.flight1);
+    if (r.flight2) segs.push(r.flight2);
 
     const first = segs[0] ?? r;
     const last  = segs[segs.length - 1] ?? r;
