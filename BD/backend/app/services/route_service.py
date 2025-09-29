@@ -50,7 +50,7 @@ SELECT
 FROM Routes r
 JOIN Flights f ON r.id = f.route  
 LEFT JOIN Tickets t ON f.id = t.flight
-LEFT JOIN Seats s ON t.id = s.ticket     considera tutti i voli, anche quelli senza biglietti o passeggeri
+LEFT JOIN Seats s ON t.id = s.ticket     -- considera tutti i voli, anche quelli senza biglietti o passeggeri
 WHERE f.airline = :airline_id
 GROUP BY r.id
 """

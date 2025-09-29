@@ -10,9 +10,6 @@ from app.models.ticket import Ticket
 from app.models.purchase import Purchase
 from sqlalchemy import text
 
-from .data import airports, routes, users, airlines, airplanes, routesAirplanes, flights, tickets, purchases
-from .views import create_views, drop_views, drop_materialized_views, create_materialized_views
-
 def init_db():
     pass
     # drop_views()

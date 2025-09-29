@@ -145,35 +145,6 @@ EXECUTE FUNCTION check_user_balance();
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--- trigger check ticket availability before ins/upd on purchases_tickets
-CREATE OR REPLACE FUNCTION check_ticket_availability()
-RETURNS TRIGGER AS $$
-DECLARE
-    delta_qnt INT;
-BEGIN
-    -- calcola la differenza tra nuova quantità e quantità corrente
-    delta_qnt := NEW.qnt - OLD.qnt;
-
-    -- se stai aumentando la quantità
-    IF delta_qnt > 0 THEN
-        -- controlla che ci siano abbastanza biglietti disponibili
-        IF (SELECT qnt FROM Ticket WHERE id = NEW.ticket) < delta_qnt THEN
-            RAISE EXCEPTION 'Not enough tickets available. Requested % more, only % left', delta_qnt, (SELECT qnt FROM Ticket WHERE id = NEW.ticket);
-        END IF;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS ticket_availability ON purchases_tickets;
-CREATE TRIGGER ticket_availability
-BEFORE UPDATE ON purchases_tickets
-FOR EACH ROW
-EXECUTE FUNCTION check_ticket_availability();
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 -- trigger: un aereo è assegnato ad una sola rotta in un certo periodo (no sovrapposizioni)
 CREATE OR REPLACE FUNCTION check_airplane_route_dates()
 RETURNS TRIGGER AS $$
@@ -182,7 +153,6 @@ BEGIN
         SELECT 1
         FROM public.routes_airplanes ra
         WHERE ra.airplane = NEW.airplane
-          AND ra.route = NEW.route
           AND (
               (NEW.startDate BETWEEN ra.startDate AND ra.endDate)
               OR (NEW.endDate BETWEEN ra.startDate AND ra.endDate)
@@ -202,33 +172,6 @@ CREATE TRIGGER trg_check_airplane_route_dates
 BEFORE INSERT OR UPDATE ON public.routes_airplanes
 FOR EACH ROW
 EXECUTE FUNCTION check_airplane_route_dates();
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
--- trigger: un aereo deve essere associato ad una compagnia aerea per essere assegnato ad una rotta
-CREATE OR REPLACE FUNCTION check_airplane_has_airline()
-RETURNS TRIGGER AS $$
-DECLARE
-    airplane_airline INT;
-BEGIN
-    SELECT a.airline INTO airplane_airline
-    FROM public.airplanes a
-    WHERE a.id = NEW.airplane;
-
-    IF airplane_airline IS NULL THEN
-        RAISE EXCEPTION 'L''aereo % non è associato ad alcuna compagnia aerea',
-            NEW.airplane;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_check_airplane_has_airline ON public.routes_airplanes;
-CREATE TRIGGER trg_check_airplane_has_airline
-BEFORE INSERT OR UPDATE ON public.routes_airplanes
-FOR EACH ROW
-EXECUTE FUNCTION check_airplane_has_airline();
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

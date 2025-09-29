@@ -6,7 +6,7 @@ Base = declarative_base()
 
 class Flight(db.Model):
     __tablename__ = 'flights'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True) # code -> route
     code = db.Column(db.String(10), nullable=False)
     
     departure = db.Column(db.DateTime, nullable=False)
@@ -29,7 +29,7 @@ class Flight(db.Model):
         db.CheckConstraint('arrival > departure', name='check_arrival_after_departure'),
         
         # UNIQUE
-        db.UniqueConstraint('code', 'route', 'departure', name='unique_flight')
+        db.UniqueConstraint('code', 'departure', name='unique_flight')
     )
 
     def __repr__(self):

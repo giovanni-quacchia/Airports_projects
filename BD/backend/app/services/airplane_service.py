@@ -28,7 +28,8 @@ SELECT
     a.*,
     JSON_ARRAYAGG(
         JSON_OBJECT(
-            
+            'from_airport', AirportFrom.code,
+            'to_airport', AirportTo.code,
             'startDate', ra.startDate,
             'endDate', ra.endDate
         )
@@ -39,13 +40,13 @@ LEFT JOIN Route r ON ra.route = r.id
 LEFT JOIN Airport AirportFrom ON r.from_airport = AirportFrom.id
 LEFT JOIN Airport AirportTo ON r.to_airport = AirportTo.id
 WHERE a.airline =: airline_id
-GROUP BY a.id, a.model;
+GROUP BY a.id;
 """
 def get_airplanes_by_airlineId(airline_id):
     session = get_session()
     
     FromAirport, ToAirport = aliased(Airport), aliased(Airport)
-    
+    # TODO: add coalesce
     query = (
         select(
             Airplane, 
@@ -68,7 +69,7 @@ def get_airplanes_by_airlineId(airline_id):
     
     results = session.execute(query).all()
     return [
-        AirplaneSchema().dump(airplane) | {"periods": periods if periods[0]['startDate'] is not None else []}
+        AirplaneSchema().dump(airplane) | {"periods": periods}
         for airplane, periods in results
     ]
 
@@ -101,7 +102,7 @@ SELECT
 FROM Airplane a
 JOIN RoutesAirplanes ra ON a.id = ra.airplane 
 WHERE ra.route = ?
-GROUP BY a.id, a.model;
+GROUP BY a.id;
 """
 def get_airplanes_by_routeId(route_id):
 

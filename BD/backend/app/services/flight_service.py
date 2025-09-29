@@ -11,7 +11,6 @@ from app.models.PurchaseTicket import PurchaseTicket
 from app.schemas.flight_schema import FlightSchema, FlightGetSchema
 from app.services.airline_service import airline_exists
 from datetime import timedelta
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app.extensions import get_session
 from flask_login import current_user
@@ -177,7 +176,6 @@ def delete_flight_by_id(flight_id):
         # rollback automatico
         raise e
     
-# TODO: airplane checked by trigger
 def update_flight_by_id(flight_id, data):
     try:
         session = get_session()
