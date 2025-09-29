@@ -5,8 +5,6 @@ from .extensions import db, login_manager
 from app.routes import main_blueprint, api, airport_bp, route_bp, user_bp, airline_bp, purchase_bp, airplane_bp, flight_bp, ticket_bp, itinerary_bp, passenger_bp, seat_bp
 from app.error_handlers import register_error_handlers
 
-from app.DB.init_db import init_db
-
 # Ensure stdout is line-buffered
 import sys
 sys.stdout.reconfigure(line_buffering=True)
@@ -32,10 +30,6 @@ def create_app():
 
     register_error_handlers(app)
     register_blueprints(app)
-
-    with app.app_context():
-        init_db()
-        print("Database tables created")
 
     return app
     
