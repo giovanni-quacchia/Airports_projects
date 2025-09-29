@@ -9,7 +9,7 @@ import { AuthService } from './core/auth.service';
   imports: [RouterOutlet, RouterLink, NgIf],
   template: `
     <header class="navbar">
-      <a routerLink="/search" class="brand">TAW Airlines</a>
+      <a routerLink="/search" class="brand">BD Airlines</a>
       <span class="grow"></span>
 
       <ng-container *ngIf="!auth.currentUser">
