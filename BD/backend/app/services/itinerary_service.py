@@ -7,7 +7,12 @@ def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_d
 
     session = get_session()
 
-    query = session.query(Itinerary)
+    query = (session.query(
+        Itinerary.flight1,
+        Itinerary.flight2,
+        Itinerary.tot_duration,
+        Itinerary.stop_time
+    ))
 
     if onlyDirect:
         query = query.where(Itinerary.flight2.is_(None))
@@ -31,6 +36,5 @@ def get_all_itineraries(from_airport=None, to_airport=None, from_date=None, to_d
             (Itinerary.flight2.is_(None) & (Itinerary.flight1['arrival'].astext <= to_date.isoformat())) |
             (Itinerary.flight2.isnot(None) & (Itinerary.flight2['arrival'].astext <= to_date.isoformat()))
         )
-   
     res = query.all()
     return ItinerarySchema(many=True).dump(res)

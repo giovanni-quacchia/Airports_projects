@@ -16,7 +16,8 @@ from flask import abort
 # stampa anche array di tickets acquistati
 """
 SELECT p.*, GROUP_CONCAT(pt.ticket) AS tickets
-FROM purchases p LEFT OUTER JOIN purchasesTickets pt ON p.id = pt.purchase
+FROM purchases p 
+LEFT OUTER JOIN purchasesTickets pt ON p.id = pt.purchase
 """
 def get_all_purchases():
     session = get_session()    

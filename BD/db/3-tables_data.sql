@@ -58,13 +58,15 @@ INSERT INTO users (id, mail, salt, digest, role, balance) VALUES
 -- =====================
 -- AIRLINES
 -- =====================
+
 INSERT INTO airlines (id, mail, salt, digest, code, name, "PIVA", logo, role, "isFirstLogin") VALUES 
-(1, 'american@contact.com', DECODE('eef08a2c0bc42f3dd85e3f3023118ae3','hex'), DECODE('5f6e13cc9274e99d93ad2a0f3a500f9b2665455892fe56cf82b0b467a8e93df9','hex'), 'AA', 'American Airlines', '12345678901', 'https://example.com/aa_logo.png', 'airline', true),
-(2, 'british@contact.com', DECODE('54a6198e591954346e2642daf83bff47','hex'), DECODE('ba3f464c66b8450b43aa1e7bead8860fb5e2d14304cfa707f76ca8d02b355e42','hex'), 'BA', 'British Airways', '23456789012', 'https://example.com/ba_logo.png', 'airline', true),
-(3, 'airfrance@contact.com', DECODE('ddc1c0010beb933850ecfde65b619f17','hex'), DECODE('c051a57530ac79b094f46cd18f438275679515f1d577754a3b484b26013c62f0','hex'), 'AF', 'Air France', '34567890123', 'https://example.com/af_logo.png', 'airline', true),
-(4, 'emirates@contact.com', DECODE('e8bf5570b3ef550f988632e6df390644','hex'), DECODE('a64be4d4ed84b9345958ff28183a0362cfa2e3af1a23e975b4bfa325f1a7b8b3','hex'), 'EK', 'Emirates', '45678901234', 'https://example.com/ek_logo.png', 'airline', true),
-(5, 'alitalia@contact.com', DECODE('e99a3dc9406b5e0ff24d4699d46cfe5f','hex'), DECODE('e2bffd6dd919ed06ae8d4812a8caefb232ef0a84abd7b73d6f213d9671b63e66','hex'), 'AZ', 'Alitalia', '56789012345', 'https://example.com/az_logo.png', 'airline', true),
-(6, 'ryanair@contact.com', DECODE('dee595a8123f3cc3505b092da7b9be3f','hex'), DECODE('54b6ed223a96bf1608eaa1377b9fd0198d0cd770b3ae42bc63b2e63c43290103','hex'), 'FR', 'Ryanair', '67890123456', 'https://example.com/fr_logo.png', 'airline', true);
+(1, 'american@contact.com', DECODE('a38616a3ecf97e181ba91e00ef670e18','hex'), DECODE('78d79ced96de9901deb5e5689dce653c83115d7d85320634ad064d8fc6578edc','hex'), 'AA', 'American Airlines', '12345678901', 'https://example.com/aa_logo.png', 'airline', true),
+(2, 'british@contact.com', DECODE('04f6819e8ebafdce5a0225951a443950','hex'), DECODE('1407b87469ed63bacf0bde37e904feb72fb9173579bbe044dc44ae91945174da','hex'), 'BA', 'British Airways', '23456789012', 'https://example.com/ba_logo.png', 'airline', true),
+(3, 'airfrance@contact.com', DECODE('878fa9ec0ee09b67009f5b3094cabd2a','hex'), DECODE('9657a3b11cf81d8c995765b4ce0e4bca11de0250a83c9cea73094354767dc3df','hex'), 'AF', 'Air France', '34567890123', 'https://example.com/af_logo.png', 'airline', true),
+(4, 'emirates@contact.com', DECODE('c04d54cbdfd2a0f8525f9d472e8a6d44','hex'), DECODE('46f49357738011fb3dc82bdcd15fddc23c586760c01b58a4adb6c5212958f6d7','hex'), 'EK', 'Emirates', '45678901234', 'https://example.com/ek_logo.png', 'airline', true),
+(5, 'alitalia@contact.com', DECODE('ffa482f49ee31cf4caaeb22e5485a078','hex'), DECODE('0cfaa0a1df2006515e8f7e3e2aa391b152b58a7f6b56e6fc58c17437d7b542c6','hex'), 'AZ', 'Alitalia', '56789012345', 'https://example.com/az_logo.png', 'airline', true),
+(6, 'ryanair@contact.com', DECODE('ad845298a8c6213e5727be348474d73d','hex'), DECODE('8f15588f0c5f1dd87744cc70a94c3557b93914a19805caa37550025bc9d8522e','hex'), 'FR', 'Ryanair', '67890123456', 'https://example.com/fr_logo.png', 'airline', true);
+
 -- =====================
 -- AIRPLANES
 -- =====================
@@ -84,15 +86,15 @@ INSERT INTO airplanes (id, model, letters, rows, airline) VALUES
 -- ROUTES_AIRPLANES
 -- =====================
 INSERT INTO routes_airplanes (id, route, airplane, "startDate", "endDate") VALUES
-(1, 1, 1, '2023-10-01 08:00:00', '2023-12-31 20:00:00'),   -- route 1, airplane 1
-(2, 2, 2, '2023-11-01 09:00:00', '2023-12-14 23:59:59'),   -- route 2, airplane 2
-(3, 3, 3, '2023-09-15 10:00:00', '2023-10-04 23:59:59'),   -- route 3, airplane 3
-(4, 4, 4, '2023-12-01 11:00:00', '2024-02-28 23:00:00'),   -- route 4, airplane 4
-(5, 5, 5, '2023-10-20 12:00:00', '2024-01-20 20:00:00'),   -- route 5, airplane 5
-(6, 6, 6, '2023-11-10 13:00:00', '2024-03-10 21:00:00'),   -- route 6, airplane 6
-(7, 1, 1, '2024-01-01 14:00:00', '2024-04-01 22:00:00'),   -- route 1, airplane 1 (nuovo periodo)
-(8, 2, 2, '2024-01-01 00:00:00', '2024-02-15 23:00:00'),   -- route 2, airplane 2 (nuovo periodo)
-(9, 3, 3, '2023-10-05 00:00:00', '2024-01-05 20:00:00'),   -- route 3, airplane 3 (esteso)
+(1, 1, 1, '2023-10-01 00:00:00', '2023-12-31 23:59:59'),   -- route 1, airplane 1
+(2, 2, 2, '2023-11-01 00:00:00', '2023-12-14 23:59:59'),   -- route 2, airplane 2
+(3, 3, 3, '2023-09-15 00:00:00', '2023-10-04 23:59:59'),   -- route 3, airplane 3
+(4, 4, 4, '2023-12-01 00:00:00', '2024-02-28 23:59:59'),   -- route 4, airplane 4
+(5, 5, 5, '2023-10-20 00:00:00', '2024-01-20 23:59:59'),   -- route 5, airplane 5
+(6, 6, 6, '2023-11-10 00:00:00', '2024-03-10 23:59:59'),   -- route 6, airplane 6
+(7, 1, 1, '2024-01-01 00:00:00', '2024-04-01 23:59:59'),   -- route 1, airplane 1 (nuovo periodo)
+(8, 2, 2, '2024-01-01 00:00:00', '2024-02-15 23:59:59'),   -- route 2, airplane 2 (nuovo periodo)
+(9, 3, 3, '2023-10-05 00:00:00', '2024-01-05 23:59:59'),   -- route 3, airplane 3 (esteso)
 (10, 10, 9, '2024-01-01 00:00:00', '2024-12-31 23:59:59'), -- route 10 (JFK-LAX), airplane 9
 (11, 11, 9, '2024-02-01 00:00:00', '2024-12-31 23:59:59'), -- route 11 (LAX-ORD), airplane 9
 (12, 12, 2, '2024-03-01 00:00:00', '2024-12-31 23:59:59'), -- route 12 (LHR-MAD), airplane 2

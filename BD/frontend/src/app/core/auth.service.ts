@@ -102,7 +102,7 @@ export class AuthService {
 
   // Get current balance
   putCurrentBalance() {
-    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}/`)
+    this.http.get<LoginResponse>(`${this.base}/${this.currentUser?.id}`, {withCredentials: true})
       .subscribe(res => {
         const user: any = res;
         localStorage.setItem(this.USER_KEY, JSON.stringify({...user, id: user.id}));
@@ -116,6 +116,10 @@ export class AuthService {
     }
     return headers;
   } 
+
+  isUserNotAdmin(): boolean {
+    return this.currentUser !== null && !this.isAdmin && !this.isAirline();
+  }
 
   get isAdmin(): boolean {
     return this.currentUser?.isAdmin || false;

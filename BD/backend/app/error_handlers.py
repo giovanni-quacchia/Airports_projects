@@ -36,6 +36,11 @@ def register_error_handlers(app):
             return jsonify({"msg": "from_airport and to_airport must be different"}), 400
         return jsonify({"msg": "Database integrity error"}), 400
     
+    # Handle 400 bad request errors
+    @app.errorhandler(400)
+    def handle_400(error):
+        return jsonify({"msg": error.description or "Bad request"}), 400
+    
     # Handle ValueError exceptions
     @app.errorhandler(ValueError)
     def handle_value_error(error):

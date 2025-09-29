@@ -21,7 +21,7 @@ class AirlinePublicSchema(Schema):
     code = fields.Str(required=True)
     name = fields.Str(required=True)
     PIVA = fields.Str(required=True)
-    logo = fields.Str(required=True)
+    logo = fields.Str()
 
     @validates('code')
     def validate_code(self, value, **kwargs):

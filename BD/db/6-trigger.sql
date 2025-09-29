@@ -31,8 +31,9 @@ BEFORE INSERT OR UPDATE OF airplane, airline ON public.flights
 FOR EACH ROW
 EXECUTE FUNCTION fn_flights_check_airplane_airline();
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--- trigger check airplane.route == route per periodo
+-- trigger controlla che l'aereo sia assegnato alla rotta per il periodo del volo
 CREATE OR REPLACE FUNCTION fn_flights_check_route_assignment_period()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -66,7 +67,9 @@ DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION fn_flights_check_route_assignment_period();
 
--- trigger if (route, code) exists, then same code for same route
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- trigger if (route, code) exists for the airline, then same code for same route
 CREATE OR REPLACE FUNCTION fn_flights_enforce_constant_code_per_route()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -82,6 +85,7 @@ BEGIN
     SELECT 1
     FROM public.flights f
     WHERE f.route = NEW.route
+      AND f.airline = NEW.airline
       AND f.id <> COALESCE(NEW.id, -1)
       AND f.code <> NEW.code
     LIMIT 1
@@ -101,3 +105,96 @@ CREATE TRIGGER trg_flights_constant_code_per_route
 BEFORE INSERT OR UPDATE OF code, route ON public.flights
 FOR EACH ROW
 EXECUTE FUNCTION fn_flights_enforce_constant_code_per_route();
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- trigger check user balance >= total_cost
+
+-- test su user 2 (balance 300) acquista ticket (DBX - HND) costo 150. (trigger chiamato dopo la transazione? no, prima)
+
+CREATE OR REPLACE FUNCTION check_user_balance()
+RETURNS TRIGGER AS $$
+DECLARE
+    user_balance numeric;
+BEGIN
+    -- trova il balance dell'utente
+    SELECT balance INTO user_balance
+    FROM users
+    WHERE id = NEW.user;
+
+    IF user_balance IS NULL THEN
+        RAISE EXCEPTION 'Utente non trovato: %', NEW.user;
+    END IF;
+
+    -- Controlla se il balance è sufficiente
+    IF user_balance < NEW.total_cost THEN
+        RAISE EXCEPTION 'Saldo insufficiente per l''utente %: saldo % < totale acquisto %',
+            NEW.user, user_balance, NEW.total_cost;
+    END IF;
+
+    -- Se va tutto bene, permetti l'INSERT/UPDATE
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_check_balance ON purchases;
+CREATE TRIGGER trg_check_balance
+BEFORE INSERT OR UPDATE ON purchases
+FOR EACH ROW
+EXECUTE FUNCTION check_user_balance();
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- trigger: un aereo è assegnato ad una sola rotta in un certo periodo (no sovrapposizioni)
+CREATE OR REPLACE FUNCTION check_airplane_route_dates()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM public.routes_airplanes ra
+        WHERE ra.airplane = NEW.airplane
+          AND (
+              (NEW.startDate BETWEEN ra.startDate AND ra.endDate)
+              OR (NEW.endDate BETWEEN ra.startDate AND ra.endDate)
+          )
+    ) THEN
+        RAISE EXCEPTION 'L''aereo % è già assegnato alla rotta % per il periodo richiesto',
+            NEW.airplane, NEW.route
+          USING ERRCODE = '23514';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_check_airplane_route_dates ON public.routes_airplanes;
+CREATE TRIGGER trg_check_airplane_route_dates
+BEFORE INSERT OR UPDATE ON public.routes_airplanes
+FOR EACH ROW
+EXECUTE FUNCTION check_airplane_route_dates();
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- trigger: controlla posto occupato
+CREATE OR REPLACE FUNCTION check_seat_occupied_per_flight()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+      SELECT 1
+      FROM seats s
+      JOIN tickets t ON s.ticket = t.id
+      WHERE s.seat = NEW.seat
+        AND t.flight = (SELECT flight FROM tickets WHERE id = NEW.ticket)
+    ) THEN
+        RAISE EXCEPTION 'Seat % is already occupied on this flight', NEW.seat;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_check_unique_seats_per_flight ON public.purchases_tickets;
+CREATE TRIGGER trg_check_unique_seats_per_flight
+BEFORE INSERT OR UPDATE ON public.seats
+FOR EACH ROW
+EXECUTE FUNCTION check_seat_occupied_per_flight();

@@ -4,10 +4,13 @@ from sqlalchemy.orm import aliased
 from app.models.flight import Flight
 from app.models.route import Route
 from app.models.airport import Airport
+from app.models.ticket import Ticket
+from app.models.seat import Seat
+from app.models.purchase import Purchase
+from app.models.PurchaseTicket import PurchaseTicket
 from app.schemas.flight_schema import FlightSchema, FlightGetSchema
 from app.services.airline_service import airline_exists
 from datetime import timedelta
-from sqlalchemy.dialects.postgresql import JSONB
 
 from app.extensions import get_session
 from flask_login import current_user
@@ -40,19 +43,61 @@ def get_all_flights(from_airport=None, to_airport=None, from_date=None, to_date=
     res = query.all()
     return FlightSchema(many=True).dump(res)
 
+"""
+SELECT f.*,
+    af.code AS from_airport,
+    at.code AS to_airport,
+    COUNT(s.seat) AS numPassengers,
+    SUM(p.totalPrice * p.quantity) AS totRevenue
+FROM Flights f
+LEFT JOIN Ticktets t ON f.id = t.flight -- considera tutti i voli, anche quelli senza biglietti o passeggeri
+LEFT JOIN Seats s ON t.id = s.ticket
+LEFT JOIN PurchasesTickets pt ON t.id = pt.ticket
+LEFT JOIN Purchases p ON pt.purchase = p.id
+JOIN Routes r ON f.route = r.id
+JOIN Airport af ON r.from_airport = af.id
+JOIN Airport at ON r.to_airport = at.id
+WHERE f.airline = :airline_id
+GROUP BY f.id, af.code, at.code
+"""
+
 def get_flights_by_airlineId(airline_id):
     
     session = get_session()
     
+    FromAirport, ToAirport = aliased(Airport), aliased(Airport) 
+    
+    query = (
+        session.query(
+            Flight,
+            FromAirport.code.label('from_airport'),
+            ToAirport.code.label('to_airport'),
+            func.sum(Purchase.total_cost * Purchase.quantity).label('totRevenue'), 
+            func.count(Seat.seat).label('numPassengers'))
+        .join(Ticket, Ticket.flight == Flight.id, isouter=True)  # considera tutti i voli, anche quelli senza biglietti o passeggeri
+        .join(Seat, Seat.ticket == Ticket.id, isouter=True)
+        .join(PurchaseTicket, PurchaseTicket.ticket == Ticket.id, isouter=True)
+        .join(Purchase, PurchaseTicket.purchase == Purchase.id, isouter=True)
+        .join(Route, Flight.route == Route.id)
+        .join(FromAirport, Route.from_airport == FromAirport.id)
+        .join(ToAirport, Route.to_airport == ToAirport.id)
+        .where(Flight.airline == airline_id)
+        .group_by(Flight.id, FromAirport.code, ToAirport.code)
+    )
+    
     if(not airline_exists(airline_id)):
         abort(404)
 
-    flights = (
-        session.query(Flight)
-        .where(Flight.airline == airline_id)
-    )
+    flights = query.all()
 
-    return FlightSchema(many=True, exclude=["airline"]).dump(flights)
+    return [{
+        **FlightSchema(exclude=["airline"]).dump(flight),
+        "from_airport": from_airport,
+        "to_airport": to_airport,
+        "totRevenue": totRevenue or 0,
+        "numPassengers": numPassengers or 0
+    } for flight, from_airport, to_airport, totRevenue, numPassengers in flights
+    ]
 
 def get_flight_by_id(flight_id):
     session = get_session()
@@ -131,7 +176,6 @@ def delete_flight_by_id(flight_id):
         # rollback automatico
         raise e
     
-# TODO: airplane checked by trigger
 def update_flight_by_id(flight_id, data):
     try:
         session = get_session()

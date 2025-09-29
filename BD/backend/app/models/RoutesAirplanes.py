@@ -11,9 +11,6 @@ class RoutesAirplanes(db.Model):
     def __repr__(self):
         return f"<RoutesAirplanes {self.id} - route: {self.route_id}, airplane: {self.airplane_id}>"
 
-    # TODO: trigger per evitare sovrapposizioni di date per lo stesso aereo su una rotta
-    # TODO: trigger: airplane deve essere associato ad una airline
-
     # Constraints
     __table_args__ = (
         # CHECK

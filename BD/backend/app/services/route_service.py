@@ -3,6 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import aliased
 from app.models.route import Route
 from app.models.airport import Airport
+from app.models.ticket import Ticket
+from app.models.flight import Flight
+from app.models.seat import Seat
 from app.extensions import db
 from app.services.airport_service import AirportsMatch
 from app.extensions import get_session
@@ -39,6 +42,66 @@ def get_route_by_id(route_id):
         abort(404)
 
     return get_route_json(route)
+
+"""
+SELECT
+    r.*,
+    COUNT(s.id) AS numPassengers
+FROM Routes r
+JOIN Flights f ON r.id = f.route  
+LEFT JOIN Tickets t ON f.id = t.flight
+LEFT JOIN Seats s ON t.id = s.ticket     -- considera tutti i voli, anche quelli senza biglietti o passeggeri
+WHERE f.airline = :airline_id
+GROUP BY r.id
+"""
+
+def get_routes_by_airlineId(airline_id):
+    session = get_session()
+    
+    FromAirport, ToAirport = aliased(Airport), aliased(Airport)
+
+    query = select(
+        Route.id,
+        FromAirport.id.label("from_id"),
+        ToAirport.id.label("to_id"),
+        FromAirport.code.label("from_code"),
+        FromAirport.name.label("from_name"),
+        FromAirport.city.label("from_city"),
+        FromAirport.country.label("from_country"),
+        ToAirport.code.label("to_code"),
+        ToAirport.name.label("to_name"),
+        ToAirport.city.label("to_city"),
+        ToAirport.country.label("to_country"),
+        db.func.count(Seat.seat).label("numPassengers")
+    ).select_from(Route).join(
+        FromAirport, Route.from_airport == FromAirport.id
+    ).join(
+        ToAirport, Route.to_airport == ToAirport.id
+    ).join(
+        Flight, Flight.route == Route.id
+    ).join(
+        Ticket, Ticket.flight == Flight.id, isouter=True
+    ).join(
+        Seat, Seat.ticket == Ticket.id, isouter=True
+    ).where(
+        Flight.airline == airline_id
+    ).group_by(
+        Route.id,
+        FromAirport.id,
+        ToAirport.id,
+        FromAirport.code,
+        FromAirport.name,
+        FromAirport.city,
+        FromAirport.country,
+        ToAirport.code,
+        ToAirport.name,
+        ToAirport.city,
+        ToAirport.country
+    )
+
+    routes = session.execute(query).all()
+
+    return [get_route_json(route) | {"numPassengers": route.numPassengers} for route in routes]
 
 def create_route(data):
     session = get_session()
@@ -77,6 +140,8 @@ def query_get_routes(FromAirport, ToAirport):
     
     return select(
         Route.id,
+        FromAirport.id.label("from_id"),
+        ToAirport.id.label("to_id"),
         FromAirport.code.label("from_code"),
         FromAirport.name.label("from_name"),
         FromAirport.city.label("from_city"),
@@ -95,12 +160,14 @@ def get_route_json(route):
     return {
         "id": route.id,
         "from_airport": {
+            "id": route.from_id,
             "code": route.from_code,
             "name": route.from_name,
             "city": route.from_city,
             "country": route.from_country
         },
         "to_airport": {
+            "id": route.to_id,
             "code": route.to_code,
             "name": route.to_name,
             "city": route.to_city,
