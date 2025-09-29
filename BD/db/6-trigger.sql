@@ -139,7 +139,7 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_check_balance ON purchases;
 CREATE TRIGGER trg_check_balance
-BEFORE INSERT OR UPDATE ON purchases
+BEFORE INSERT OR UPDATE OF total_cost ON purchases
 FOR EACH ROW
 EXECUTE FUNCTION check_user_balance();
 
