@@ -11,4 +11,3 @@ class PurchaseTicket(db.Model):
         db.ForeignKeyConstraint(['purchase'], ['purchases.id'], name='fk_purchase', onupdate='CASCADE', ondelete='CASCADE'),
         db.ForeignKeyConstraint(['ticket'], ['tickets.id'], name='fk_ticket', onupdate='CASCADE', ondelete='RESTRICT'),
     )
-    
