@@ -42,7 +42,7 @@ testem.log
 Thumbs.db
 
 # Env
-
+# .env
 
 # python cache files
 
