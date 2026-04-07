@@ -72,28 +72,8 @@ sudo apt install docker.io docker-compose -y
 #### TAW Project
 
 ```bash
-# Navigate to TAW directory
 cd TAW
-
-# Build and start all services (first time)
 docker compose up -d --build
-
-# View logs
-docker logs -f taw_backend
-docker logs -f taw_frontend
-
-# Start/Stop services (subsequent runs)
-docker compose start
-docker compose stop
-
-# Restart services
-docker compose restart
-
-# Stop and remove containers
-docker compose down
-
-# Stop and remove containers + volumes (database data)
-docker compose down -v
 ```
 
 **Service URLs:**
@@ -104,24 +84,8 @@ docker compose down -v
 #### BD Project
 
 ```bash
-# Navigate to BD directory
 cd BD
-
-# Build and start all services
 docker compose up -d --build
-
-# View logs
-docker logs -f bd_backend
-docker logs -f bd_frontend
-
-# Management commands
-docker compose start
-docker compose stop
-docker compose restart
-docker compose down
-
-# Remove all data including database
-docker compose down -v
 ```
 
 **Service URLs:**
@@ -133,54 +97,24 @@ docker compose down -v
 
 ## 📊 System Features
 
-### User Roles & Permissions
 
-#### 1. **Administrator**
-- Create and manage airline accounts (invitation-based registration)
+#### 1. **Admin**
+- Create new airlines
 - Delete user accounts
-- View system-wide statistics
-- Manage all flights, routes, and aircraft
 - Access to all administrative endpoints
 
-#### 2. **Airline**
+#### 2. **Airlines**
 - Create and manage routes
-- Create and manage aircraft fleet
-- Schedule flights
+- Create and manage airplanes
+- Create and manage flights
 - Set and update ticket prices (Economy, Business, First Class)
 - View airline-specific statistics (passengers, revenue, popular routes)
-- Update ticket pricing by class
 
 #### 3. **Customer (Registered User)**
 - Search flights by origin and destination (no login required)
 - Purchase tickets (login required)
 - Select seats
 - Add extras (baggage, legroom, etc.)
-
-### Core Functionality
-
-#### Flight Management
-- Flight creation with aircraft, route, and schedule assignment
-- Real-time seat availability tracking
-- Multi-class ticketing (Economy, Business, First Class)
-- Dynamic pricing per ticket class
-
-#### Route Management
-- Airlines can create routes between airports
-- Route assignment to aircraft for specific periods
-- Route statistics and analytics
-
-#### Booking System
-- Public flight search interface
-- Authenticated ticket purchase
-- Seat selection mechanism
-- Additional services (baggage, premium seating)
-- Transaction-safe booking process
-
-#### Statistics & Analytics
-- Passenger count per flight
-- Revenue tracking by airline
-- Most requested routes
-- Sortable and filterable data views
 
 ---
 
@@ -197,12 +131,6 @@ docker compose down -v
 - `flights`: Scheduled flights
 - `tickets`: Booking records
 - `passengers`: Passenger information linked to tickets
-
-**Key Design Decisions:**
-- Replica set for transaction support
-- Foreign key relationships via ObjectId references
-- Optional population of referenced documents
-- Index optimization for search queries
 
 ### BD (PostgreSQL Schema)
 
@@ -266,23 +194,6 @@ BD:
 
 ---
 
-## 📖 Learning Outcomes
-
-This academic project demonstrates proficiency in:
-
-1. **Full-Stack Development**: End-to-end application development with modern frameworks
-2. **Database Design**: Both NoSQL (document-based) and SQL (relational) approaches
-3. **Authentication & Authorization**: JWT implementation, role-based access control
-4. **Transaction Management**: ACID properties in both MongoDB and PostgreSQL
-5. **Containerization**: Docker multi-container orchestration
-6. **RESTful API Design**: Proper HTTP methods, status codes, and endpoint structure
-7. **Frontend Development**: Angular with reactive programming and routing
-8. **Database Optimization**: Indexes, materialized views, query optimization
-9. **Data Integrity**: Triggers, constraints, and validation
-10. **Software Architecture**: Separation of concerns, service layers, MVC pattern
-
----
-
 ## 📄 License
 
 This project is submitted as academic coursework and is intended for educational purposes only.
@@ -296,12 +207,3 @@ Giovanni Quacchia - Alessandro Zuccarello
 ---
 
 **Note**: The included .env files are provided for demonstration purposes only to ensure the project runs out of the box. For any production deployment, these files should be excluded from version control and populated with unique, newly generated security keys and credentials.
-
----
-
-## 📎 References
-
-- Angular Documentation: https://angular.dev
-- Express.js Guide: https://expressjs.com
-- MongoDB Manual: https://docs.mongodb.com
-- PostgreSQL Documentation: https://www.postgresql.org/docs/
