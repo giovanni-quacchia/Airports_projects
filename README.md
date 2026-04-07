@@ -2,7 +2,11 @@
 
 > University project  
 > Course: Web Technologies and Databases  
-> Academic Year: 2024-2025
+> Acade
+
+https://github.com/user-attachments/assets/33111da5-4f16-445d-8984-34bd88871249
+
+mic Year: 2024-2025
 
 ## 📋 Project Overview
 
