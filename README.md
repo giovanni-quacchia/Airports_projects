@@ -230,6 +230,10 @@ docker compose down -v
 
 ## 📚 API Documentation
 
+See [TAW API Documentation](./TAW/giovanni_quacchia_900676.pdf) (in italian)
+
+See [BD Documentation](./BD/Documentazione%20BD.pdf) (in italian)
+
 ### Authentication Endpoints (TAW)
 
 ```
@@ -318,6 +322,10 @@ This project is submitted as academic coursework and is intended for educational
 ## 👥 Authors
 
 Giovanni Quacchia - Alessandro Zuccarello 
+
+---
+
+**Note**: The included .env files are provided for demonstration purposes only to ensure the project runs out of the box. For any production deployment, these files should be excluded from version control and populated with unique, newly generated security keys and credentials.
 
 ---
 
