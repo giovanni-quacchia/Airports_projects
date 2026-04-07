@@ -1,8 +1,8 @@
 const pc = require('picocolors')
 
 // Models
-import {getModel as getAirlineModel} from '../models/Airline';
-import {getModel as getUserModel} from '../models/User';
+import {getModel as getAirlineModel} from '../models/airline';
+import {getModel as getUserModel} from '../models/user';
 import {getModel as getTicketModel} from '../models/Ticket';
 
 

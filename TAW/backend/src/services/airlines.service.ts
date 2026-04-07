@@ -1,4 +1,4 @@
-import Ar, {Airline} from '../models/Airline';
+import Ar, {Airline} from '../models/airline';
 import mongoose from 'mongoose';
 import { AppError } from '../models/AppError';
 

@@ -1,6 +1,6 @@
 import { addItineraryFields, getAirportContidions, JOIN, JOINStop, matchAirlines, matchAirport, matchDate } from "../db/queries";
 import { isObject, validateObj, validatePartialObj } from "../utils/utils";
-import Fl from '../models/Flight';
+import Fl from '../models/flight';
 import { getAllFlights } from "../services/flights.service";
 import { AppError } from "../models/AppError";
 

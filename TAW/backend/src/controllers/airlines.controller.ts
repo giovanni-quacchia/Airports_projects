@@ -1,7 +1,7 @@
 import airlines from '../services/airlines.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 import { validateLogin } from '../utils/auth.utils';
-import { validateNew, validatePut, validateSearch } from '../models/Airline';
+import { validateNew, validatePut, validateSearch } from '../models/airline';
 import { AppError } from '../models/AppError';
 
 export async function logIn(req, res, next) {

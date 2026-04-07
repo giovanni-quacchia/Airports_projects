@@ -1,9 +1,9 @@
 import mongoose, { get } from 'mongoose';
 import { AppError } from '../models/AppError';
-import {getModel as getPassengerModel} from '../models/Passenger'
+import {getModel as getPassengerModel} from '../models/passenger'
 import {getModel as getPurchaseModel, newPurchase} from '../models/Purchase'
 import {getModel as getTicketModel} from '../models/Ticket'
-import {getModel as getUserModel} from '../models/User'
+import {getModel as getUserModel} from '../models/user'
 
 async function getAllPurchases(query, userId, user) {
     

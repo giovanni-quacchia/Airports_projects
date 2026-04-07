@@ -1,7 +1,7 @@
 import users from '../services/users.service'
 import { validateLogin } from '../utils/auth.utils';
 import { manageErrors, printObject, validateObj } from '../utils/utils';
-import { validateNew, validatePut, validateSearch } from '../models/User';
+import { validateNew, validatePut, validateSearch } from '../models/user';
 import { AppError } from '../models/AppError';
 
 export async function logIn(req, res, next) {

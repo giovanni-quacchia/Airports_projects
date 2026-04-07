@@ -1,10 +1,10 @@
 import { JOIN, matchId } from '../db/queries';
-import Pa, { newPassenger } from '../models/Passenger';
+import Pa, { newPassenger } from '../models/passenger';
 import { AppError } from '../models/AppError';
-import {getModel as getPassengerModel} from '../models/Passenger';
-import {getModel as getFlightModel} from '../models/Flight';
+import {getModel as getPassengerModel} from '../models/passenger';
+import {getModel as getFlightModel} from '../models/flight';
 import {getModel as getPurchaseModel} from '../models/Purchase';
-import {getModel as getAirplaneModel} from '../models/Airplane';
+import {getModel as getAirplaneModel} from '../models/airplane';
 import purchasesService from './purchases.service';
 import mongoose from 'mongoose';
 import { checkSeat } from '../utils/utils';

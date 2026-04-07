@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { JOIN } from '../db/queries';
-import {Airplane, getModel, newAirplane, validatePut} from '../models/Airplane';
-import Airline from '../models/Airline'
+import {Airplane, getModel, newAirplane, validatePut} from '../models/airplane';
+import Airline from '../models/airline'
 import { AppError } from '../models/AppError';
 
 async function getAllAirplanes(airlineId = "") {

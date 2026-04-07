@@ -1,4 +1,4 @@
-import { validateNew, validatePut } from '../models/Airport';
+import { validateNew, validatePut } from '../models/airport';
 import airports from '../services/airports.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 

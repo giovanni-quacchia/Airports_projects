@@ -1,6 +1,6 @@
 import flights from '../services/flights.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
-import { validateNew, validatePut, validateSearch } from '../models/Flight';
+import { validateNew, validatePut, validateSearch } from '../models/flight';
 
 export async function getAllFlights(req, res, next) {
     try {

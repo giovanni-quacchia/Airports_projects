@@ -1,5 +1,5 @@
 import { AppError } from '../models/AppError';
-import { validateNew, validatePut, validateSearch } from '../models/Passenger';
+import { validateNew, validatePut, validateSearch } from '../models/passenger';
 import passengers from '../services/passengers.service'
 import { manageErrors, printObject, validateObj } from '../utils/utils';
 

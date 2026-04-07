@@ -1,5 +1,5 @@
 import { AppError } from '../models/AppError';
-import Us, {User} from '../models/User';
+import Us, {User} from '../models/user';
 import { validateLogin } from '../utils/auth.utils';
 const auth = require('../utils/auth.utils')
 

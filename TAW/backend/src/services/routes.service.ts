@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { GROUPBY, JOIN, matchAirport } from '../db/queries';
-import Airport from '../models/Airport';
-import Ro, {Route} from '../models/Route';
+import Airport from '../models/airport';
+import Ro, {Route} from '../models/route';
 import { AppError } from '../models/AppError';
 
 async function getAllRoutes(query, airlineId = "", user: any = {}) {

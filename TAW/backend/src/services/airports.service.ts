@@ -1,5 +1,5 @@
 import { matchAirport } from '../db/queries';
-import Ar, {Airport} from '../models/Airport';
+import Ar, {Airport} from '../models/airport';
 
 async function getAllAirports(query) {
     const parsedData: any = Ar.validateSearch(query);
