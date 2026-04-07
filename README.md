@@ -234,36 +234,6 @@ See [TAW API Documentation](./TAW/giovanni_quacchia_900676.pdf) (in italian)
 
 See [BD Documentation](./BD/Documentazione%20BD.pdf) (in italian)
 
-### Authentication Endpoints (TAW)
-
-```
-POST   /api/auth/register          # Customer registration
-POST   /api/auth/login             # User login
-POST   /api/auth/airline/invite    # Admin creates airline (temp password)
-POST   /api/auth/change-password   # First-time password change
-```
-
-### Flight Search & Booking
-
-```
-GET    /api/flights/search?from=XXX&to=YYY    # Public flight search
-POST   /api/tickets                           # Purchase ticket (auth)
-GET    /api/tickets/:id/seats                 # Available seats
-POST   /api/tickets/:id/select-seat           # Seat selection
-```
-
-### Admin & Airline Management
-
-```
-GET    /api/airlines              # List airlines
-POST   /api/airlines              # Create airline (admin)
-PUT    /api/airlines/:id          # Update airline
-DELETE /api/airlines/:id          # Delete airline (admin)
-
-GET    /api/statistics            # System statistics
-GET    /api/statistics/airline/:id # Airline-specific stats
-```
-
 ---
 
 ## 🧪 Testing
