@@ -1,6 +1,6 @@
 # Airport Flight Management System
  
-University project for the **Web Technologies and Databases** course (A.Y. 2024-2025).  
+University project for the **Web Technologies and Databases** courses (A.Y. 2024-2025).  
 Built by Giovanni Quacchia & Alessandro Zuccarello.
  
 The repo contains two separate implementations of the same flight booking platform, each built around a different database paradigm. Same domain, different stack — the idea was to see how the two approaches compare in practice.
