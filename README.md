@@ -1,209 +1,73 @@
 # Airport Flight Management System
-
-> University project  
-> Course: Web Technologies and Databases  
-> Academic Year: 2024-2025
-
-https://github.com/user-attachments/assets/33111da5-4f16-445d-8984-34bd88871249
-
-
-## 📋 Project Overview
-
-This repository contains two complementary academic projects developed as part of the Web Technologies and Databases curriculum. The system implements a comprehensive airline flight management platform with two different architectural approaches, demonstrating proficiency in both NoSQL (MongoDB) and SQL (PostgreSQL) database paradigms.
-
-### Project Components
-
-1. **TAW (Web Technologies Project)**: A full-stack application using the MEAN stack (MongoDB, Express.js, Angular, Node.js)
-2. **BD (Database Project)**: A database-focused implementation using PostgreSQL with a Flask backend and Angular frontend
-
-Both projects provide a complete flight booking and management system with role-based access control, transaction handling, and real-time availability tracking.
-
+ 
+University project for the **Web Technologies and Databases** course (A.Y. 2024-2025).  
+Built by Giovanni Quacchia & Alessandro Zuccarello.
+ 
+The repo contains two separate implementations of the same flight booking platform, each built around a different database paradigm. Same domain, different stack — the idea was to see how the two approaches compare in practice.
+ 
 ---
-
-## 🏗️ Architecture
-
-### TAW Project (NoSQL Implementation)
-
-**Technology Stack:**
-- **Frontend**: Angular 20.x with TypeScript
-- **Backend**: Node.js with Express 5.x and TypeScript
-- **Database**: MongoDB 6.x with Replica Set
-- **Authentication**: JWT (JSON Web Tokens)
-- **Containerization**: Docker with Docker Compose
-
-**Key Features:**
-- RESTful API architecture
-- MongoDB transactions using replica sets
-- Real-time seat availability
-- Role-based access control (Admin, Airline, Customer)
-- Reactive forms and routing
-
-### BD Project (SQL Implementation)
-
-**Technology Stack:**
-- **Frontend**: Angular with TypeScript
-- **Backend**: Python Flask
-- **Database**: PostgreSQL 16
-- **Containerization**: Docker with Docker Compose
-
-**Key Features:**
-- Relational database design with triggers and constraints
-- Materialized views for statistics
-- Database-level access control with user roles
-- Complex SQL queries and aggregations
-- Transactional integrity with ACID properties
-
+ 
+## What's inside
+ 
+### TAW — MEAN stack (NoSQL)
+Full-stack app with Angular, Node.js/Express, and MongoDB. Uses a replica set to support multi-document transactions, JWT for auth, and Docker Compose to wire everything together.
+ 
+### BD — Flask + PostgreSQL (SQL)
+Database-heavy implementation with Angular on the frontend and a Python Flask API on the backend. Leans into PostgreSQL features: triggers, materialized views, row-level security, deferrable constraints.
+ 
+Both projects cover the same feature set: flight search, booking, seat selection, extras, and a role-based dashboard for admins, airlines, and customers.
+ 
 ---
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Docker
-- Docker compose
-
+ 
+## Roles
+ 
+- **Admin** — manages users and airlines
+- **Airline** — creates routes, planes, flights, and sets prices (Economy / Business / First Class)
+- **Customer** — searches flights (no login needed), books tickets and picks seats (login required)
+---
+ 
+## Running locally
+ 
+The only hard dependency is Docker + Docker Compose.
+ 
 ```bash
-sudo apt update
-sudo apt install docker.io docker-compose -y
-```
-
-### Installation & Deployment
-
-#### TAW Project
-
-```bash
+# TAW (MongoDB)
 cd TAW
 docker compose up -d --build
-```
-
-**Service URLs:**
-- Frontend: http://localhost:4200
-- Backend API: http://localhost:3000
-- MongoDB: localhost:27017
-
-#### BD Project
-
-```bash
+# frontend → http://localhost:4200
+# backend  → http://localhost:3000
+ 
+# BD (PostgreSQL)
 cd BD
 docker compose up -d --build
+# frontend → http://localhost:4200
+# backend  → http://localhost:5001
 ```
-
-**Service URLs:**
-- Frontend: http://localhost:4200
-- Backend API: http://localhost:5001
-- PostgreSQL: localhost:5433
-
+ 
 ---
-
-## 📊 System Features
-
-
-#### 1. **Admin**
-- Create new airlines
-- Delete user accounts
-- Access to all administrative endpoints
-
-#### 2. **Airlines**
-- Create and manage routes
-- Create and manage airplanes
-- Create and manage flights
-- Set and update ticket prices (Economy, Business, First Class)
-- View airline-specific statistics (passengers, revenue, popular routes)
-
-#### 3. **Customer (Registered User)**
-- Search flights by origin and destination (no login required)
-- Purchase tickets (login required)
-- Select seats
-- Add extras (baggage, legroom, etc.)
-
+ 
+## Test credentials
+ 
+**Admin:** `admin@gmail.com` / `admin`  
+**Customer:** `user@gmail.com` / `user`
+ 
+Airlines are pre-loaded in both projects (Ryanair, British Airways, Air France, Emirates, and others) — credentials follow the pattern `contact@<airline>.com` / `password`.
+ 
 ---
-
-## 🗄️ Database Design
-
-### TAW (MongoDB Schema)
-
-**Collections:**
-- `users`: Authentication and role management
-- `airlines`: Airline company information
-- `airports`: Airport details
-- `routes`: Flight routes (origin → destination)
-- `airplanes`: Aircraft fleet
-- `flights`: Scheduled flights
-- `tickets`: Booking records
-- `passengers`: Passenger information linked to tickets
-
-### BD (PostgreSQL Schema)
-
-**Key Tables:**
-- `airlines`: Airline companies with authentication
-- `users`: Customer accounts
-- `airports`: Airport information
-- `routes`: Flight routes
-- `airplanes`: Aircraft fleet
-- `flights`: Scheduled flights
-- `tickets`: Booking records with ENUM types (ECONOMY, BUSINESS, FIRST_CLASS)
-
-**Database Features:**
-- **Triggers**: 
-  - Validate airline consistency (flight.airline = airplane.airline)
-  - Auto-generate flight codes (airline_code + number)
-  - Maintain flight code consistency per route
-- **Views**: Role-based data access for non-admin users
-- **Materialized Views**: Pre-calculated statistics for performance
-- **Constraints**: Deferrable constraints for complex transactions
-- **Indexes**: Optimized query performance
-- **Row-Level Security**: Fine-grained access control
-
+ 
+## Docs
+ 
+Both projects include a PDF with design choices and documentation (written in Italian):
+- [TAW — Web Technologies report](TAW/giovanni_quacchia_900676.pdf)
+- [BD — Database report](BD/Documentazione%20BD.pdf)
 ---
+ 
+## Notes
+ 
+The `.env` files are committed intentionally so the project runs out of the box. Don't use those credentials for anything beyond local testing.
+ 
+This project is academic work, submitted as coursework only.
 
-## 📚 API Documentation
+## Preview
 
-See [TAW API Documentation](./TAW/giovanni_quacchia_900676.pdf) (in italian)
-
-See [BD Documentation](./BD/Documentazione%20BD.pdf) (in italian)
-
----
-
-## 🧪 Testing
-
-The system includes pre-loaded test data:
-
-**Admin user**: `admin@gmail.com:admin`
-
-**Test customer accounts**:
-- `user@gmail.com:user`
-- `user@gmail.com:user2`
-
-**Airlines**: 
-
-TAW:
-- Ryanair (FR): contact@ryanair.com / password
-- British Airways (BA): contact@ba.com / password
-- Air France (AF): contact@airfrance.com / password
-- Lufthansa (LH): contact@lufthansa.com / password
-- ITA Airways (AZ): contact@itaairways.com / password
-- Emirates (EK): contact@emirates.com / password
-
-BD:
-- American Airlines (AA): american@contact.com / password
-- British Airways (BA): british@contact.com / password
-- Air France (AF): airfrance@contact.com / password
-- Emirates (EK): emirates@contact.com / password
-- Alitalia (AZ): alitalia@contact.com / password
-- Ryanair (FR): ryanair@contact.com / password
-
----
-
-## 📄 License
-
-This project is submitted as academic coursework and is intended for educational purposes only.
-
----
-
-## 👥 Authors
-
-Giovanni Quacchia - Alessandro Zuccarello 
-
----
-
-**Note**: The included .env files are provided for demonstration purposes only to ensure the project runs out of the box. For any production deployment, these files should be excluded from version control and populated with unique, newly generated security keys and credentials.
+https://github.com/user-attachments/assets/33111da5-4f16-445d-8984-34bd88871249
